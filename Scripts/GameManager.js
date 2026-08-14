@@ -36,10 +36,19 @@ const GameManager = {
     isTurnInProgress: false,
 
     init: function() {
-        ParticleEngine.init('fx-canvas');
-        this.loadSaveData();
-        this.renderHeroSelection();
-        this.updateHeaderStats();
+        const viewContainer = document.getElementById('main-view');
+        if (!viewContainer) {
+            setTimeout(() => GameManager.init(), 50);
+            return;
+        }
+        try {
+            ParticleEngine.init('fx-canvas');
+            this.loadSaveData();
+            this.renderHeroSelection();
+            this.updateHeaderStats();
+        } catch (e) {
+            console.error("Game initialization error:", e);
+        }
     },
 
     setGameStart: function(classType) {

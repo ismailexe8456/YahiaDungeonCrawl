@@ -9,13 +9,6 @@
   <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="Game design.css">
-
-  <!-- JS Modules -->
-  <script defer src="Scripts/SoundEngine.js"></script>
-  <script defer src="Scripts/ParticleEngine.js"></script>
-  <script defer src="Scripts/player.js"></script>
-  <script defer src="Scripts/enemy.js"></script>
-  <script defer src="Scripts/GameManager.js"></script>
 </head>
 
 <body>
@@ -54,6 +47,18 @@
 
   <!-- Dynamic Modals Container (Shop, Inventory, Stat Point Allocation, Victory/Defeat) -->
   <div id="modal-container"></div>
+
+  <!-- JS Modules loaded at end of body for instant DOM availability -->
+  <script src="Scripts/SoundEngine.js"></script>
+  <script src="Scripts/ParticleEngine.js"></script>
+  <script src="Scripts/player.js"></script>
+  <script src="Scripts/enemy.js"></script>
+  <script src="Scripts/GameManager.js"></script>
+  <script>
+    if (typeof GameManager !== 'undefined') {
+      GameManager.init();
+    }
+  </script>
 </body>
 
 </html>

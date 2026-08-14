@@ -405,33 +405,75 @@ const GameManager = {
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
 
+        if (player) {
+            player.health = player.maxHealth;
+            player.mana = player.maxMana;
+            player.shield = 0;
+        }
+
         let nodesHtml = this.stageNodes.map((node, index) => {
             const isCompleted = index < this.currentNodeIndex;
             const isCurrent = index === this.currentNodeIndex;
             const isLocked = index > this.currentNodeIndex;
 
+            let statusText = '🔒 Locked';
+            let clickHandler = '';
+
+            if (isCurrent) {
+                statusText = '👉 ENTER';
+                clickHandler = `GameManager.enterMapNode(${index})`;
+            } else if (isCompleted) {
+                if (node.type === 'forge') {
+                    statusText = '🔨 Forge';
+                    clickHandler = `GameManager.openUpgradeModal()`;
+                } else if (node.type === 'merchant') {
+                    statusText = '🛒 Merchant';
+                    clickHandler = `GameManager.openShopModal()`;
+                } else {
+                    statusText = '⚔️ Farm XP';
+                    clickHandler = `GameManager.reFightNode(${index})`;
+                }
+            }
+
             return `
                 <div class="map-node ${isCompleted ? 'node-completed' : ''} ${isCurrent ? 'node-current' : ''} ${isLocked ? 'node-locked' : ''}" 
-                     onclick="${isCurrent ? `GameManager.enterMapNode(${index})` : ''}">
+                     onclick="${clickHandler}"
+                     style="cursor:${isLocked ? 'not-allowed' : 'pointer'};">
                     <div class="node-icon"><i class="fas ${node.icon}"></i></div>
                     <div class="node-title">${node.title}</div>
-                    <div class="node-status">${isCompleted ? '✓ Cleared' : isCurrent ? '👉 ENTER' : '🔒 Locked'}</div>
+                    <div class="node-status">${statusText}</div>
                 </div>
             `;
         }).join('<div class="node-connector"></div>');
 
         viewContainer.innerHTML = `
-            <div class="map-screen text-center">
-                <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.2rem; margin-bottom:6px;">
-                    🗺️ Stage ${this.currentStage} Expedition Map
+            <div class="map-screen text-center" style="padding:16px;">
+                <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2.2rem; margin-bottom:6px;">
+                    Stage ${this.currentStage} Expedition Map
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Clear 4 fights, upgrade in the Blacksmith Forge, trade at the Merchant after finishing all fights, and defeat the Stage Boss!</p>
+                <p style="color:var(--ink-dim); margin-bottom:16px;">Revisit the Blacksmith Forge or Merchant anytime to upgrade gear & restock potions before fighting the Boss!</p>
+
+                <!-- Quick Access Hub Buttons -->
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="icon-btn" onclick="GameManager.openUpgradeModal()" style="padding:8px 16px; border:1px solid var(--gold); color:var(--gold-bright);">
+                        🔨 Visit Blacksmith Forge (Upgrades)
+                    </button>
+                    <button class="icon-btn" onclick="GameManager.openShopModal()" style="padding:8px 16px; border:1px solid var(--gold); color:var(--gold-bright);">
+                        🛒 Visit Wandering Merchant (Potions)
+                    </button>
+                </div>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}
                 </div>
             </div>
         `;
+    },
+
+    reFightNode: function(nodeIndex) {
+        SoundEngine.playClick();
+        this.logAction(`Entering XP farming fight...`, 'info');
+        this.startCombat(false);
     },
 
     enterMapNode: function(nodeIndex) {
@@ -1980,6 +2022,21 @@ const GameManager = {
         this.saveGameData();
         this.updateHeaderStats();
         this.openInventoryModal('wealth');
+    buyPotion: function(type) {
+        SoundEngine.playClick();
+        if (!player) return;
+        const cost = 15;
+        if (player.gold < cost) {
+            this.showShopError("Not enough gold to purchase potion!");
+            return;
+        }
+        player.gold -= cost;
+        if (type === 'hp') player.potions.hpPotion = (player.potions.hpPotion || 0) + 1;
+        else if (type === 'mp') player.potions.mpPotion = (player.potions.mpPotion || 0) + 1;
+        this.saveGameData();
+        this.updateHeaderStats();
+        this.openShopModal();
+        this.showToast(`Bought 1 ${type.toUpperCase()} Potion!`, 'success');
     },
 
     openShopModal: function(isMapNode = false) {
@@ -2024,11 +2081,30 @@ const GameManager = {
                     <div id="shop-error-toast" style="display:none; margin-bottom:12px; padding:10px 16px; border-radius:10px; background:rgba(255,42,95,0.2); border:1px solid var(--crimson); color:#ff2a5f; font-weight:800; text-align:center;"></div>
 
                     <div class="shop-section">
-                        <h4>🐾 Party Companions</h4>
+                        <h4 style="color:var(--gold); margin-bottom:8px;">🧪 Emergency Potions & Supplies</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                            <div class="shop-item panel" style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong style="color:var(--gold-bright);"><img src="characters imgs/items/health_potion.jpg" style="width:20px; height:20px; border-radius:4px; vertical-align:middle;"> Health Potion (+150 HP)</strong>
+                                    <div class="item-desc" style="font-size:0.8rem; color:var(--ink-dim);">Restores 150 Health in battle</div>
+                                </div>
+                                <button class="btn btn-primary" onclick="GameManager.buyPotion('hp')" ${player.gold < 15 ? 'disabled' : ''}>Buy 🪙15 Gold</button>
+                            </div>
+
+                            <div class="shop-item panel" style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong style="color:var(--gold-bright);"><img src="characters imgs/items/mana_potion.jpg" style="width:20px; height:20px; border-radius:4px; vertical-align:middle;"> Mana Potion (+100 MP)</strong>
+                                    <div class="item-desc" style="font-size:0.8rem; color:var(--ink-dim);">Restores 100 Mana in battle</div>
+                                </div>
+                                <button class="btn btn-primary" onclick="GameManager.buyPotion('mp')" ${player.gold < 15 ? 'disabled' : ''}>Buy 🪙15 Gold</button>
+                            </div>
+                        </div>
+
+                        <h4 style="color:var(--gold); margin-bottom:8px;">🐾 Party Companions</h4>
                         ${companionOptions}
-                        <h4>💎 Socketable Elemental Gems</h4>
+                        <h4 style="color:var(--gold); margin-bottom:8px;">💎 Socketable Elemental Gems</h4>
                         ${gemOptions}
-                        <h4>⚔️ Weapons & Gear</h4>
+                        <h4 style="color:var(--gold); margin-bottom:8px;">⚔️ Weapons & Gear</h4>
                         ${weaponOptions}
                     </div>
 

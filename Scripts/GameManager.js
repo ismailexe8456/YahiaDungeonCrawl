@@ -516,7 +516,7 @@ const GameManager = {
         this.showModal(modalHtml);
     },
 
-    // Multi-Slot Save / Load System
+    // Multi-Slot Save / Load & Cloud Database System
     openSaveLoadModal: function() {
         SoundEngine.playClick();
         let slotsHtml = '';
@@ -526,7 +526,7 @@ const GameManager = {
 
             slotsHtml += `
                 <div class="save-slot-card glass-panel">
-                    <div class="slot-title">💾 Save Slot ${i}</div>
+                    <div class="slot-title">💾 Local Slot ${i}</div>
                     ${slotData ? `
                         <div class="slot-info">
                             <strong>${slotData.playerData.classType}</strong> (Lvl ${slotData.playerData.level})<br>
@@ -534,14 +534,14 @@ const GameManager = {
                             <span class="slot-time">${slotData.timestamp || 'Saved'}</span>
                         </div>
                         <div class="slot-actions">
-                            <button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Overwrite Slot ${i}</button>
+                            <button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Save Slot ${i}</button>
                             <button class="btn btn-potion" onclick="GameManager.loadFromSlot(${i})">Load Slot ${i}</button>
                             <button class="btn btn-secondary" onclick="GameManager.deleteSlot(${i})" style="color:#ff2a5f;">&times;</button>
                         </div>
                     ` : `
-                        <div class="slot-info" style="color:#888;">Empty Slot</div>
+                        <div class="slot-info" style="color:#888;">Empty Local Slot</div>
                         <div class="slot-actions">
-                            ${player ? `<button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Save to Slot ${i}</button>` : ''}
+                            ${player ? `<button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Save Slot ${i}</button>` : ''}
                         </div>
                     `}
                 </div>
@@ -550,23 +550,169 @@ const GameManager = {
 
         const modalHtml = `
             <div class="modal-overlay">
-                <div class="modal-card glass-panel" style="max-width:650px;">
+                <div class="modal-card glass-panel" style="max-width:700px; max-height:85vh; overflow-y:auto;">
                     <div class="modal-header">
-                        <h2>💾 Game Save & Load System</h2>
+                        <h2>💾 Game Save & Cloud Database</h2>
                         <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
                     </div>
 
+                    <!-- Cloud Database Realtime Sync Box -->
+                    <div class="cloud-db-box glass-panel" style="margin-bottom:20px; padding:16px; border:1px solid var(--gold);">
+                        <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-cloud-upload-alt"></i> Realtime Cloud Database Sync</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Save progress directly to our online cloud database to sync your character across any computer or mobile browser!</p>
+
+                        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+                            <input type="text" id="cloud-username-input" class="glass-input" placeholder="Enter Hero Account Name (e.g. Yahia_Legend)" style="flex-grow:1; padding:10px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.5); color:#fff;">
+                            ${player ? `<button class="btn btn-primary" onclick="GameManager.saveToCloudDB()"><i class="fas fa-cloud-upload-alt"></i> Save to Cloud DB</button>` : ''}
+                            <button class="btn btn-potion" onclick="GameManager.loadFromCloudDB()"><i class="fas fa-cloud-download-alt"></i> Load from Cloud DB</button>
+                        </div>
+                        <div id="cloud-status-msg" style="font-size:0.85rem; font-weight:700;"></div>
+                    </div>
+
+                    <h4 style="color:var(--text-muted); margin-bottom:10px;">Local Offline Save Slots</h4>
                     <div class="save-slots-list">${slotsHtml}</div>
 
-                    <div style="margin-top:20px; display:flex; gap:12px; justify-content:space-between; align-items:center;">
-                        <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Export Save Code</button>
-                        <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Save Code</button>
+                    <div style="margin-top:20px; display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="GameManager.openLeaderboardModal()"><i class="fas fa-trophy"></i> Global Leaderboard</button>
+                        <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Copy Save Code</button>
+                        <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Code</button>
                         <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    saveToCloudDB: async function() {
+        if (!player) return;
+        const inputEl = document.getElementById('cloud-username-input');
+        const statusEl = document.getElementById('cloud-status-msg');
+        const username = inputEl ? inputEl.value.trim() : '';
+
+        if (!username) {
+            if (statusEl) statusEl.innerHTML = '<span style="color:#ff2a5f;">❌ Please enter a Hero Account Name!</span>';
+            return;
+        }
+
+        if (statusEl) statusEl.innerHTML = '<span style="color:var(--gold);">⏳ Saving hero to Cloud Database...</span>';
+
+        const saveData = {
+            timestamp: new Date().toLocaleString(),
+            currentStage: this.currentStage,
+            currentNodeIndex: this.currentNodeIndex,
+            difficulty: this.difficulty,
+            playerData: {
+                classType: player.classType,
+                level: player.level,
+                xp: player.xp,
+                gold: player.gold,
+                str: player.str,
+                agi: player.agi,
+                int: player.int,
+                vit: player.vit,
+                statPoints: player.statPoints,
+                equipment: player.equipment,
+                companion: player.companion,
+                socketedGem: player.socketedGem,
+                specialization: player.specialization,
+                blessings: player.blessings,
+                achievements: player.achievements
+            }
+        };
+
+        try {
+            await CloudDatabase.saveToCloud(username, saveData);
+            SoundEngine.playLevelUp();
+            if (statusEl) statusEl.innerHTML = `<span style="color:var(--heal-green);">✓ Successfully saved hero '${username}' to Cloud DB!</span>`;
+        } catch (err) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff2a5f;">❌ Cloud DB error: ${err.message}</span>`;
+        }
+    },
+
+    loadFromCloudDB: async function() {
+        const inputEl = document.getElementById('cloud-username-input');
+        const statusEl = document.getElementById('cloud-status-msg');
+        const username = inputEl ? inputEl.value.trim() : '';
+
+        if (!username) {
+            if (statusEl) statusEl.innerHTML = '<span style="color:#ff2a5f;">❌ Please enter your Hero Account Name!</span>';
+            return;
+        }
+
+        if (statusEl) statusEl.innerHTML = '<span style="color:var(--gold);">⏳ Fetching hero from Cloud Database...</span>';
+
+        try {
+            const data = await CloudDatabase.loadFromCloud(username);
+            const pData = data.saveData.playerData;
+
+            player = new Player(pData.classType);
+            player.level = pData.level;
+            player.xp = pData.xp;
+            player.gold = pData.gold;
+            player.str = pData.str;
+            player.agi = pData.agi;
+            player.int = pData.int;
+            player.vit = pData.vit;
+            player.statPoints = pData.statPoints;
+            player.equipment = pData.equipment;
+            player.companion = pData.companion;
+            player.socketedGem = pData.socketedGem;
+            player.specialization = pData.specialization;
+            player.blessings = pData.blessings || [];
+            player.achievements = pData.achievements || [];
+
+            if (player.specialization) player.setSpecialization(player.specialization);
+            player.recalculateStats();
+
+            this.currentStage = data.saveData.currentStage || 1;
+            this.currentNodeIndex = data.saveData.currentNodeIndex || 0;
+            this.difficulty = data.saveData.difficulty || 'normal';
+
+            SoundEngine.playLevelUp();
+            this.closeModal();
+            this.renderDungeonMap();
+            this.logAction(`Loaded Cloud DB Hero <strong>'${username}'</strong>: Level ${player.level} ${player.classType} on Stage ${this.currentStage}!`, 'info');
+        } catch (err) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff2a5f;">❌ Could not load: ${err.message}</span>`;
+        }
+    },
+
+    openLeaderboardModal: async function() {
+        SoundEngine.playClick();
+        this.showModal(`
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel text-center" style="max-width:600px;">
+                    <h2 style="color:var(--gold); font-size:2rem;"><i class="fas fa-trophy"></i> Global Cloud DB Leaderboard</h2>
+                    <p style="color:var(--text-muted); margin-bottom:16px;">Top players worldwide fetched from Cloud Database</p>
+                    <div id="leaderboard-content" style="min-height:180px; display:flex; align-items:center; justify-content:center;">
+                        <span style="color:var(--gold);">⏳ Loading global scores...</span>
+                    </div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        const list = await CloudDatabase.fetchLeaderboard();
+        const contentEl = document.getElementById('leaderboard-content');
+        if (!contentEl) return;
+
+        if (list.length === 0) {
+            contentEl.innerHTML = '<p style="color:var(--text-muted);">No cloud records found yet. Be the first to save your hero to Cloud DB!</p>';
+            return;
+        }
+
+        const rowsHtml = list.map((item, index) => `
+            <div class="leaderboard-row ${index === 0 ? 'rank-gold' : (index === 1 ? 'rank-silver' : (index === 2 ? 'rank-bronze' : ''))}">
+                <div class="rank-num">#${index + 1}</div>
+                <div class="rank-user"><strong>${item.username}</strong> (${item.classType} Lvl ${item.level})</div>
+                <div class="rank-score">Stage ${item.stage} | 🪙 ${item.gold} Gold</div>
+            </div>
+        `).join('');
+
+        contentEl.innerHTML = `<div class="leaderboard-list">${rowsHtml}</div>`;
     },
 
     saveToSlot: function(slotIdx) {

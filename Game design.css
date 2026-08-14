@@ -753,3 +753,31 @@ body {
     background: rgba(245, 197, 24, 0.2) !important;
 }
 
+/* Global Online Leaderboard Styling */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(20, 20, 35, 0.8);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+.rank-num { font-weight: 900; width: 35px; color: var(--gold); }
+.rank-user { flex-grow: 1; text-align: left; }
+.rank-score { font-weight: 700; color: var(--mana-blue); }
+
+.rank-gold { border-color: #ffd700; background: rgba(255, 215, 0, 0.15); }
+.rank-silver { border-color: #c0c0c0; background: rgba(192, 192, 192, 0.15); }
+.rank-bronze { border-color: #cd7f32; background: rgba(205, 127, 50, 0.15); }
+
+

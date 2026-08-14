@@ -545,12 +545,6 @@ const GameManager = {
                     </div>
                 </div>
 
-                <!-- Combat Ticker Log Strip -->
-                <div class="panel log-strip" id="combat-ticker-box" style="margin-bottom:14px; padding:10px 12px; display:flex; gap:9px; align-items:flex-start;">
-                    <div class="t" style="font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); padding-top:2px;">📜 LOG</div>
-                    <div class="msg" id="log-body" style="font-size:12px; color:var(--ink-dim); line-height:1.45;"></div>
-                </div>
-
                 <!-- Anchored Action Dock -->
                 <div class="dock">
                     <div class="dock-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">

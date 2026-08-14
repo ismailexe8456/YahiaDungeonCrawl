@@ -101,57 +101,57 @@ const GameManager = {
         player = null;
         this.updateHeaderStats();
         viewContainer.innerHTML = `
-            <div class="hero-select-screen text-center animate-fade-in">
-                <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.4rem; margin-bottom:4px;">
-                    ⚔️ Choose Your Hero Class (World ${this.activeWorld})
+            <div class="hero-select-screen text-center animate-fade-in" style="padding:16px;">
+                <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2.2rem; margin-bottom:6px;">
+                    ⚔ Choose Your Champion (World ${this.activeWorld})
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:24px;">Select a legendary champion for World ${this.activeWorld} to begin your expedition!</p>
+                <p style="color:var(--ink-dim); margin-bottom:20px; font-size:0.95rem;">Select a legendary hero for World ${this.activeWorld} to begin your dungeon expedition!</p>
 
                 <div style="margin-bottom:20px; display:flex; gap:12px; justify-content:center;">
-                    <button class="btn btn-potion" onclick="GameManager.openSettingsModal()">
-                        ⚙️ Settings & World Switcher (World ${this.activeWorld})
+                    <button class="icon-btn" onclick="GameManager.openSettingsModal()" style="padding:8px 16px;">
+                        ⚙ Settings & World Save Manager
                     </button>
-                    <button class="btn btn-secondary" onclick="TutorialEngine.openTutorial(0)" style="color:var(--gold);">
-                        <i class="fas fa-question-circle"></i> How to Play
+                    <button class="icon-btn" onclick="TutorialEngine.openTutorial(0)" style="padding:8px 16px; color:var(--gold-bright);">
+                        ❔ How to Play Guide
                     </button>
                 </div>
 
                 <div class="hero-class-grid">
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Warrior', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Warrior', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/Warrior.jpg" alt="Warrior"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Warrior</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Warrior</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Warrior</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
+                        <button class="cta" style="pointer-events:none;">Choose Warrior</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Rogue', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Rogue', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/Rouge.jpg" alt="Rogue"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Rogue</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Rogue</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Rogue</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
+                        <button class="cta" style="pointer-events:none;">Choose Rogue</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Wizard', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Wizard', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/Wizard.jpg" alt="Wizard"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Wizard</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Wizard</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Wizard</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
+                        <button class="cta" style="pointer-events:none;">Choose Wizard</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Hunter', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Hunter', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/hunter.jpg" alt="Hunter"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Hunter</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Hunter</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Hunter</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
+                        <button class="cta" style="pointer-events:none;">Choose Hunter</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Paladin', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Paladin', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/Paladin.jpg" alt="Paladin"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Paladin</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Paladin</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Paladin</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
+                        <button class="cta" style="pointer-events:none;">Choose Paladin</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Necromancer', event)" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card panel" onclick="GameManager.setGameStart('Necromancer', event)" style="padding:14px; cursor:pointer;">
                         <div class="hero-avatar"><img src="characters imgs/player/Necromancer.jpg" alt="Necromancer"></div>
-                        <h3 style="color:var(--gold); margin:8px 0 4px 0;">Necromancer</h3>
-                        <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
-                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Necromancer</button>
+                        <h3 style="font-family:var(--font-display); color:var(--gold-bright); margin:10px 0 4px 0;">Necromancer</h3>
+                        <div style="color:var(--ink-dim); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
+                        <button class="cta" style="pointer-events:none;">Choose Necromancer</button>
                     </div>
                 </div>
             </div>
@@ -496,66 +496,78 @@ const GameManager = {
         if (!viewContainer) return;
 
         const arenaHtml = `
-            <div class="battle-arena">
-                <!-- Clash Royale Compact Battle Stage -->
-                <div class="clash-battle-stage">
-                    <!-- Hero Unit Left -->
-                    <div class="clash-unit-card" id="player-unit">
-                        <div class="clash-portrait-box">
-                            <img src="${player.img}" alt="${player.classType}" class="unit-img" id="player-img">
-                            <div class="shield-overlay" id="player-shield-badge" style="display:${player.shield > 0 ? 'block' : 'none'}">🛡️ ${player.shield}</div>
-                        </div>
-                        <div class="clash-unit-details">
-                            <div class="clash-unit-title">${player.classType} <span class="unit-lvl">Lvl ${player.level}</span></div>
-                            <div class="stat-bar-group">
-                                <div class="bar-label"><span>HP</span> <span id="player-hp-txt">${player.health}/${player.maxHealth}</span></div>
-                                <div class="bar-bg"><div class="bar-fill bar-hp" id="player-hp-bar" style="width: ${(player.health/player.maxHealth)*100}%"></div></div>
+            <div class="battle-arena-wrapper">
+                <!-- Arena Stage Panel -->
+                <div class="panel arena" style="padding:14px; margin-bottom:12px;">
+                    <div class="eyebrow" style="margin-bottom:12px;">Battle — Forest Depths</div>
+                    
+                    <div class="combatants" style="display:flex; align-items:center; gap:10px;">
+                        <!-- Player Fighter -->
+                        <div class="fighter" style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                            <div class="who" style="display:flex; align-items:center; gap:8px;">
+                                <div class="medallion" style="width:52px; height:52px;">
+                                    <img src="${player.img}" alt="${player.classType}" id="player-img">
+                                </div>
+                                <div class="id">
+                                    <div class="lvl" style="font-size:10px; color:var(--ink-faint); font-weight:600;">LV ${player.level}</div>
+                                    <div class="nm" style="font-family:var(--font-display); font-size:14px; color:var(--ink);">${player.classType}</div>
+                                </div>
                             </div>
-                            <div class="stat-bar-group">
-                                <div class="bar-label"><span>MP</span> <span id="player-mp-txt">${player.mana}/${player.maxMana}</span></div>
-                                <div class="bar-bg"><div class="bar-fill bar-mp" id="player-mp-bar" style="width: ${(player.mana/player.maxMana)*100}%"></div></div>
+                            <div class="stat-row">
+                                <div class="stat-label">HP <span class="val" id="player-hp-txt">${player.health}/${player.maxHealth}</span></div>
+                                <div class="bar hp"><i id="player-hp-bar" style="width: ${(player.health/player.maxHealth)*100}%"></i></div>
+                            </div>
+                            <div class="stat-row">
+                                <div class="stat-label">MP <span class="val" id="player-mp-txt">${player.mana}/${player.maxMana}</span></div>
+                                <div class="bar mp"><i id="player-mp-bar" style="width: ${(player.mana/player.maxMana)*100}%"></i></div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- VS Badge -->
-                    <div class="clash-vs-badge">VS</div>
+                        <!-- VS Badge -->
+                        <div class="vs-badge" style="font-family:var(--font-display); font-size:11px; color:var(--gold); border:1px solid var(--gold-dim); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:var(--bg-inset); flex-shrink:0;">VS</div>
 
-                    <!-- Enemy Unit Right -->
-                    <div class="clash-unit-card" id="enemy-unit">
-                        <div class="clash-portrait-box">
-                            <img src="${enemy.img}" alt="${enemy.name}" class="unit-img" id="enemy-img">
-                            ${enemy.isBoss ? '<div class="boss-crown">👑 BOSS</div>' : ''}
-                        </div>
-                        <div class="clash-unit-details">
-                            <div class="clash-unit-title" style="color:${enemy.isBoss ? '#ff3366' : '#fff'}">${enemy.name}</div>
-                            <div class="stat-bar-group">
-                                <div class="bar-label"><span>HP</span> <span id="enemy-hp-txt">${enemy.health}/${enemy.maxHealth}</span></div>
-                                <div class="bar-bg"><div class="bar-fill bar-hp" id="enemy-hp-bar" style="width: ${(enemy.health/enemy.maxHealth)*100}%"></div></div>
+                        <!-- Enemy Fighter -->
+                        <div class="fighter enemy" style="flex:1; display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                            <div class="who" style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
+                                <div class="medallion enemy" style="width:52px; height:52px;">
+                                    <img src="${enemy.img}" alt="${enemy.name}" id="enemy-img">
+                                </div>
+                                <div class="id" style="text-align:right;">
+                                    <div class="lvl" style="font-size:10px; color:var(--ink-faint); font-weight:600;">${enemy.isBoss ? '👑 BOSS' : 'BEAST'}</div>
+                                    <div class="nm" style="font-family:var(--font-display); font-size:14px; color:var(--ink);">${enemy.name}</div>
+                                </div>
+                            </div>
+                            <div class="stat-row" style="width:100%;">
+                                <div class="stat-label" style="justify-content:flex-end;"><span class="val" id="enemy-hp-txt">${enemy.health}/${enemy.maxHealth}</span> HP</div>
+                                <div class="bar hp"><i id="enemy-hp-bar" style="width: ${(enemy.health/enemy.maxHealth)*100}%"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Clash Royale Action Deck Panel -->
-                <div class="action-panel glass-panel">
-                    <div class="clash-deck-header">
-                        <div class="clash-mana-title">⚔️ Deck (Mana: <span style="color:#00d2ff;">${player.mana}/${player.maxMana} MP</span>)</div>
-                        <div class="clash-potions-row">
-                            <button class="btn btn-potion" onclick="GameManager.usePotion('hp')">❤️ (${player.potions.hpPotion})</button>
-                            <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 (${player.potions.mpPotion})</button>
-                            <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000; font-weight:800;">🎒 Inv</button>
+                <!-- Combat Ticker Log Strip -->
+                <div class="panel log-strip" id="combat-ticker-box" style="margin-bottom:14px; padding:10px 12px; display:flex; gap:9px; align-items:flex-start;">
+                    <div class="t" style="font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); padding-top:2px;">📜 LOG</div>
+                    <div class="msg" id="log-body" style="font-size:12px; color:var(--ink-dim); line-height:1.45;"></div>
+                </div>
+
+                <!-- Anchored Action Dock -->
+                <div class="dock">
+                    <div class="dock-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div class="mana" style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:14px;">💧</span>
+                            <span class="mana-val" style="font-family:var(--font-mono); font-size:12px; color:var(--arcane); font-weight:700;">${player.mana} / ${player.maxMana} MP</span>
+                        </div>
+                        <div class="badges" style="display:flex; gap:6px;">
+                            <button class="badge-sm" onclick="GameManager.usePotion('hp')" title="Drink Health Potion">❤️ ${player.potions.hpPotion}</button>
+                            <button class="badge-sm" onclick="GameManager.usePotion('mp')" title="Drink Mana Potion">🧪 ${player.potions.mpPotion}</button>
+                            <button class="badge-sm" onclick="GameManager.openInventoryModal()" title="Open Inventory">🎒</button>
                         </div>
                     </div>
 
                     <div id="skills-container">
                         ${this.renderSkillButtons()}
                     </div>
-                </div>
-
-                <!-- 1-Line Compact Battle Ticker -->
-                <div class="clash-battle-ticker glass-panel" id="combat-ticker-box">
-                    <div class="ticker-content" id="log-body"></div>
                 </div>
             </div>
         `;
@@ -577,8 +589,8 @@ const GameManager = {
     renderSkillButtons: function() {
         if (enemy && enemy.health <= 0) {
             return `
-                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="padding: 16px; font-size: 1.2rem; font-weight: 800; width: 100%;">
-                    🎉 VICTORY! Click to Continue Expedition ➡️
+                <button class="cta animate-bounce" onclick="GameManager.advanceMapNode()" style="padding:14px; font-size:1.1rem; width:100%;">
+                    🎉 VICTORY! Continue Expedition ➡️
                 </button>
             `;
         }
@@ -596,71 +608,52 @@ const GameManager = {
             const disabled = isCooldown || isInsufficientMana;
             const isSelected = this.selectedSkillIndex === index;
 
-            let iconClass = 'fa-khanda';
-            if (skill.type === 'magic' || skill.element === 'fire') iconClass = 'fa-fire-flame-curved';
-            else if (skill.element === 'dark') iconClass = 'fa-ghost';
-            else if (skill.element === 'holy') iconClass = 'fa-sun';
-            else if (skill.sound === 'heal') iconClass = 'fa-heart-pulse';
-            else if (skill.sound === 'shield' || skill.type === 'buff') iconClass = 'fa-shield-halved';
-            else if (skill.sound === 'heavyHit') iconClass = 'fa-skull';
-
-            let elemClass = '';
-            if (skill.element === 'fire') elemClass = 'elem-fire';
-            else if (skill.element === 'dark') elemClass = 'elem-dark';
-            else if (skill.element === 'holy') elemClass = 'elem-holy';
-            else if (skill.type === 'buff') elemClass = 'elem-buff';
+            let iconClass = '🗡️';
+            if (skill.type === 'magic' || skill.element === 'fire') iconClass = '🔥';
+            else if (skill.element === 'dark') iconClass = '☠️';
+            else if (skill.element === 'holy') iconClass = '✨';
+            else if (skill.sound === 'heal') iconClass = '💚';
+            else if (skill.sound === 'shield' || skill.type === 'buff') iconClass = '🛡️';
 
             return `
-                <div class="clash-skill-card ${elemClass} ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" 
-                     onclick="GameManager.selectSkill(${index})">
+                <div class="skill ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" 
+                     onclick="GameManager.selectSkill(${index})"
+                     style="position:relative; background:var(--bg-inset); border:1px solid ${isSelected ? 'var(--gold)' : 'var(--border-rune)'}; border-radius:10px; padding:8px 6px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;">
                     
-                    <div class="skill-mana-badge ${skill.manaCost === 0 ? 'free' : ''}">
-                        ${skill.manaCost > 0 ? `${skill.manaCost}💧` : 'Free'}
+                    <div class="cost ${skill.manaCost === 0 ? 'free' : (isInsufficientMana ? 'locked' : '')}"
+                         style="position:absolute; top:-6px; right:-6px; font-family:var(--font-mono); font-size:9.5px; font-weight:700; background:${skill.manaCost === 0 ? 'var(--gold)' : (isInsufficientMana ? '#3a3040' : 'var(--arcane)')}; color:${skill.manaCost === 0 ? '#241a06' : '#eaf4fb'}; border-radius:5px; padding:1px 4px;">
+                        ${skill.manaCost > 0 ? skill.manaCost : 'FREE'}
                     </div>
 
-                    <div class="skill-art-container">
-                        <i class="fas ${iconClass}"></i>
-                    </div>
+                    <div class="glyph" style="font-size:20px;">${iconClass}</div>
+                    <div class="name" style="font-size:10.5px; font-weight:600; color:${isSelected ? 'var(--gold-bright)' : 'var(--ink-dim)'}; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${skill.name}</div>
 
-                    <div class="skill-card-footer">
-                        <div class="skill-card-name">${skill.name}</div>
-                    </div>
-
-                    ${isCooldown ? `
-                        <div class="skill-lock-overlay">
-                            <i class="fas fa-hourglass-half" style="font-size:1.1rem; margin-bottom:2px;"></i>
-                            <span>${skill.currentCD}T</span>
-                        </div>
-                    ` : ''}
-
-                    ${!isCooldown && isInsufficientMana ? `
-                        <div class="skill-lock-overlay">
-                            <i class="fas fa-lock" style="font-size:1.1rem; margin-bottom:2px;"></i>
-                            <span>NO MP</span>
-                        </div>
-                    ` : ''}
+                    ${isCooldown ? `<div style="position:absolute; inset:0; background:rgba(10,8,20,0.85); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--crimson); font-weight:800; font-size:10px;">⌛ ${skill.currentCD}T</div>` : ''}
                 </div>
             `;
         }).join('');
 
         const isCastDisabled = selectedSkill.currentCD > 0 || player.mana < selectedSkill.manaCost || (enemy && enemy.health <= 0);
-        let btnText = `⚔️ CAST ${selectedSkill.name.toUpperCase()}`;
+        let btnText = `⚔ CAST ${selectedSkill.name.toUpperCase()}`;
         if (selectedSkill.currentCD > 0) btnText = `⌛ COOLDOWN (${selectedSkill.currentCD} TURNS)`;
-        else if (player.mana < selectedSkill.manaCost) btnText = `💧 NOT ENOUGH MP (${selectedSkill.manaCost} REQUIRED)`;
+        else if (player.mana < selectedSkill.manaCost) btnText = `💧 NOT ENOUGH MP (${selectedSkill.manaCost} MP)`;
 
         return `
-            <div class="clash-deck-4col">${cardsHtml}</div>
-            
-            <div class="skill-confirm-panel glass-panel" style="margin-top:8px; padding:10px 14px; border:1.5px solid var(--gold); border-radius:12px; background:rgba(12,10,22,0.85);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <strong style="color:var(--gold); font-size:0.95rem; font-family:'MedievalSharp',serif;">${selectedSkill.name}</strong>
-                    <span style="font-size:0.8rem; color:var(--mana-blue); font-weight:800;">Cost: ${selectedSkill.manaCost > 0 ? `${selectedSkill.manaCost} MP` : 'FREE'}</span>
-                </div>
-                <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px; line-height:1.35;">${selectedSkill.desc}</div>
-                <button class="btn btn-primary" onclick="GameManager.useSkill(${this.selectedSkillIndex})" ${isCastDisabled ? 'disabled' : ''} style="width:100%; padding:10px; font-weight:900; font-size:0.95rem; background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000;">
-                    ${btnText}
-                </button>
+            <div class="skills-row" style="display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:10px;">
+                ${cardsHtml}
             </div>
+            
+            <div class="cast-card" style="background:var(--bg-inset); border:1px solid var(--border-rune); border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                <div class="row1" style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                    <span class="nm" style="font-family:var(--font-display); font-size:13px; color:var(--gold-bright);">${selectedSkill.name}</span>
+                    <span class="cost" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);">Cost: ${selectedSkill.manaCost > 0 ? `${selectedSkill.manaCost} MP` : 'Free'}</span>
+                </div>
+                <div class="desc" style="font-size:11.5px; color:var(--ink-dim); line-height:1.4;">${selectedSkill.desc}</div>
+            </div>
+
+            <button class="cta" onclick="GameManager.useSkill(${this.selectedSkillIndex})" ${isCastDisabled ? 'disabled' : ''}>
+                ${btnText}
+            </button>
         `;
     },
 

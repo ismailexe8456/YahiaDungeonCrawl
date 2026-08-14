@@ -7,6 +7,8 @@
   <title>Dungeon Crawl - Dark Fantasy RPG</title>
   
   <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="Game design.css">
 </head>
@@ -17,31 +19,19 @@
 
   <div class="game-container">
     <!-- Top Navigation Header -->
-    <header class="game-header glass-panel">
-      <div class="brand">
-        <i class="fas fa-dragon" style="font-size: 1.8rem; color: var(--gold);"></i>
-        <h1>Dungeon Crawl</h1>
+    <header class="game-header panel" style="padding:10px 16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div class="brand" style="display:flex; align-items:center; gap:8px;">
+        <div class="crest" style="width:30px; height:30px; border-radius:8px; background:linear-gradient(160deg,var(--gold-bright),var(--ember)); display:flex; align-items:center; justify-content:center; font-size:16px;">⚔</div>
+        <h1 style="font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--ink); margin:0;">Dungeon Crawl</h1>
       </div>
 
-      <div class="header-stats">
-        <div class="stat-chip stage-badge">
-          <i class="fas fa-dungeon"></i> Stage <span id="hdr-stage">1</span>
-        </div>
-        <div class="stat-chip gold-badge">
-          <i class="fas fa-coins"></i> <span id="hdr-gold">0</span> Gold
-        </div>
-        <div class="stat-chip coin-badge" onclick="GameManager.openInventoryModal('gear')" style="cursor:pointer;">
-          <i class="fas fa-hammer"></i> <span id="hdr-coins">0</span> Coins
-        </div>
-        <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="padding: 6px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color: #000; font-weight: 800;">
-          <i class="fas fa-briefcase"></i> Inventory
-        </button>
-        <button class="btn btn-potion" onclick="GameManager.openSettingsModal()" style="padding: 6px 14px; font-size: 0.85rem;">
-          <i class="fas fa-cog"></i> Settings
-        </button>
-        <button class="btn btn-secondary" onclick="TutorialEngine.openTutorial(0)" style="padding: 6px 14px; font-size: 0.85rem; color:var(--gold);">
-          <i class="fas fa-question-circle"></i> How to Play
-        </button>
+      <div class="header-stats" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div class="pill stage-badge" style="color:var(--gold);">Stage <span id="hdr-stage">1</span></div>
+        <div class="pill gold-c">🪙 <span id="hdr-gold">0</span> Gold</div>
+        <div class="pill coin-c" onclick="GameManager.openInventoryModal('gear')" style="cursor:pointer;">💎 <span id="hdr-coins">0</span> Coins</div>
+        <button class="icon-btn" onclick="GameManager.openInventoryModal()" style="padding:6px 12px;">🎒 Inventory</button>
+        <button class="icon-btn" onclick="GameManager.openSettingsModal()" style="padding:6px 12px;">⚙ Settings</button>
+        <button class="icon-btn" onclick="TutorialEngine.openTutorial(0)" style="padding:6px 12px;">❔ Guide</button>
       </div>
     </header>
 

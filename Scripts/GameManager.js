@@ -571,9 +571,37 @@ const GameManager = {
             `;
         }
         
+    inspectedSkillIndex: null,
+
+    toggleSkillInspect: function(skillIndex, event) {
+        if (event) event.stopPropagation();
+        SoundEngine.playClick();
+        if (this.inspectedSkillIndex === skillIndex) {
+            this.inspectedSkillIndex = null;
+        } else {
+            this.inspectedSkillIndex = skillIndex;
+        }
+        const skillsContainer = document.getElementById('skills-container');
+        if (skillsContainer) {
+            skillsContainer.innerHTML = this.renderSkillButtons();
+        }
+    },
+
+    renderSkillButtons: function() {
+        if (enemy && enemy.health <= 0) {
+            return `
+                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="padding: 16px; font-size: 1.2rem; font-weight: 800; width: 100%;">
+                    🎉 VICTORY! Click to Continue Expedition ➡️
+                </button>
+            `;
+        }
+        
         let cardsHtml = player.skills.map((skill, index) => {
-            const disabled = skill.currentCD > 0 || player.mana < skill.manaCost || (enemy && enemy.health <= 0);
-            
+            const isCooldown = skill.currentCD > 0;
+            const isInsufficientMana = player.mana < skill.manaCost;
+            const disabled = isCooldown || isInsufficientMana || (enemy && enemy.health <= 0);
+            const isInspected = this.inspectedSkillIndex === index;
+
             let iconClass = 'fa-khanda';
             if (skill.type === 'magic' || skill.element === 'fire') iconClass = 'fa-fire-flame-curved';
             else if (skill.element === 'dark') iconClass = 'fa-ghost';
@@ -589,34 +617,56 @@ const GameManager = {
             else if (skill.type === 'buff') elemClass = 'elem-buff';
 
             return `
-                <div class="clash-card ${elemClass} ${disabled ? 'disabled' : ''}" 
+                <div class="clash-skill-card ${elemClass} ${disabled ? 'disabled' : ''}" 
                      onclick="${disabled ? '' : `GameManager.useSkill(${index})`}" 
-                     onmouseenter="SoundEngine.playHover()"
-                     title="${skill.name}: ${skill.desc}">
+                     onmouseenter="SoundEngine.playHover()">
                     
-                    <div class="clash-card-art-bg">
+                    <div class="skill-mana-badge ${skill.manaCost === 0 ? 'free' : ''}">
+                        ${skill.manaCost > 0 ? `${skill.manaCost} 💧` : 'Free'}
+                    </div>
+
+                    <button class="skill-star-btn ${isInspected ? 'active' : ''}" onclick="GameManager.toggleSkillInspect(${index}, event)" title="Inspect Skill Details">
+                        ${isInspected ? '★' : '☆'}
+                    </button>
+
+                    <div class="skill-art-container">
                         <i class="fas ${iconClass}"></i>
                     </div>
 
-                    <div class="clash-elixir-badge ${skill.manaCost === 0 ? 'zero-cost' : ''}">
-                        ${skill.manaCost > 0 ? skill.manaCost : 'FREE'} <i class="fas fa-droplet" style="font-size:0.75rem;"></i>
+                    <div class="skill-card-footer">
+                        <div class="skill-card-name">${skill.name}</div>
                     </div>
 
-                    <div class="clash-card-banner">
-                        <span class="clash-card-title">${skill.name}</span>
-                    </div>
-
-                    ${skill.currentCD > 0 ? `
-                        <div class="clash-cd-overlay">
+                    ${isCooldown ? `
+                        <div class="skill-lock-overlay">
                             <i class="fas fa-hourglass-half" style="font-size:1.4rem; margin-bottom:4px;"></i>
                             <span>${skill.currentCD} TURNS</span>
+                        </div>
+                    ` : ''}
+
+                    ${!isCooldown && isInsufficientMana ? `
+                        <div class="skill-lock-overlay">
+                            <i class="fas fa-lock" style="font-size:1.4rem; margin-bottom:4px;"></i>
+                            <span>NO MP</span>
+                        </div>
+                    ` : ''}
+
+                    ${isInspected ? `
+                        <div class="skill-inspect-popover animate-bounce" onclick="event.stopPropagation()">
+                            <strong style="color:var(--gold); display:block; margin-bottom:4px; font-size:0.85rem;">${skill.name}</strong>
+                            <p style="margin:0; font-size:0.75rem; color:#eee; line-height:1.3;">${skill.desc}</p>
                         </div>
                     ` : ''}
                 </div>
             `;
         }).join('');
 
-        return `<div class="clash-deck">${cardsHtml}</div>`;
+        return `
+            <div class="clash-card-row">${cardsHtml}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:6px;">
+                <i class="fas fa-hand-pointer" style="color:var(--gold);"></i> Tap ☆ on any card to reveal details
+            </div>
+        `;
     },
 
     useSkill: function(skillIndex) {

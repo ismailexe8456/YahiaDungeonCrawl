@@ -1486,94 +1486,142 @@ body {
     }
 }
 
-.clash-card {
-    background: radial-gradient(circle at center, rgba(45, 35, 75, 0.9) 0%, rgba(12, 10, 22, 0.98) 100%);
-    border: 2px solid var(--gold);
+/* Horizontal Scrollable Ability Card Row & Star Inspect */
+.clash-card-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 8px 4px 12px 4px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.clash-card-row::-webkit-scrollbar {
+    height: 6px;
+}
+.clash-card-row::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 4px;
+}
+
+.clash-skill-card {
+    flex: 0 0 115px;
+    width: 115px;
+    height: 130px;
     border-radius: 14px;
+    background: radial-gradient(circle at center, rgba(40, 30, 70, 0.95) 0%, rgba(12, 10, 22, 0.98) 100%);
+    border: 2px solid var(--gold);
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
+    scroll-snap-align: start;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s ease, box-shadow 0.2s ease;
-    height: 115px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(245, 197, 24, 0.15);
 }
 
-.clash-card:hover:not(.disabled) {
+.clash-skill-card:hover:not(.disabled) {
     transform: translateY(-5px) scale(1.03);
     border-color: #fff;
     box-shadow: 0 10px 28px var(--gold-glow);
 }
 
-.clash-card-art-bg {
+.skill-mana-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0, 210, 255, 0.6);
+    border: 1px solid #fff;
+    z-index: 6;
+}
+
+.skill-mana-badge.free {
+    background: linear-gradient(135deg, #00ff9d 0%, #00b36b 100%);
+    color: #000;
+    box-shadow: 0 3px 8px rgba(0, 255, 157, 0.6);
+}
+
+.skill-star-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: rgba(15, 12, 25, 0.95);
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.85rem;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 7;
+    transition: transform 0.2s ease, background 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.skill-star-btn:hover, .skill-star-btn.active {
+    transform: scale(1.25);
+    background: var(--gold);
+    color: #000;
+    box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.skill-art-container {
     width: 100%;
-    height: 100%;
+    height: 94px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
     color: var(--gold);
-    background: radial-gradient(circle, rgba(138, 43, 226, 0.25) 0%, transparent 70%);
-    transition: transform 0.3s ease;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.3) 0%, transparent 70%);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
-.clash-card:hover .clash-card-art-bg {
-    transform: scale(1.12);
-}
-
-.clash-elixir-badge {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: linear-gradient(135deg, #d900ff 0%, #8000ff 100%);
-    color: #fff;
-    font-weight: 900;
-    font-size: 0.95rem;
-    padding: 3px 9px;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(217, 0, 255, 0.7);
-    border: 2px solid #fff;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 1px 2px #000;
-    z-index: 5;
-}
-
-.clash-elixir-badge.zero-cost {
-    background: linear-gradient(135deg, #00ff9d 0%, #00b36b 100%);
-    box-shadow: 0 3px 10px rgba(0, 255, 157, 0.7);
-    color: #000;
-    text-shadow: none;
-}
-
-.clash-card-banner {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 100%);
-    padding: 6px 4px 4px 4px;
+.skill-card-footer {
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 100%);
+    padding: 6px 4px;
     text-align: center;
-    z-index: 4;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
-.clash-card-title {
+.skill-card-name {
     font-weight: 900;
     font-size: 0.78rem;
     color: #fff;
     text-shadow: 0 1px 3px #000;
-    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.clash-cd-overlay {
+.clash-skill-card.disabled {
+    filter: grayscale(0.85) brightness(0.5);
+    cursor: not-allowed;
+    border-color: #555;
+}
+
+.skill-lock-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(10, 8, 20, 0.88);
+    background: rgba(10, 8, 20, 0.85);
     border-radius: 14px;
     display: flex;
     flex-direction: column;
@@ -1581,17 +1629,26 @@ body {
     justify-content: center;
     color: var(--crimson);
     font-weight: 900;
-    font-size: 0.85rem;
-    z-index: 10;
+    font-size: 0.8rem;
+    z-index: 8;
 }
 
-.clash-battle-ticker {
-    padding: 8px 14px;
-    max-height: 48px;
-    overflow-y: auto;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    border-radius: 10px;
+.skill-inspect-popover {
+    position: absolute;
+    bottom: 135px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    background: rgba(12, 10, 22, 0.98);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1.5px solid var(--gold);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95), 0 0 20px var(--gold-glow);
+    border-radius: 12px;
+    padding: 10px 12px;
+    z-index: 999;
+    pointer-events: auto;
+    text-align: left;
 }
 
 

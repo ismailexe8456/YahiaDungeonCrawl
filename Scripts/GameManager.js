@@ -80,12 +80,11 @@ const GameManager = {
         }
 
         this.stageNodes = [
-            { type: 'battle', title: 'Dungeon Skirmish', icon: 'fa-skull-crossbones' },
-            { type: 'battle', title: 'Beast Patrol', icon: 'fa-paw' },
-            { type: 'shrine', title: 'Ancient Rune Shrine', icon: 'fa-gavel' },
+            { type: 'battle', title: 'Dungeon Fight 1', icon: 'fa-skull-crossbones' },
+            { type: 'battle', title: 'Dungeon Fight 2', icon: 'fa-paw' },
             { type: 'forge', title: 'Blacksmith Forge', icon: 'fa-hammer' },
-            { type: 'rest', title: 'Campfire Rest Site', icon: 'fa-fire' },
-            { type: 'battle', title: 'Vanguard Mini-Boss', icon: 'fa-khanda' },
+            { type: 'battle', title: 'Dungeon Fight 3', icon: 'fa-ghost' },
+            { type: 'battle', title: 'Mini-Boss Fight', icon: 'fa-khanda' },
             { type: 'merchant', title: 'Wandering Merchant', icon: 'fa-store' },
             { type: 'boss', title: 'Stage Boss Gate', icon: 'fa-dragon' }
         ];
@@ -118,7 +117,7 @@ const GameManager = {
                 <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.2rem; margin-bottom:6px;">
                     🗺️ Stage ${this.currentStage} Expedition Map
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate 8 node paths to fight beasts, forge gear, rest at campfires, trade with merchants, and vanquish stage bosses!</p>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Clear 4 fights, upgrade in the Blacksmith Forge, trade at the Merchant after finishing all fights, and defeat the Stage Boss!</p>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}

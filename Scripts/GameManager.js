@@ -895,6 +895,8 @@ const GameManager = {
     }
 };
 
-window.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => GameManager.init());
+} else {
     GameManager.init();
-});
+}

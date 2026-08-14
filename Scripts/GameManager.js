@@ -933,10 +933,13 @@ const GameManager = {
     openShrineModal: function() {
         SoundEngine.playClick();
         const modalHtml = `
-            <div class="modal-overlay">
-                <div class="modal-card glass-panel text-center" style="max-width:600px;">
-                    <h2 style="color:var(--mana-blue); font-size:2rem;">🏛️ Ancient Rune Shrine</h2>
-                    <p style="color:var(--text-muted); margin-bottom:20px;">Choose a permanent blessing to empower your hero for the remainder of this stage!</p>
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeShrineModal()">
+                <div class="modal-card glass-panel" style="max-width:600px;">
+                    <div class="modal-header">
+                        <h2 style="color:var(--mana-blue); font-size:2rem; margin:0;">🏛️ Ancient Rune Shrine</h2>
+                        <button class="close-btn" onclick="GameManager.closeShrineModal()">&times;</button>
+                    </div>
+                    <p style="color:var(--text-muted); margin:12px 0 20px 0;">Choose a permanent blessing to empower your hero for the remainder of this stage!</p>
 
                     <div class="shrine-options">
                         <div class="shrine-card" onclick="GameManager.claimShrine('crit')">
@@ -952,10 +955,19 @@ const GameManager = {
                             <p>+15% Dodge Chance</p>
                         </div>
                     </div>
+
+                    <div style="margin-top:24px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeShrineModal()"><i class="fas fa-times"></i> Skip Shrine & Exit</button>
+                    </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    closeShrineModal: function() {
+        this.closeModal();
+        this.advanceMapNode();
     },
 
     claimShrine: function(type) {
@@ -977,9 +989,12 @@ const GameManager = {
         SoundEngine.playLevelUp();
 
         const modalHtml = `
-            <div class="modal-overlay">
+            <div class="modal-overlay" onclick="if(event.target === this) { GameManager.closeModal(); GameManager.advanceMapNode(); }">
                 <div class="modal-card glass-panel text-center" style="max-width:500px;">
-                    <h2 style="color:var(--gold); font-size:2rem;">🎁 Hidden Treasure Vault!</h2>
+                    <div class="modal-header" style="justify-content:flex-end;">
+                        <button class="close-btn" onclick="GameManager.closeModal(); GameManager.advanceMapNode()">&times;</button>
+                    </div>
+                    <h2 style="color:var(--gold); font-size:2rem; margin-top:-10px;">🎁 Hidden Treasure Vault!</h2>
                     <p style="margin-top:12px;">You opened an ancient chest and found:</p>
                     <div style="font-size:1.3rem; margin:16px 0; color:var(--gold);">
                         🪙 +${goldWon} Gold <br>
@@ -1004,11 +1019,17 @@ const GameManager = {
         `).join('');
 
         const modalHtml = `
-            <div class="modal-overlay">
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
                 <div class="modal-card glass-panel text-center" style="max-width:650px;">
-                    <h2 style="color:var(--gold); font-size:2rem;">⭐ Level 5 Class Mastery</h2>
+                    <div class="modal-header">
+                        <h2>⭐ Level 5 Class Mastery</h2>
+                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                    </div>
                     <p style="color:var(--text-muted); margin-bottom:20px;">Select your sub-class specialization to unlock a 5th Legendary Skill and passive boosts!</p>
                     <div class="spec-grid">${optionsHtml}</div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Decide Later</button>
+                    </div>
                 </div>
             </div>
         `;

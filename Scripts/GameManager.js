@@ -408,7 +408,7 @@ const GameManager = {
         if (!viewContainer) return;
 
         viewContainer.innerHTML = `
-            <div class="battle-stage">
+            <div class="battle-stage" style="padding-bottom:0;">
                 <!-- Player Unit -->
                 <div class="combat-unit glass-panel" id="player-unit">
                     <div class="unit-portrait-box">
@@ -458,24 +458,26 @@ const GameManager = {
                 </div>
             </div>
 
-            <!-- Action Command Panel -->
-            <div class="action-panel glass-panel">
-                <div class="action-skills" id="skills-container">
-                    ${this.renderSkillButtons()}
+            <!-- Clash Royale Ability Card Hand Deck -->
+            <div class="action-panel glass-panel" style="padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-family:'MedievalSharp',cursive; color:var(--gold); font-size:0.95rem; font-weight:700;">
+                        ⚔️ Battle Action Deck (Mana: <span style="color:#00d2ff;">${player.mana}/${player.maxMana} MP</span>)
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-potion" onclick="GameManager.usePotion('hp')" style="padding:6px 12px; font-size:0.8rem;">❤️ HP (${player.potions.hpPotion})</button>
+                        <button class="btn btn-potion" onclick="GameManager.usePotion('mp')" style="padding:6px 12px; font-size:0.8rem;">🧪 MP (${player.potions.mpPotion})</button>
+                        <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="padding:6px 12px; font-size:0.8rem; background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000; font-weight:800;">🎒 Inventory</button>
+                    </div>
                 </div>
 
-                <div class="action-items">
-                    ${enemy && enemy.health <= 0 ? `<button class="btn btn-primary" onclick="GameManager.advanceMapNode()"><i class="fas fa-arrow-right"></i> Continue Expedition</button>` : ''}
-                    <button class="btn btn-potion" onclick="GameManager.usePotion('hp')">❤️ HP (${player.potions.hpPotion})</button>
-                    <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 MP (${player.potions.mpPotion})</button>
-                    <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()">🎒 Gear & Gems</button>
-                    <button class="btn btn-secondary" onclick="GameManager.openShopModal()">🛒 Merchant</button>
-                    <button class="btn btn-potion" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save Game</button>
+                <div id="skills-container">
+                    ${this.renderSkillButtons()}
                 </div>
             </div>
 
             <!-- Combat History Log -->
-            <div class="combat-log-container glass-panel">
+            <div class="combat-log-container glass-panel" style="margin-top:0;">
                 <div class="log-header"><i class="fas fa-scroll"></i> Battle Log</div>
                 <div class="log-body" id="log-body"></div>
             </div>
@@ -485,27 +487,56 @@ const GameManager = {
     renderSkillButtons: function() {
         if (enemy && enemy.health <= 0) {
             return `
-                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="grid-column: 1 / -1; padding: 16px; font-size: 1.3rem; font-weight: 800; width: 100%;">
+                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="padding: 16px; font-size: 1.2rem; font-weight: 800; width: 100%;">
                     🎉 VICTORY! Click to Continue Expedition ➡️
                 </button>
             `;
         }
-        return player.skills.map((skill, index) => {
+        
+        let cardsHtml = player.skills.map((skill, index) => {
             const disabled = skill.currentCD > 0 || player.mana < skill.manaCost || (enemy && enemy.health <= 0);
+            
+            let iconClass = 'fa-khanda';
+            if (skill.type === 'magic' || skill.element === 'fire') iconClass = 'fa-fire-flame-curved';
+            else if (skill.element === 'dark') iconClass = 'fa-ghost';
+            else if (skill.element === 'holy') iconClass = 'fa-sun';
+            else if (skill.sound === 'heal') iconClass = 'fa-heart-pulse';
+            else if (skill.sound === 'shield' || skill.type === 'buff') iconClass = 'fa-shield-halved';
+            else if (skill.sound === 'heavyHit') iconClass = 'fa-skull';
+
+            let elemClass = '';
+            if (skill.element === 'fire') elemClass = 'elem-fire';
+            else if (skill.element === 'dark') elemClass = 'elem-dark';
+            else if (skill.element === 'holy') elemClass = 'elem-holy';
+            else if (skill.type === 'buff') elemClass = 'elem-buff';
+
             return `
-                <button class="btn btn-skill ${disabled ? 'disabled' : ''}" 
-                        onclick="GameManager.useSkill(${index})" 
-                        onmouseenter="SoundEngine.playHover()" 
-                        ${disabled ? 'disabled' : ''}>
-                    <div class="skill-top">
-                        <span class="skill-name">${skill.name}</span>
-                        ${skill.manaCost > 0 ? `<span class="skill-cost">${skill.manaCost} MP</span>` : ''}
+                <div class="clash-card ${elemClass} ${disabled ? 'disabled' : ''}" 
+                     onclick="${disabled ? '' : `GameManager.useSkill(${index})`}" 
+                     onmouseenter="SoundEngine.playHover()">
+                    
+                    <div class="clash-elixir-badge ${skill.manaCost === 0 ? 'zero-cost' : ''}">
+                        <i class="fas fa-droplet"></i> ${skill.manaCost > 0 ? skill.manaCost : 'FREE'}
                     </div>
-                    <div class="skill-desc">${skill.desc}</div>
-                    ${skill.currentCD > 0 ? `<div class="cd-overlay">CD: ${skill.currentCD} turns</div>` : ''}
-                </button>
+
+                    <div class="clash-card-icon">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+
+                    <div class="clash-card-title">${skill.name}</div>
+                    <div class="clash-card-desc">${skill.desc}</div>
+
+                    ${skill.currentCD > 0 ? `
+                        <div class="clash-cd-overlay">
+                            <i class="fas fa-hourglass-half" style="font-size:1.2rem; margin-bottom:4px;"></i>
+                            <span>${skill.currentCD} TURNS</span>
+                        </div>
+                    ` : ''}
+                </div>
             `;
         }).join('');
+
+        return `<div class="clash-deck">${cardsHtml}</div>`;
     },
 
     useSkill: function(skillIndex) {
@@ -1500,49 +1531,243 @@ const GameManager = {
         this.closeModal();
     },
 
-    openInventoryModal: function() {
+    openInventoryModal: function(activeTab = 'wealth') {
         SoundEngine.playClick();
+        if (!player) {
+            const modalHtml = `
+                <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
+                    <div class="modal-card glass-panel text-center" style="max-width:480px;">
+                        <h2 style="color:var(--gold); margin-bottom:10px;"><i class="fas fa-briefcase"></i> RPG Inventory</h2>
+                        <p style="color:var(--text-muted); margin-bottom:20px;">You have not chosen a Hero Champion yet! Please select your Hero class to unlock your inventory, coins, pets, and power-ups.</p>
+                        <button class="btn btn-primary" onclick="GameManager.closeModal()">OK, Choose Champion</button>
+                    </div>
+                </div>
+            `;
+            this.showModal(modalHtml);
+            return;
+        }
+
+        const wLvl = player.equipment.weaponLevel || 0;
+        const aLvl = player.equipment.armorLevel || 0;
+        const accLvl = player.equipment.accessoryLevel || 0;
+
         const modalHtml = `
-            <div class="modal-overlay">
-                <div class="modal-card glass-panel" style="max-width:650px;">
-                    <div class="modal-header">
-                        <h2>🎒 Character Gear & Attributes</h2>
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
+                <div class="modal-card glass-panel inventory-modal-box">
+                    <div class="modal-header" style="margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${player.img}" alt="${player.classType}" style="width:42px; height:42px; border-radius:50%; border:2px solid var(--gold); object-fit:cover;">
+                            <div>
+                                <h2 style="margin:0; font-size:1.4rem;"><i class="fas fa-briefcase" style="color:var(--gold);"></i> ${player.classType} Inventory</h2>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Level ${player.level} ${player.specialization ? player.specialization.name : player.title}</div>
+                            </div>
+                        </div>
                         <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
                     </div>
-                    
-                    <div class="gear-grid">
-                        <div class="gear-slot">
-                            <label>Weapon</label>
-                            <div class="item-name">${player.equipment.weapon.name}</div>
-                            <div class="item-stat">+${player.equipment.weapon.str || 0} STR</div>
-                        </div>
-                        <div class="gear-slot">
-                            <label>Socketed Gem</label>
-                            <div class="item-name" style="color:${player.socketedGem ? player.socketedGem.color : '#aaa'}">
-                                ${player.socketedGem ? player.socketedGem.name : 'Empty Socket'}
+
+                    <!-- Inventory Tabs -->
+                    <div class="inventory-tabs">
+                        <button class="inv-tab-btn ${activeTab === 'wealth' ? 'active' : ''}" onclick="GameManager.switchInventoryTab('wealth')">
+                            <i class="fas fa-coins"></i> Stats & Coins
+                        </button>
+                        <button class="inv-tab-btn ${activeTab === 'gear' ? 'active' : ''}" onclick="GameManager.switchInventoryTab('gear')">
+                            <i class="fas fa-shield-halved"></i> Gear & Gems
+                        </button>
+                        <button class="inv-tab-btn ${activeTab === 'pets' ? 'active' : ''}" onclick="GameManager.switchInventoryTab('pets')">
+                            <i class="fas fa-dragon"></i> Pets & Allies
+                        </button>
+                        <button class="inv-tab-btn ${activeTab === 'potions' ? 'active' : ''}" onclick="GameManager.switchInventoryTab('potions')">
+                            <i class="fas fa-flask"></i> Potions & Buffs
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Stats & Coins -->
+                    <div id="inv-tab-wealth" class="inv-tab-pane ${activeTab === 'wealth' ? 'active' : ''}">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                            <div class="glass-panel" style="padding:12px; border:1px solid var(--gold); text-align:center;">
+                                <div style="font-size:0.8rem; color:var(--text-muted);">🪙 Gold Treasures</div>
+                                <div style="font-size:1.6rem; font-weight:800; color:var(--gold);">${player.gold}</div>
                             </div>
-                            <div class="item-stat">${player.socketedGem ? player.socketedGem.stat : 'No gem socketed'}</div>
+                            <div class="glass-panel" style="padding:12px; border:1px solid #ff9900; text-align:center;">
+                                <div style="font-size:0.8rem; color:var(--text-muted);">⚔️ Victory Coins</div>
+                                <div style="font-size:1.6rem; font-weight:800; color:#ff9900;">${player.coins || 0}</div>
+                            </div>
                         </div>
-                        <div class="gear-slot">
-                            <label>Companion</label>
-                            <div class="item-name">${player.companion ? player.companion.name : 'None Recruited'}</div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h3 style="color:var(--gold); font-size:1.05rem; margin:0;"><i class="fas fa-chart-line"></i> Attribute Point Allocation</h3>
+                            <span class="stat-pts-badge" style="background:rgba(138,43,226,0.3); border:1px solid var(--primary); padding:4px 12px; border-radius:20px; font-weight:800; font-size:0.85rem;">
+                                Points Available: ${player.statPoints}
+                            </span>
+                        </div>
+
+                        <div class="stat-alloc-card">
+                            <div>
+                                <strong style="color:#ff3366;"><i class="fas fa-fist-raised"></i> Strength (STR)</strong>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Total: ${player.TotalStr} (+${player.str - (HERO_CLASSES[player.classType]?.baseStats.str || 0)} allocated)</div>
+                            </div>
+                            <button class="stat-alloc-btn" onclick="GameManager.addStatFromInventory('str')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
+                        </div>
+
+                        <div class="stat-alloc-card">
+                            <div>
+                                <strong style="color:#00d2ff;"><i class="fas fa-running"></i> Agility (AGI)</strong>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Total: ${player.TotalAgi} | Dodge: ${Math.floor(player.DodgeChance*100)}%</div>
+                            </div>
+                            <button class="stat-alloc-btn" onclick="GameManager.addStatFromInventory('agi')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
+                        </div>
+
+                        <div class="stat-alloc-card">
+                            <div>
+                                <strong style="color:#aa00ff;"><i class="fas fa-hat-wizard"></i> Intelligence (INT)</strong>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Total: ${player.TotalInt} | Max MP: ${player.maxMana}</div>
+                            </div>
+                            <button class="stat-alloc-btn" onclick="GameManager.addStatFromInventory('int')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
+                        </div>
+
+                        <div class="stat-alloc-card">
+                            <div>
+                                <strong style="color:#00ff9d;"><i class="fas fa-heart"></i> Vitality (VIT)</strong>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Total: ${player.TotalVit} | Max HP: ${player.maxHealth}</div>
+                            </div>
+                            <button class="stat-alloc-btn" onclick="GameManager.addStatFromInventory('vit')" ${player.statPoints <= 0 ? 'disabled' : ''}>+</button>
                         </div>
                     </div>
 
-                    <div class="stats-detail-box" style="margin-top:16px;">
-                        <div><strong>STR:</strong> ${player.TotalStr} | <strong>AGI:</strong> ${player.TotalAgi} | <strong>INT:</strong> ${player.TotalInt} | <strong>VIT:</strong> ${player.TotalVit}</div>
-                        <div><strong>Crit Chance:</strong> ${Math.floor(player.CritChance*100)}% | <strong>Dodge:</strong> ${Math.floor(player.DodgeChance*100)}%</div>
-                        <div><strong>Stat Points Available:</strong> ${player.statPoints}</div>
+                    <!-- Tab 2: Gear & Gems -->
+                    <div id="inv-tab-gear" class="inv-tab-pane ${activeTab === 'gear' ? 'active' : ''}">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px;">
+                            <div class="glass-panel" style="padding:14px;">
+                                <div style="font-size:0.8rem; color:var(--text-muted);">⚔️ Weapon (+${wLvl})</div>
+                                <div style="font-weight:700; color:var(--gold); margin:4px 0;">${player.equipment.weapon ? player.equipment.weapon.name : 'Basic Sword'}</div>
+                                <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(wLvl * 15)}% Bonus Attack Power</div>
+                            </div>
+
+                            <div class="glass-panel" style="padding:14px;">
+                                <div style="font-size:0.8rem; color:var(--text-muted);">🛡️ Armor (+${aLvl})</div>
+                                <div style="font-weight:700; color:var(--heal-green); margin:4px 0;">${player.equipment.armor ? player.equipment.armor.name : 'Basic Plate'}</div>
+                                <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(aLvl * 15)}% Bonus Health</div>
+                            </div>
+
+                            <div class="glass-panel" style="padding:14px;">
+                                <div style="font-size:0.8rem; color:var(--text-muted);">💍 Accessory (+${accLvl})</div>
+                                <div style="font-weight:700; color:var(--mana-blue); margin:4px 0;">${player.equipment.accessory ? player.equipment.accessory.name : 'Basic Ring'}</div>
+                                <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(accLvl * 15)}% Bonus Crit/Agility</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding:14px; border:1px solid ${player.socketedGem ? player.socketedGem.color : 'var(--glass-border)'}; margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted);">✨ Socketed Elemental Gem</div>
+                                    <strong style="color:${player.socketedGem ? player.socketedGem.color : '#aaa'}; font-size:1.05rem;">
+                                        ${player.socketedGem ? player.socketedGem.name : 'Empty Gem Socket'}
+                                    </strong>
+                                    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">
+                                        ${player.socketedGem ? player.socketedGem.stat : 'Socket a gem in the Blacksmith Forge to unlock elemental passives.'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openUpgradeModal();" style="width:100%;">
+                            🔨 Open Blacksmith Forge & Gem Socketing
+                        </button>
+                    </div>
+
+                    <!-- Tab 3: Pets & Allies -->
+                    <div id="inv-tab-pets" class="inv-tab-pane ${activeTab === 'pets' ? 'active' : ''}">
+                        ${!player.companion ? `
+                            <div class="glass-panel text-center" style="padding:28px;">
+                                <i class="fas fa-paw" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                                <h4 style="color:var(--gold); margin-bottom:6px;">No Pet Companion Recruited</h4>
+                                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:16px;">Visit the Wandering Merchant at Node 6 to hire a loyal Dire Wolf, Arcane Golem, Holy Cleric, or Shadow Drake!</p>
+                                <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openShopModal();">🛒 Visit Merchant Shop</button>
+                            </div>
+                        ` : `
+                            <div class="glass-panel" style="padding:16px; border:1px solid var(--gold); margin-bottom:16px;">
+                                <div style="display:flex; gap:16px; align-items:center;">
+                                    <img src="${player.companion.img || 'characters imgs/enemy/goblin_scout.jpg'}" alt="${player.companion.name}" style="width:70px; height:70px; border-radius:14px; object-fit:cover; border:2px solid var(--gold);">
+                                    <div style="flex-grow:1;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                            <h3 style="color:var(--gold); margin:0;">${player.companion.name}</h3>
+                                            <span class="stat-chip" style="color:var(--gold); background:rgba(245,197,24,0.2); font-size:0.75rem;">Tier ${player.companion.tier || 1} Ally</span>
+                                        </div>
+                                        <div style="color:var(--text-muted); font-size:0.85rem; margin:4px 0;">${player.companion.title}</div>
+                                        <div style="font-size:0.85rem; color:#fff;">${player.companion.desc}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openUpgradeModal();" style="width:100%;">
+                                🐉 Open Pet Evolution Chamber
+                            </button>
+                        `}
+                    </div>
+
+                    <!-- Tab 4: Potions & Buffs -->
+                    <div id="inv-tab-potions" class="inv-tab-pane ${activeTab === 'potions' ? 'active' : ''}">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+                            <div class="glass-panel" style="padding:14px; text-align:center;">
+                                <div style="font-size:2rem; margin-bottom:4px;">❤️</div>
+                                <h4 style="color:var(--heal-green); margin-bottom:4px;">Health Potions</h4>
+                                <div style="font-size:1.2rem; font-weight:800; margin-bottom:10px;">${player.potions.hpPotion} Remaining</div>
+                                <button class="btn btn-potion" onclick="GameManager.usePotion('hp'); GameManager.openInventoryModal('potions');" ${player.potions.hpPotion <= 0 ? 'disabled' : ''} style="width:100%;">
+                                    Drink HP Potion
+                                </button>
+                            </div>
+
+                            <div class="glass-panel" style="padding:14px; text-align:center;">
+                                <div style="font-size:2rem; margin-bottom:4px;">🧪</div>
+                                <h4 style="color:var(--mana-blue); margin-bottom:4px;">Mana Potions</h4>
+                                <div style="font-size:1.2rem; font-weight:800; margin-bottom:10px;">${player.potions.mpPotion} Remaining</div>
+                                <button class="btn btn-potion" onclick="GameManager.usePotion('mp'); GameManager.openInventoryModal('potions');" ${player.potions.mpPotion <= 0 ? 'disabled' : ''} style="width:100%;">
+                                    Drink MP Potion
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding:14px;">
+                            <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-bolt"></i> Active Combat Buffs & Status</h4>
+                            <div style="font-size:0.88rem; line-height:1.6;">
+                                <div>🛡️ <strong>Shield Points:</strong> <span style="color:var(--mana-blue);">${player.shield || 0} Shield</span></div>
+                                <div>🎯 <strong>Critical Hit Rate:</strong> ${Math.floor(player.CritChance*100)}%</div>
+                                <div>💨 <strong>Dodge Evasion Rate:</strong> ${Math.floor(player.DodgeChance*100)}%</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="margin-top:20px; text-align:right;">
-                        ${player.statPoints > 0 ? `<button class="btn btn-potion" onclick="GameManager.closeModal(); GameManager.openStatModal()">Allocate Stat Points (${player.statPoints})</button>` : ''}
-                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close Inventory</button>
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    switchInventoryTab: function(tabName) {
+        SoundEngine.playClick();
+        const tabs = document.querySelectorAll('.inv-tab-btn');
+        tabs.forEach(t => t.classList.remove('active'));
+        const panes = document.querySelectorAll('.inv-tab-pane');
+        panes.forEach(p => p.classList.remove('active'));
+
+        const targetPane = document.getElementById(`inv-tab-${tabName}`);
+        if (targetPane) targetPane.classList.add('active');
+
+        const activeBtn = Array.from(tabs).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabName));
+        if (activeBtn) activeBtn.classList.add('active');
+    },
+
+    addStatFromInventory: function(stat) {
+        if (!player || player.statPoints <= 0) return;
+        player.statPoints--;
+        player[stat]++;
+        player.recalculateStats();
+        SoundEngine.playClick();
+        this.saveGameData();
+        this.updateHeaderStats();
+        this.openInventoryModal('wealth');
     },
 
     openShopModal: function(isMapNode = false) {

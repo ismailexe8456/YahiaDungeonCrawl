@@ -28,6 +28,65 @@ const ACHIEVEMENTS_LIST = [
     { id: 'lvl5', title: '🔥 Class Master', desc: 'Reach Level 5 and unlock a Specialization.', bonus: '+1 Legendary Skill' }
 ];
 
+const ITEM_DATABASE = {
+    'iron_sword': {
+        name: 'Iron Sword',
+        type: 'Weapon (Tier 1)',
+        img: 'characters imgs/items/iron_sword.jpg',
+        stats: '+15% Base Attack Power / STR',
+        flavor: '"Forged in cold mountain iron, standard issue for dungeon vanguard conquerors."'
+    },
+    'leather_vest': {
+        name: 'Leather Vest',
+        type: 'Armor (Tier 1)',
+        img: 'characters imgs/items/leather_vest.jpg',
+        stats: '+15% Base Max Health / VIT',
+        flavor: '"Supple dire-boar hide stitched with heavy iron rivets."'
+    },
+    'wooden_ring': {
+        name: 'Wooden Ring',
+        type: 'Accessory (Tier 1)',
+        img: 'characters imgs/items/wooden_ring.jpg',
+        stats: '+15% Agility & Critical Strike Rate',
+        flavor: '"Carved from elder ironwood, attuned to ancient forest spirits."'
+    },
+    'ruby_gem': {
+        name: 'Ruby of Infernal Flame',
+        type: 'Socketed Gem',
+        img: 'characters imgs/items/ruby_gem.jpg',
+        stats: '+20% Fire Spell Power & Lifesteal',
+        flavor: '"Pulsating with embers of a slain subterranean fire drake."'
+    },
+    'sapphire_gem': {
+        name: 'Sapphire of Frost Shield',
+        type: 'Socketed Gem',
+        img: 'characters imgs/items/sapphire_gem.jpg',
+        stats: '+25% Max Shield Points & Glacial Ice Armor',
+        flavor: '"Crystallized ice that never melts, reinforcing armor barrier."'
+    },
+    'emerald_gem': {
+        name: 'Emerald of Venom Lifesteal',
+        type: 'Socketed Gem',
+        img: 'characters imgs/items/emerald_gem.jpg',
+        stats: '+15% Poison Damage & +10% Lifesteal',
+        flavor: '"Dripping with viper toxins that drain vitality from wounded foes."'
+    },
+    'diamond_gem': {
+        name: 'Diamond of Holy Radiance',
+        type: 'Socketed Gem',
+        img: 'characters imgs/items/diamond_gem.jpg',
+        stats: '+30% Holy Spell Power & Undead Smite',
+        flavor: '"Pure consecrated diamond prism refracts divine light against shadow fiends."'
+    },
+    'pet_egg': {
+        name: 'Unhatched Mythic Pet Egg',
+        type: 'Pet Ally Chamber',
+        img: 'characters imgs/items/pet_egg.jpg',
+        stats: 'Hatchable Companion (Dire Wolf / Arcane Golem / Holy Cleric)',
+        flavor: '"Dormant mythic egg emitting a faint warm pulse. Visit Wandering Merchant at Node 6 to hatch."'
+    }
+};
+
 const GameManager = {
     currentStage: 1,
     highScore: 1,
@@ -923,34 +982,46 @@ const GameManager = {
                     <!-- Section 1: Gear Upgrades -->
                     <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-hammer"></i> Gear Refinement (+1 to +10)</h3>
                     <div class="upgrade-grid" style="margin-bottom:20px;">
-                        <div class="upgrade-card glass-panel">
+                        <div class="upgrade-card glass-panel relative-item-card text-center">
+                            <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('iron_sword', event)" title="Inspect Item Lore & Stats">⭐</button>
+                            <div class="item-icon-frame">
+                                <img src="characters imgs/items/iron_sword.jpg" alt="Iron Sword" class="item-icon-img">
+                            </div>
                             <div class="upgrade-top">
                                 <strong>⚔️ Weapon (+${wLvl})</strong>
                                 <span class="upgrade-stat" style="color:var(--gold);">+${Math.floor(wLvl * 15)}% STR/INT</span>
                             </div>
-                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.weapon ? player.equipment.weapon.name : 'Weapon'}</div>
+                            <div class="item-name" style="margin:6px 0; font-weight:700;">${player.equipment.weapon ? player.equipment.weapon.name : 'Iron Sword'}</div>
                             <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('weapon')" ${(player.coins || 0) < wCost || wLvl >= 10 ? 'disabled' : ''} style="width:100%;">
                                 ${wLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${wCost} Coins`}
                             </button>
                         </div>
 
-                        <div class="upgrade-card glass-panel">
+                        <div class="upgrade-card glass-panel relative-item-card text-center">
+                            <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('leather_vest', event)" title="Inspect Item Lore & Stats">⭐</button>
+                            <div class="item-icon-frame">
+                                <img src="characters imgs/items/leather_vest.jpg" alt="Leather Vest" class="item-icon-img">
+                            </div>
                             <div class="upgrade-top">
                                 <strong>🛡️ Armor (+${aLvl})</strong>
                                 <span class="upgrade-stat" style="color:var(--heal-green);">+${Math.floor(aLvl * 15)}% VIT/HP</span>
                             </div>
-                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.armor ? player.equipment.armor.name : 'Armor'}</div>
+                            <div class="item-name" style="margin:6px 0; font-weight:700;">${player.equipment.armor ? player.equipment.armor.name : 'Leather Vest'}</div>
                             <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('armor')" ${(player.coins || 0) < aCost || aLvl >= 10 ? 'disabled' : ''} style="width:100%;">
                                 ${aLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${aCost} Coins`}
                             </button>
                         </div>
 
-                        <div class="upgrade-card glass-panel">
+                        <div class="upgrade-card glass-panel relative-item-card text-center">
+                            <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('wooden_ring', event)" title="Inspect Item Lore & Stats">⭐</button>
+                            <div class="item-icon-frame">
+                                <img src="characters imgs/items/wooden_ring.jpg" alt="Wooden Ring" class="item-icon-img">
+                            </div>
                             <div class="upgrade-top">
                                 <strong>💍 Accessory (+${accLvl})</strong>
                                 <span class="upgrade-stat" style="color:var(--mana-blue);">+${Math.floor(accLvl * 15)}% AGI/Crit</span>
                             </div>
-                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.accessory ? player.equipment.accessory.name : 'Accessory'}</div>
+                            <div class="item-name" style="margin:6px 0; font-weight:700;">${player.equipment.accessory ? player.equipment.accessory.name : 'Wooden Ring'}</div>
                             <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('accessory')" ${(player.coins || 0) < accCost || accLvl >= 10 ? 'disabled' : ''} style="width:100%;">
                                 ${accLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${accCost} Coins`}
                             </button>
@@ -963,16 +1034,23 @@ const GameManager = {
                         <div style="margin-bottom:10px; font-size:0.9rem;">
                             Current Socketed Gem: <strong style="color:${player.socketedGem ? player.socketedGem.color : '#aaa'}">${player.socketedGem ? player.socketedGem.name : 'Empty Socket'}</strong>
                         </div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-                            ${Object.values(GEMS).map(gem => `
-                                <div class="glass-panel" style="padding:10px; border-radius:8px; border:1px solid ${gem.color}; text-align:center;">
-                                    <div style="font-weight:700; color:${gem.color}; font-size:0.85rem;">${gem.name}</div>
-                                    <div style="color:var(--text-muted); font-size:0.75rem; margin:4px 0;">${gem.stat}</div>
-                                    <button class="btn btn-potion" onclick="GameManager.socketGem('${gem.id}')" ${player.gold < gem.price ? 'disabled' : ''} style="width:100%; font-size:0.8rem; padding:6px;">
-                                        Socket (${gem.price} Gold)
-                                    </button>
-                                </div>
-                            `).join('')}
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                            ${Object.values(GEMS).map(gem => {
+                                const gemKey = gem.id === 'ruby' ? 'ruby_gem' : (gem.id === 'sapphire' ? 'sapphire_gem' : (gem.id === 'emerald' ? 'emerald_gem' : 'diamond_gem'));
+                                return `
+                                    <div class="glass-panel relative-item-card" style="padding:10px; border-radius:8px; border:1px solid ${gem.color}; text-align:center;">
+                                        <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('${gemKey}', event)" title="Inspect Gem Lore & Stats">⭐</button>
+                                        <div class="item-icon-frame" style="width:52px; height:52px; border-color:${gem.color}; margin-bottom:6px;">
+                                            <img src="characters imgs/items/${gemKey}.jpg" alt="${gem.name}" class="item-icon-img">
+                                        </div>
+                                        <div style="font-weight:700; color:${gem.color}; font-size:0.85rem;">${gem.name}</div>
+                                        <div style="color:var(--text-muted); font-size:0.75rem; margin:3px 0 8px 0;">${gem.stat}</div>
+                                        <button class="btn btn-potion" onclick="GameManager.socketGem('${gem.id}')" ${player.gold < gem.price ? 'disabled' : ''} style="width:100%; font-size:0.8rem; padding:6px;">
+                                            Socket (${gem.price} Gold)
+                                        </button>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
 
@@ -980,7 +1058,16 @@ const GameManager = {
                     <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-dragon"></i> 🐉 Pet Evolution Chamber</h3>
                     <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; border:1px solid var(--glass-border);">
                         ${!player.companion ? `
-                            <div style="color:var(--text-muted); font-size:0.9rem;">You don't have a Pet Companion yet! Visit the Wandering Merchant at Node 6 to adopt one.</div>
+                            <div class="relative-item-card" style="display:flex; align-items:center; gap:16px;">
+                                <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('pet_egg', event)" title="Inspect Pet Egg">⭐</button>
+                                <div class="item-icon-frame" style="width:60px; height:60px; margin:0; flex-shrink:0;">
+                                    <img src="characters imgs/items/pet_egg.jpg" alt="Unhatched Egg" class="item-icon-img">
+                                </div>
+                                <div style="color:var(--text-muted); font-size:0.9rem;">
+                                    <strong>No Pet Companion Recruited</strong><br>
+                                    Visit the Wandering Merchant at Node 6 on the Expedition Map to adopt a mythic companion!
+                                </div>
+                            </div>
                         ` : `
                             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                                 <div>
@@ -1724,22 +1811,34 @@ const GameManager = {
 
                     <!-- Tab 2: Gear & Gems -->
                     <div id="inv-tab-gear" class="inv-tab-pane ${activeTab === 'gear' ? 'active' : ''}">
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px;">
-                            <div class="glass-panel" style="padding:14px;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:16px;">
+                            <div class="glass-panel relative-item-card text-center" style="padding:12px;">
+                                <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('iron_sword', event)" title="Inspect Item Lore & Stats">⭐</button>
+                                <div class="item-icon-frame" style="width:54px; height:54px;">
+                                    <img src="characters imgs/items/iron_sword.jpg" alt="Iron Sword" class="item-icon-img">
+                                </div>
                                 <div style="font-size:0.8rem; color:var(--text-muted);">⚔️ Weapon (+${wLvl})</div>
-                                <div style="font-weight:700; color:var(--gold); margin:4px 0;">${player.equipment.weapon ? player.equipment.weapon.name : 'Basic Sword'}</div>
+                                <div style="font-weight:700; color:var(--gold); margin:4px 0;">${player.equipment.weapon ? player.equipment.weapon.name : 'Iron Sword'}</div>
                                 <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(wLvl * 15)}% Bonus Attack Power</div>
                             </div>
 
-                            <div class="glass-panel" style="padding:14px;">
+                            <div class="glass-panel relative-item-card text-center" style="padding:12px;">
+                                <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('leather_vest', event)" title="Inspect Item Lore & Stats">⭐</button>
+                                <div class="item-icon-frame" style="width:54px; height:54px;">
+                                    <img src="characters imgs/items/leather_vest.jpg" alt="Leather Vest" class="item-icon-img">
+                                </div>
                                 <div style="font-size:0.8rem; color:var(--text-muted);">🛡️ Armor (+${aLvl})</div>
-                                <div style="font-weight:700; color:var(--heal-green); margin:4px 0;">${player.equipment.armor ? player.equipment.armor.name : 'Basic Plate'}</div>
+                                <div style="font-weight:700; color:var(--heal-green); margin:4px 0;">${player.equipment.armor ? player.equipment.armor.name : 'Leather Vest'}</div>
                                 <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(aLvl * 15)}% Bonus Health</div>
                             </div>
 
-                            <div class="glass-panel" style="padding:14px;">
+                            <div class="glass-panel relative-item-card text-center" style="padding:12px;">
+                                <button class="item-inspect-star-btn" onclick="GameManager.showItemInfo('wooden_ring', event)" title="Inspect Item Lore & Stats">⭐</button>
+                                <div class="item-icon-frame" style="width:54px; height:54px;">
+                                    <img src="characters imgs/items/wooden_ring.jpg" alt="Wooden Ring" class="item-icon-img">
+                                </div>
                                 <div style="font-size:0.8rem; color:var(--text-muted);">💍 Accessory (+${accLvl})</div>
-                                <div style="font-weight:700; color:var(--mana-blue); margin:4px 0;">${player.equipment.accessory ? player.equipment.accessory.name : 'Basic Ring'}</div>
+                                <div style="font-weight:700; color:var(--mana-blue); margin:4px 0;">${player.equipment.accessory ? player.equipment.accessory.name : 'Wooden Ring'}</div>
                                 <div style="font-size:0.8rem; color:#aaa;">+${Math.floor(accLvl * 15)}% Bonus Crit/Agility</div>
                             </div>
                         </div>
@@ -2356,6 +2455,63 @@ const GameManager = {
     closeInputModal: function() {
         const inputContainer = document.getElementById('input-modal-container');
         if (inputContainer) inputContainer.innerHTML = '';
+    },
+
+    showItemInfo: function(itemId, event) {
+        if (event) event.stopPropagation();
+        
+        const existing = document.getElementById('item-popover-tooltip');
+        if (existing) {
+            existing.remove();
+            if (this.activePopoverId === itemId) {
+                this.activePopoverId = null;
+                return;
+            }
+        }
+
+        const item = ITEM_DATABASE[itemId];
+        if (!item) return;
+
+        this.activePopoverId = itemId;
+
+        const popover = document.createElement('div');
+        popover.id = 'item-popover-tooltip';
+        popover.className = 'glass-panel item-popover-box animate-bounce';
+        popover.innerHTML = `
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:6px;">
+                <img src="${item.img}" alt="${item.name}" style="width:38px; height:38px; border-radius:8px; border:1px solid var(--gold); object-fit:cover;">
+                <div>
+                    <strong style="color:var(--gold); font-size:1.05rem; display:block;">${item.name}</strong>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">${item.type}</span>
+                </div>
+            </div>
+            <div style="color:#00ff9d; font-weight:800; font-size:0.88rem; margin-bottom:8px;">${item.stats}</div>
+            <div style="color:var(--text-muted); font-size:0.8rem; font-style:italic; line-height:1.4;">${item.flavor}</div>
+        `;
+
+        document.body.appendChild(popover);
+
+        const targetEl = event ? (event.currentTarget || event.target) : null;
+        if (targetEl) {
+            const rect = targetEl.getBoundingClientRect();
+            let left = rect.left + 28;
+            let top = rect.top + 28;
+
+            if (left + 310 > window.innerWidth) left = window.innerWidth - 320;
+            if (top + 190 > window.innerHeight) top = window.innerHeight - 200;
+
+            popover.style.left = `${Math.max(10, left)}px`;
+            popover.style.top = `${Math.max(10, top)}px`;
+        }
+
+        const dismissHandler = (e) => {
+            if (!popover.contains(e.target) && e.target !== targetEl) {
+                popover.remove();
+                GameManager.activePopoverId = null;
+                window.removeEventListener('click', dismissHandler);
+            }
+        };
+        setTimeout(() => window.addEventListener('click', dismissHandler), 10);
     }
 };
 

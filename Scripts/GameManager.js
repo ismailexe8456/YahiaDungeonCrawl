@@ -637,13 +637,15 @@ const GameManager = {
 
         DialogueEngine.spawnSpeechBubble('enemy-unit', DialogueEngine.getRandomDialogue('enemy_attack'), false);
 
-        if (Math.random() < player.DodgeChance) {
+        let dodgeChance = Math.min(player.DodgeChance, 0.25);
+        if (Math.random() < dodgeChance) {
             this.spawnFloatingText(playerImgEl, 'DODGED!', 'dodge');
             this.logAction(`You dodged ${enemy.name}'s ${enemySkill.name}!`, 'info');
             DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_dodge'), true);
         } else {
-            let baseDmg = enemy.strength * (enemy.isBoss ? 2.5 : 1.6);
-            let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 12));
+            let minDmg = enemy.isBoss ? Math.floor(player.maxHealth * 0.35) : Math.floor(player.maxHealth * 0.15);
+            let baseDmg = enemy.strength * (enemy.isBoss ? 2.8 : 1.8);
+            let damage = Math.max(minDmg, Math.floor(baseDmg * enemySkill.mult + (Math.random() * 15)));
             let isCrit = Math.random() < enemy.CritChance;
             if (isCrit) damage = Math.floor(damage * 1.6);
 

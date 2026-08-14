@@ -5,7 +5,7 @@ const ENEMY_DATABASE = [
     // Tier 1 Monsters & Boss
     {
         name: 'Goblin Scout',
-        img: 'characters imgs/enemy/Goblin.jpg',
+        img: 'characters imgs/enemy/goblin_scout.jpg',
         tier: 1,
         isBoss: false,
         baseHp: 220,
@@ -20,7 +20,7 @@ const ENEMY_DATABASE = [
     },
     {
         name: 'Forest Troll',
-        img: 'characters imgs/enemy/Troll.jpg',
+        img: 'characters imgs/enemy/forest_troll.jpg',
         tier: 1,
         isBoss: false,
         baseHp: 380,
@@ -38,7 +38,7 @@ const ENEMY_DATABASE = [
     },
     {
         name: 'Gorgon Earthshaker',
-        img: 'characters imgs/enemy/Troll.jpg',
+        img: 'characters imgs/enemy/gorgon_earthshaker.jpg',
         tier: 1,
         isBoss: true,
         baseHp: 750,
@@ -57,7 +57,7 @@ const ENEMY_DATABASE = [
     },
     {
         name: 'Orc Berserker',
-        img: 'characters imgs/enemy/Troll.jpg',
+        img: 'characters imgs/enemy/orc_berserker.jpg',
         tier: 2,
         isBoss: false,
         baseHp: 540,
@@ -75,7 +75,7 @@ const ENEMY_DATABASE = [
     },
     {
         name: 'Shadow Goblin Warlord',
-        img: 'characters imgs/enemy/Goblin.jpg',
+        img: 'characters imgs/enemy/shadow_warlord.jpg',
         tier: 2,
         isBoss: true,
         baseHp: 1200,
@@ -96,7 +96,7 @@ const ENEMY_DATABASE = [
     // Tier 3 Boss
     {
         name: 'Void Dragon',
-        img: 'characters imgs/enemy/Troll.jpg',
+        img: 'characters imgs/enemy/void_dragon.jpg',
         tier: 3,
         isBoss: true,
         baseHp: 2200,
@@ -118,7 +118,7 @@ const ENEMY_DATABASE = [
     // Tier 4 Boss
     {
         name: 'Lich King of the Abyss',
-        img: 'characters imgs/enemy/Goblin.jpg',
+        img: 'characters imgs/enemy/lich_king.jpg',
         tier: 4,
         isBoss: true,
         baseHp: 3200,

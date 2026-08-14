@@ -1,4 +1,4 @@
-/* Modern Dark Fantasy RPG Design System - Expanded Phase 2 */
+/* Modern Dark Fantasy RPG Design System - Animations & Dialogue Engine */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;600;700&display=swap');
 
 :root {
@@ -160,6 +160,123 @@ body {
     box-shadow: 0 6px 20px rgba(56, 239, 125, 0.6);
 }
 
+/* Character Idle Floating Animations */
+.unit-portrait-box {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--glass-border);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+    margin-bottom: 16px;
+    animation: idleFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes idleFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+}
+
+/* Attack Lunge Animations */
+.anim-lunge-right {
+    animation: lungeRight 0.45s ease-out;
+}
+
+.anim-lunge-left {
+    animation: lungeLeft 0.45s ease-out;
+}
+
+@keyframes lungeRight {
+    0% { transform: translateX(0) scale(1); }
+    40% { transform: translateX(60px) scale(1.15); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes lungeLeft {
+    0% { transform: translateX(0) scale(1); }
+    40% { transform: translateX(-60px) scale(1.15); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+/* Damage Recoil & Flash Animations */
+.anim-recoil {
+    animation: recoilHit 0.4s ease-in-out;
+}
+
+@keyframes recoilHit {
+    0% { transform: scale(1); filter: none; }
+    25% { transform: scale(0.9) rotate(-4deg); filter: brightness(2) drop-shadow(0 0 20px red); }
+    50% { transform: scale(0.95) rotate(4deg); filter: brightness(1.5); }
+    100% { transform: scale(1); filter: none; }
+}
+
+/* RPG Dialogue Box Styling */
+.dialogue-box {
+    display: flex;
+    gap: 20px;
+    max-width: 650px;
+    width: 100%;
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 35px var(--gold-glow);
+    background: rgba(16, 16, 28, 0.95);
+    padding: 20px;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .dialogue-box { flex-direction: column; text-align: center; }
+}
+
+.dialogue-portrait-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.dialogue-portrait {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.dialogue-name-tag {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.dialogue-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    min-height: 100px;
+}
+
+.dialogue-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #fff;
+    margin-bottom: 16px;
+}
+
+.dialogue-footer {
+    text-align: right;
+}
+
 /* Hero Select View */
 .hero-select-header {
     text-align: center;
@@ -213,8 +330,7 @@ body {
 }
 
 .hero-portrait {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: cover;
     transition: transform 0.4s ease;
 }
@@ -289,28 +405,11 @@ body {
     transition: all 0.3s ease;
 }
 
-.node-icon {
-    font-size: 2.2rem;
-    margin-bottom: 8px;
-}
+.node-icon { font-size: 2.2rem; margin-bottom: 8px; }
+.node-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+.node-status { font-size: 0.75rem; font-weight: 800; }
 
-.node-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.node-status {
-    font-size: 0.75rem;
-    font-weight: 800;
-}
-
-.node-completed {
-    border-color: var(--heal-green);
-    color: var(--heal-green);
-    opacity: 0.6;
-}
-
+.node-completed { border-color: var(--heal-green); color: var(--heal-green); opacity: 0.6; }
 .node-current {
     border-color: var(--gold);
     background: linear-gradient(135deg, rgba(245, 197, 24, 0.2) 0%, rgba(138, 43, 226, 0.3) 100%);
@@ -318,97 +417,8 @@ body {
     cursor: pointer;
     transform: scale(1.1);
 }
-
-.node-locked {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.node-connector {
-    width: 30px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-}
-
-/* Shrine Cards */
-.shrine-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 16px;
-}
-
-.shrine-card {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--mana-blue);
-    padding: 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.shrine-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 25px var(--mana-glow);
-    background: rgba(0, 210, 255, 0.15);
-}
-
-/* Companion Badge */
-.companion-badge {
-    background: rgba(245, 197, 24, 0.15);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-/* Mastery Specializations */
-.spec-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
-}
-
-.spec-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: left;
-}
-
-.spec-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-5px);
-    box-shadow: 0 0 25px var(--gold-glow);
-}
-
-.spec-card h3 { color: var(--gold); margin-bottom: 6px; }
-.spec-skill-tag { margin-top: 10px; font-size: 0.8rem; color: var(--mana-blue); }
-
-/* Achievements Grid */
-.ach-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.achievement-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.ach-unlocked { border-left: 4px solid var(--heal-green); }
-.ach-locked { opacity: 0.5; border-left: 4px solid #666; }
-.ach-desc { font-size: 0.8rem; color: var(--text-muted); }
-.ach-bonus { font-weight: 700; color: var(--gold); font-size: 0.85rem; }
+.node-locked { opacity: 0.4; cursor: not-allowed; }
+.node-connector { width: 30px; height: 4px; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 
 /* Battle Arena Layout */
 .battle-stage {
@@ -427,17 +437,6 @@ body {
     flex-direction: column;
     align-items: center;
     position: relative;
-}
-
-.unit-portrait-box {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 4px solid var(--glass-border);
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-    margin-bottom: 16px;
 }
 
 .unit-img {
@@ -572,13 +571,7 @@ body {
     box-shadow: 0 6px 20px rgba(138, 43, 226, 0.3);
 }
 
-.skill-top {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 4px;
-}
-
+.skill-top { display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px; }
 .skill-name { font-weight: 700; color: var(--gold); }
 .skill-cost { font-size: 0.8rem; color: var(--mana-blue); }
 .skill-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
@@ -696,47 +689,6 @@ body {
     background: none; border: none;
     color: #fff; font-size: 1.8rem;
     cursor: pointer;
-}
-
-.shop-section h4 { color: var(--gold); margin: 14px 0 8px 0; }
-
-.shop-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 8px;
-    margin-bottom: 6px;
-}
-
-.item-desc { font-size: 0.8rem; color: var(--text-muted); }
-
-.gear-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-}
-
-.gear-slot {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.gear-slot label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-.gear-slot .item-name { font-weight: 700; color: var(--gold); margin: 4px 0; }
-.gear-slot .item-stat { font-size: 0.8rem; color: var(--mana-blue); }
-
-.stat-alloc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    margin-bottom: 8px;
 }
 
 .shake-active { animation: screenShake 0.35s ease-in-out; }

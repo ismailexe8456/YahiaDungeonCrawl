@@ -55,7 +55,9 @@ const GameManager = {
         player = new Player(classType);
         SoundEngine.playClick();
         this.logAction(`Hero selected: <strong style="color:var(--gold)">${player.classType}</strong> - ${player.title}!`, 'info');
-        this.startStageMap(this.currentStage);
+        DialogueEngine.triggerHeroSelectQuote(classType, () => {
+            this.startStageMap(this.currentStage);
+        });
     },
 
     startStageMap: function(stageNum) {
@@ -161,6 +163,8 @@ const GameManager = {
         this.updateHeaderStats();
         this.logAction(`Encountered: <span style="color:${enemy.isBoss ? '#ff3366' : '#ff9900'}">${enemy.name}</span>!`, 'warning');
         this.isTurnInProgress = false;
+
+        DialogueEngine.triggerEncounterDialogue(enemy);
     },
 
     renderBattleArena: function() {
@@ -281,6 +285,11 @@ const GameManager = {
         const enemyImgEl = document.getElementById('enemy-img');
         const playerImgEl = document.getElementById('player-img');
 
+        if (playerImgEl) {
+            playerImgEl.classList.add('anim-lunge-right');
+            setTimeout(() => playerImgEl.classList.remove('anim-lunge-right'), 450);
+        }
+
         if (skill.type === 'physical' || skill.type === 'magic') {
             ParticleEngine.spawnSlashFX(enemyImgEl, skill.element === 'dark' ? '#aa00ff' : '#ff3366');
 
@@ -296,6 +305,11 @@ const GameManager = {
                 if (isCrit) {
                     damage = Math.floor(damage * 1.8);
                     ParticleEngine.triggerShake(16);
+                }
+
+                if (enemyImgEl) {
+                    enemyImgEl.classList.add('anim-recoil');
+                    setTimeout(() => enemyImgEl.classList.remove('anim-recoil'), 400);
                 }
 
                 enemy.health = Math.max(0, enemy.health - damage);
@@ -359,7 +373,13 @@ const GameManager = {
 
     executeEnemyTurn: function() {
         const playerImgEl = document.getElementById('player-img');
+        const enemyImgEl = document.getElementById('enemy-img');
         const enemySkill = enemy.getRandomSkill();
+
+        if (enemyImgEl) {
+            enemyImgEl.classList.add('anim-lunge-left');
+            setTimeout(() => enemyImgEl.classList.remove('anim-lunge-left'), 450);
+        }
 
         if (Math.random() < player.DodgeChance) {
             this.spawnFloatingText(playerImgEl, 'DODGED!', 'dodge');
@@ -382,6 +402,11 @@ const GameManager = {
             }
 
             if (damage > 0) {
+                if (playerImgEl) {
+                    playerImgEl.classList.add('anim-recoil');
+                    setTimeout(() => playerImgEl.classList.remove('anim-recoil'), 400);
+                }
+
                 player.health = Math.max(0, player.health - damage);
                 SoundEngine.playHeavyHit();
                 ParticleEngine.triggerShake(12);

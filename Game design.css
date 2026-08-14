@@ -1,5 +1,5 @@
-/* Modern Dark Fantasy RPG Design System - Animations & Dialogue Engine */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;600;700&display=swap');
+/* Gothic Dark Fantasy RPG Design System - MedievalSharp & Almendra Typography */
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@700;900&display=swap');
 
 :root {
     --bg-dark: #0a0a10;
@@ -33,7 +33,8 @@ body {
         radial-gradient(circle at 50% 10%, rgba(138, 43, 226, 0.18) 0%, transparent 60%),
         radial-gradient(circle at 80% 90%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
     color: var(--text-main);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Almendra', serif;
+    font-size: 1.1rem;
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -81,9 +82,10 @@ body {
 }
 
 .brand h1 {
-    font-family: 'Cinzel', serif;
-    font-size: 1.8rem;
-    font-weight: 900;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
     background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -112,8 +114,8 @@ body {
 .high-badge { color: var(--mana-blue); }
 
 .btn {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.95rem;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.05rem;
     font-weight: 700;
     padding: 12px 24px;
     border-radius: 12px;
@@ -284,8 +286,8 @@ body {
 }
 
 .hero-select-header h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 2.2rem;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 2.4rem;
     color: var(--gold);
     margin-bottom: 8px;
 }
@@ -351,8 +353,8 @@ body {
 }
 
 .hero-card h3 {
-    font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.6rem;
     margin-bottom: 4px;
 }
 
@@ -470,7 +472,7 @@ body {
 }
 
 .unit-info { width: 100%; text-align: center; }
-.unit-info h3 { font-family: 'Cinzel', serif; font-size: 1.4rem; }
+.unit-info h3 { font-family: 'MedievalSharp', cursive; font-size: 1.5rem; }
 .unit-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
 
 .stat-bar-group { margin-bottom: 8px; }
@@ -532,9 +534,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Cinzel', serif;
+    font-family: 'MedievalSharp', cursive;
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--gold);
     box-shadow: 0 0 20px var(--gold-glow);
 }
@@ -635,9 +637,9 @@ body {
 
 .floating-text {
     position: fixed;
-    font-family: 'Cinzel', serif;
+    font-family: 'MedievalSharp', cursive;
     font-weight: 900;
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     pointer-events: none;
     z-index: 999;
     animation: floatUp 1s ease-out forwards;

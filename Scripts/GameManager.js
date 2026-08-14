@@ -117,41 +117,41 @@ const GameManager = {
                 </div>
 
                 <div class="hero-class-grid">
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Warrior')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Warrior', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/Warrior.jpg" alt="Warrior"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Warrior</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Warrior')" style="width:100%;">Select Warrior</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Warrior</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Rogue')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Rogue', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/Rouge.jpg" alt="Rogue"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Rogue</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Rogue')" style="width:100%;">Select Rogue</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Rogue</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Wizard')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Wizard', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/Wizard.jpg" alt="Wizard"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Wizard</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Wizard')" style="width:100%;">Select Wizard</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Wizard</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Hunter')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Hunter', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/hunter.jpg" alt="Hunter"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Hunter</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Hunter')" style="width:100%;">Select Hunter</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Hunter</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Paladin')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Paladin', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/Paladin.jpg" alt="Paladin"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Paladin</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Paladin')" style="width:100%;">Select Paladin</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Paladin</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Necromancer')" onmouseenter="SoundEngine.playHover()">
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Necromancer', event)" onmouseenter="SoundEngine.playHover()">
                         <div class="hero-avatar"><img src="characters imgs/player/Necromancer.jpg" alt="Necromancer"></div>
                         <h3 style="color:var(--gold); margin:8px 0 4px 0;">Necromancer</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
-                        <button class="btn btn-primary" onclick="GameManager.setGameStart('Necromancer')" style="width:100%;">Select Necromancer</button>
+                        <button class="btn btn-primary" style="width:100%; pointer-events:none;">Select Necromancer</button>
                     </div>
                 </div>
             </div>
@@ -355,8 +355,9 @@ const GameManager = {
         }
     },
 
-    setGameStart: function(classType) {
-        SoundEngine.playClick();
+    setGameStart: function(classType, event) {
+        if (event) event.stopPropagation();
+        try { SoundEngine.playClick(); } catch(e) {}
         player = new Player(classType);
         player.gold = 50;
         player.coins = 0;

@@ -2022,6 +2022,8 @@ const GameManager = {
         this.saveGameData();
         this.updateHeaderStats();
         this.openInventoryModal('wealth');
+    },
+
     buyPotion: function(type) {
         SoundEngine.playClick();
         if (!player) return;

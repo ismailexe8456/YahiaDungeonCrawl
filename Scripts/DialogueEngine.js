@@ -225,7 +225,8 @@ const DialogueEngine = {
                     </div>
                     <div class="dialogue-content">
                         <div class="dialogue-text" id="dialogue-text-target"></div>
-                        <div class="dialogue-footer">
+                        <div class="dialogue-footer" style="display:flex; gap:10px; justify-content:flex-end;">
+                            <button class="btn btn-secondary" id="dialogue-skip-btn">⏩ Skip</button>
                             <button class="btn btn-primary" id="dialogue-next-btn">Continue ▶</button>
                         </div>
                     </div>
@@ -235,14 +236,22 @@ const DialogueEngine = {
 
         const textTarget = document.getElementById('dialogue-text-target');
         const nextBtn = document.getElementById('dialogue-next-btn');
+        const skipBtn = document.getElementById('dialogue-skip-btn');
 
         this.typeText(textTarget, text, speakerName, 25);
 
-        nextBtn.onclick = () => {
+        const dismiss = () => {
+            if (this.typingTimer) {
+                clearInterval(this.typingTimer);
+                this.typingTimer = null;
+            }
             SoundEngine.playClick();
             GameManager.closeModal();
             if (onComplete) onComplete();
         };
+
+        nextBtn.onclick = dismiss;
+        skipBtn.onclick = dismiss;
     },
 
     triggerEncounterDialogue: function(enemyObj, onFinish) {

@@ -429,12 +429,6 @@ const GameManager = {
                 <div class="map-nodes-container">
                     ${nodesHtml}
                 </div>
-
-                <div style="margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="background: linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color: #000; font-weight: 800;"><i class="fas fa-briefcase"></i> Inventory</button>
-                    <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
-                    <button class="btn btn-potion" onclick="GameManager.openSettingsModal()"><i class="fas fa-cog"></i> Settings</button>
-                </div>
             </div>
         `;
     },

@@ -57,6 +57,21 @@ const TutorialEngine = {
                     <p style="font-size:0.88rem;">Spend Victory Coins in the Blacksmith Forge anytime to upgrade your <strong>Weapon, Armor, and Accessories from +1 to +10</strong>, boosting stats by +15% per tier!</p>
                 </div>
             `
+        },
+        {
+            title: "⭐ Item Inspection & Dark Fantasy Lore",
+            icon: "fa-star",
+            content: `
+                <p>Every piece of equipment, elemental gem, and pet egg features a ⭐ <strong>Star Inspection Badge</strong>!</p>
+                <div style="margin:14px 0; background:rgba(245,197,24,0.1); border:1px solid var(--gold); padding:12px; border-radius:10px; text-align:left; font-size:0.88rem;">
+                    <p style="color:var(--gold); font-weight:700; margin-bottom:4px;">⭐ Click any Star to Inspect:</p>
+                    <ul style="margin:4px 0 0 18px; color:var(--text-muted);">
+                        <li>Inspect full item stats & bonus calculations.</li>
+                        <li>Read immersive dark fantasy lore & item history.</li>
+                        <li>Click outside or tap ⭐ again to dismiss tooltip.</li>
+                    </ul>
+                </div>
+            `
         }
     ],
 

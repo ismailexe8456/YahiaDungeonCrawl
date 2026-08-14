@@ -24,20 +24,14 @@
       </div>
 
       <div class="header-stats">
-        <div class="stat-chip gold-badge">
-          <i class="fas fa-coins"></i> <span id="hdr-gold">0</span> Gold
-        </div>
-        <div class="stat-chip coin-badge" onclick="GameManager.openUpgradeModal()" style="cursor:pointer;">
-          <i class="fas fa-hammer"></i> <span id="hdr-coins">0</span> Coins
-        </div>
-        <div class="stat-chip world-badge" onclick="GameManager.openSaveLoadModal()" style="cursor:pointer; background:rgba(0,180,255,0.2); border:1px solid #00b4ff; color:#00e5ff; font-weight:700;">
-          <i class="fas fa-globe"></i> <span id="hdr-world">World 1</span>
-        </div>
         <div class="stat-chip stage-badge">
           <i class="fas fa-dungeon"></i> Stage <span id="hdr-stage">1</span>
         </div>
-        <div class="stat-chip high-badge">
-          <i class="fas fa-trophy"></i> Best: <span id="hdr-high">1</span>
+        <div class="stat-chip gold-badge">
+          <i class="fas fa-coins"></i> <span id="hdr-gold">0</span> Gold
+        </div>
+        <div class="stat-chip coin-badge" onclick="GameManager.openInventoryModal('gear')" style="cursor:pointer;">
+          <i class="fas fa-hammer"></i> <span id="hdr-coins">0</span> Coins
         </div>
         <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="padding: 6px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color: #000; font-weight: 800;">
           <i class="fas fa-briefcase"></i> Inventory

@@ -298,10 +298,11 @@ body {
     margin: 0 auto;
 }
 
-.hero-grid {
+.hero-class-grid, .hero-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
 }
 
 .hero-card {
@@ -313,30 +314,35 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    padding: 16px;
 }
 
 .hero-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
     border-color: var(--gold);
     box-shadow: 0 12px 35px var(--gold-glow);
 }
 
-.hero-img-wrapper {
+.hero-avatar, .hero-img-wrapper {
     position: relative;
     width: 100%;
-    height: 240px;
+    height: 180px;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.6);
 }
 
-.hero-portrait {
-    width: 100%; height: 100%;
+.hero-avatar img, .hero-portrait {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    object-position: top;
     transition: transform 0.4s ease;
 }
 
+.hero-card:hover .hero-avatar img,
 .hero-card:hover .hero-portrait { transform: scale(1.08); }
 
 .hero-badge {

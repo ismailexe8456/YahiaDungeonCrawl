@@ -255,13 +255,13 @@ const DialogueEngine = {
     },
 
     triggerEncounterDialogue: function(enemyObj, onFinish) {
-        const taunt = BOSS_TAUNTS[enemyObj.name] || `Prepare yourself! ${enemyObj.name} challenges you to mortal combat!`;
-        this.showDialogueModal(enemyObj.name, enemyObj.img, taunt, onFinish);
+        const taunt = BOSS_TAUNTS[enemyObj.name] || `Prepare yourself! ${enemyObj.name} challenges you to combat!`;
+        // Bypass popup modal overlay completely; spawn real-time speech bubble over unit portrait
+        this.spawnSpeechBubble('enemy-unit', taunt, false);
+        if (onFinish) onFinish();
     },
 
     triggerHeroSelectQuote: function(heroClass, onFinish) {
-        const quote = HERO_QUOTES[heroClass] || "Forward into the abyss!";
-        const heroDef = HERO_CLASSES[heroClass];
-        this.showDialogueModal(heroClass, heroDef.img, quote, onFinish);
+        if (onFinish) onFinish();
     }
 };

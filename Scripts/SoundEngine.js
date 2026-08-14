@@ -15,8 +15,70 @@ const SoundEngine = {
         }
     },
 
+    ambientOscs: [],
+    ambientGain: null,
+    isAmbientPlaying: false,
+
+    startAmbientMusic: function() {
+        if (this.isAmbientPlaying || this.muted) return;
+        this.init();
+        if (!this.audioCtx) return;
+
+        try {
+            this.ambientGain = this.audioCtx.createGain();
+            this.ambientGain.gain.setValueAtTime(0.001, this.audioCtx.currentTime);
+            // Soft atmospheric non-loud volume (0.10 gain)
+            this.ambientGain.gain.exponentialRampToValueAtTime(0.10, this.audioCtx.currentTime + 3.0);
+
+            // Dark fantasy D minor ambient pad drones (D2, A2, F3, D3)
+            const freqs = [73.42, 110.00, 174.61, 293.66];
+            this.ambientOscs = freqs.map((freq, idx) => {
+                const osc = this.audioCtx.createOscillator();
+                const filter = this.audioCtx.createBiquadFilter();
+                
+                osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+
+                // Low-pass filter for soft warm ambient sound
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(320 + (idx * 60), this.audioCtx.currentTime);
+
+                osc.connect(filter);
+                filter.connect(this.ambientGain);
+                osc.start();
+                return osc;
+            });
+
+            this.ambientGain.connect(this.audioCtx.destination);
+            this.isAmbientPlaying = true;
+        } catch (e) {
+            console.error("Ambient music error:", e);
+        }
+    },
+
+    stopAmbientMusic: function() {
+        if (this.ambientGain && this.audioCtx) {
+            try {
+                this.ambientGain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 1.0);
+                setTimeout(() => {
+                    this.ambientOscs.forEach(osc => { try { osc.stop(); } catch(e){} });
+                    this.ambientOscs = [];
+                    this.isAmbientPlaying = false;
+                }, 1050);
+            } catch(e) {
+                this.ambientOscs = [];
+                this.isAmbientPlaying = false;
+            }
+        }
+    },
+
     toggleMute: function() {
         this.muted = !this.muted;
+        if (this.muted) {
+            this.stopAmbientMusic();
+        } else {
+            this.startAmbientMusic();
+        }
         return this.muted;
     },
 

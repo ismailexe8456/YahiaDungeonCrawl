@@ -82,7 +82,7 @@ const GameManager = {
             { type: 'battle', title: 'Dungeon Skirmish', icon: 'fa-skull-crossbones' },
             { type: 'battle', title: 'Beast Patrol', icon: 'fa-paw' },
             { type: 'shrine', title: 'Ancient Rune Shrine', icon: 'fa-gavel' },
-            { type: 'battle', title: 'Shadow Depths', icon: 'fa-ghost' },
+            { type: 'forge', title: 'Blacksmith Forge', icon: 'fa-hammer' },
             { type: 'rest', title: 'Campfire Rest Site', icon: 'fa-fire' },
             { type: 'battle', title: 'Vanguard Mini-Boss', icon: 'fa-khanda' },
             { type: 'merchant', title: 'Wandering Merchant', icon: 'fa-store' },
@@ -117,14 +117,13 @@ const GameManager = {
                 <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.2rem; margin-bottom:6px;">
                     🗺️ Stage ${this.currentStage} Expedition Map
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate 8 node paths to fight beasts, rest at campfires, trade with merchants, and vanquish stage bosses!</p>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate 8 node paths to fight beasts, forge gear, rest at campfires, trade with merchants, and vanquish stage bosses!</p>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}
                 </div>
 
                 <div style="margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-potion" onclick="GameManager.openUpgradeModal()"><i class="fas fa-hammer"></i> Blacksmith Forge & Upgrades</button>
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Gear & Gems</button>
                     <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
                     <button class="btn btn-secondary" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load</button>
@@ -143,6 +142,8 @@ const GameManager = {
             this.startCombat(node.type === 'boss');
         } else if (node.type === 'shrine') {
             this.openShrineModal();
+        } else if (node.type === 'forge') {
+            this.openUpgradeModal(true);
         } else if (node.type === 'treasure') {
             this.openTreasureModal();
         } else if (node.type === 'rest') {
@@ -535,7 +536,8 @@ const GameManager = {
         this.showModal(modalHtml);
     },
 
-    openUpgradeModal: function() {
+    openUpgradeModal: function(isMapNode = false) {
+        if (isMapNode) this.isCurrentNodeForge = true;
         SoundEngine.playClick();
         if (!player) return;
 
@@ -548,12 +550,12 @@ const GameManager = {
         const accCost = (accLvl + 1) * 10;
 
         const modalHtml = `
-            <div class="modal-overlay">
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeForgeModal()">
                 <div class="modal-card glass-panel" style="max-width:650px;">
                     <div class="modal-header">
                         <h2>🔨 Blacksmith Forge & Gear Upgrades</h2>
                         <span class="stat-chip coin-badge">⚔️ ${player.coins || 0} Victory Coins</span>
-                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                        <button class="close-btn" onclick="GameManager.closeForgeModal()">&times;</button>
                     </div>
 
                     <p style="color:var(--text-muted); margin-bottom:16px;">Spend Victory Coins earned from battle victories to upgrade weapon, armor, and accessories up to +10!</p>
@@ -594,12 +596,20 @@ const GameManager = {
                     </div>
 
                     <div style="margin-top:20px; text-align:right;">
-                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Exit Forge</button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeForgeModal()">Exit Forge</button>
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    closeForgeModal: function() {
+        this.closeModal();
+        if (this.isCurrentNodeForge) {
+            this.isCurrentNodeForge = false;
+            this.advanceMapNode();
+        }
     },
 
     upgradeGearSlot: function(slot) {
@@ -618,7 +628,7 @@ const GameManager = {
         SoundEngine.playLevelUp();
         this.logAction(`Forged <strong>${slot.toUpperCase()} +${currentLvl + 1}</strong>! Stats boosted!`, 'info');
         this.saveGameData();
-        this.openUpgradeModal();
+        this.openUpgradeModal(this.isCurrentNodeForge);
     },
 
     handleDefeat: function() {

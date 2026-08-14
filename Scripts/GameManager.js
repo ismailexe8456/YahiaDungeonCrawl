@@ -594,7 +594,7 @@ const GameManager = {
         const cost = (currentLvl + 1) * 10;
 
         if ((player.coins || 0) < cost) {
-            alert("Not enough Victory Coins! Win more battles to earn coins.");
+            this.showInsufficientFunds('merchant-shop-card', cost, 'Victory Coins');
             return;
         }
 
@@ -1063,9 +1063,10 @@ const GameManager = {
     },
 
     openShopModal: function(isMapNode = false) {
+        if (isMapNode) this.isCurrentNodeMerchant = true;
         SoundEngine.playClick();
         let weaponOptions = SHOP_ITEMS.weapons.map((w, idx) => `
-            <div class="shop-item">
+            <div class="shop-item glass-panel" id="shop-item-weapon-${idx}">
                 <div><strong>${w.name}</strong> <div class="item-desc">${w.desc}</div></div>
                 <button class="btn btn-primary" onclick="GameManager.buyGear('weapon', ${idx})">Buy 🪙${w.price}</button>
             </div>
@@ -1074,7 +1075,7 @@ const GameManager = {
         let companionOptions = Object.keys(COMPANIONS).map(key => {
             const comp = COMPANIONS[key];
             return `
-                <div class="shop-item">
+                <div class="shop-item glass-panel" id="shop-item-comp-${key}">
                     <div><strong>${comp.name}</strong> (${comp.title}) <div class="item-desc">${comp.desc}</div></div>
                     <button class="btn btn-potion" onclick="GameManager.buyCompanion('${key}')">Hire 🪙${comp.price}</button>
                 </div>
@@ -1084,7 +1085,7 @@ const GameManager = {
         let gemOptions = Object.keys(GEMS).map(key => {
             const g = GEMS[key];
             return `
-                <div class="shop-item">
+                <div class="shop-item glass-panel" id="shop-item-gem-${key}">
                     <div style="color:${g.color}"><strong>${g.name}</strong> <div class="item-desc">${g.stat}</div></div>
                     <button class="btn btn-primary" onclick="GameManager.buyGem('${key}')">Buy 🪙${g.price}</button>
                 </div>
@@ -1093,12 +1094,14 @@ const GameManager = {
 
         const modalHtml = `
             <div class="modal-overlay">
-                <div class="modal-card glass-panel" style="max-width:720px; max-height:85vh; overflow-y:auto;">
+                <div class="modal-card glass-panel" id="merchant-shop-card" style="max-width:720px; max-height:85vh; overflow-y:auto;">
                     <div class="modal-header">
                         <h2>🛒 Dungeon Merchant Shop</h2>
                         <span class="gold-badge">🪙 Gold: ${player.gold}</span>
-                        <button class="close-btn" onclick="GameManager.closeModal(); ${isMapNode ? 'GameManager.advanceMapNode();' : ''}">&times;</button>
+                        <button class="close-btn" onclick="GameManager.closeShopModal()">&times;</button>
                     </div>
+
+                    <div id="shop-error-toast" style="display:none; margin-bottom:12px; padding:10px 16px; border-radius:10px; background:rgba(255,42,95,0.2); border:1px solid var(--crimson); color:#ff2a5f; font-weight:800; text-align:center;"></div>
 
                     <div class="shop-section">
                         <h4>🐾 Party Companions</h4>
@@ -1110,7 +1113,7 @@ const GameManager = {
                     </div>
 
                     <div style="margin-top:16px; text-align:right;">
-                        <button class="btn btn-secondary" onclick="GameManager.closeModal(); ${isMapNode ? 'GameManager.advanceMapNode();' : ''}">Exit Shop</button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeShopModal()">Exit Shop</button>
                     </div>
                 </div>
             </div>
@@ -1118,10 +1121,36 @@ const GameManager = {
         this.showModal(modalHtml);
     },
 
+    closeShopModal: function() {
+        this.closeModal();
+        if (this.isCurrentNodeMerchant) {
+            this.isCurrentNodeMerchant = false;
+            this.advanceMapNode();
+        }
+    },
+
+    showInsufficientFunds: function(elementId, neededAmt, currencyType = 'Gold') {
+        SoundEngine.playError();
+        const toastEl = document.getElementById('shop-error-toast');
+        const cardEl = document.getElementById(elementId) || document.getElementById('merchant-shop-card');
+
+        if (cardEl) {
+            cardEl.classList.add('shake-active');
+            setTimeout(() => cardEl.classList.remove('shake-active'), 400);
+        }
+
+        if (toastEl) {
+            toastEl.style.display = 'block';
+            toastEl.innerHTML = `⚠️ Insufficient Funds! You need ${neededAmt} ${currencyType} (You have ${currencyType === 'Gold' ? player.gold : (player.coins || 0)})!`;
+            setTimeout(() => { toastEl.style.display = 'none'; }, 2500);
+        }
+    },
+
     buyCompanion: function(compKey) {
         const comp = COMPANIONS[compKey];
-        if (!comp || player.gold < comp.price) {
-            alert("Not enough gold!");
+        if (!comp) return;
+        if (player.gold < comp.price) {
+            this.showInsufficientFunds(`shop-item-comp-${compKey}`, comp.price, 'Gold');
             return;
         }
         player.gold -= comp.price;
@@ -1133,8 +1162,9 @@ const GameManager = {
 
     buyGem: function(gemKey) {
         const gem = GEMS[gemKey];
-        if (!gem || player.gold < gem.price) {
-            alert("Not enough gold!");
+        if (!gem) return;
+        if (player.gold < gem.price) {
+            this.showInsufficientFunds(`shop-item-gem-${gemKey}`, gem.price, 'Gold');
             return;
         }
         player.gold -= gem.price;
@@ -1147,8 +1177,9 @@ const GameManager = {
 
     buyGear: function(category, idx) {
         let item = category === 'weapon' ? SHOP_ITEMS.weapons[idx] : SHOP_ITEMS.armors[idx];
-        if (!item || player.gold < item.price) {
-            alert("Not enough gold!");
+        if (!item) return;
+        if (player.gold < item.price) {
+            this.showInsufficientFunds(`shop-item-weapon-${idx}`, item.price, 'Gold');
             return;
         }
         player.gold -= item.price;

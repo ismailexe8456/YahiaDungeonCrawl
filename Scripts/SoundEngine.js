@@ -230,5 +230,12 @@ const SoundEngine = {
                 this.playTone(freq, 'triangle', 0.2, 0.3, 0.001);
             }, index * 80);
         });
+    },
+
+    // Insufficient Funds / Error Buzzer Sound
+    playError: function() {
+        if (this.muted) return;
+        this.playTone(140, 'sawtooth', 0.2, 0.4, 0.01);
+        setTimeout(() => this.playTone(100, 'sawtooth', 0.25, 0.4, 0.01), 80);
     }
 };

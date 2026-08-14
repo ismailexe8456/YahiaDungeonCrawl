@@ -93,7 +93,7 @@ const ENEMY_DATABASE = [
         phase2Skill: { name: '🔥 ENRAGED SHADOW STORM', mult: 3.0, type: 'magic' }
     },
 
-    // Tier 3 Bosses
+    // Tier 3 Boss
     {
         name: 'Void Dragon',
         img: 'characters imgs/enemy/Troll.jpg',
@@ -113,6 +113,28 @@ const ENEMY_DATABASE = [
             { name: 'Cataclysm Shockwave', mult: 3.2, type: 'magic' }
         ],
         phase2Skill: { name: '⚡ ANCIENT DRAGON CATACLYSM', mult: 4.0, type: 'magic' }
+    },
+
+    // Tier 4 Boss
+    {
+        name: 'Lich King of the Abyss',
+        img: 'characters imgs/enemy/Goblin.jpg',
+        tier: 4,
+        isBoss: true,
+        baseHp: 3200,
+        baseMp: 500,
+        str: 165,
+        agi: 60,
+        defense: 75,
+        spd: 60,
+        xpReward: 900,
+        goldReward: 600,
+        skills: [
+            { name: 'Soul Reaper Slash', mult: 1.8, type: 'magic' },
+            { name: 'Frost Nova Burst', mult: 2.8, type: 'magic' },
+            { name: 'Abyssal Oblivion', mult: 3.8, type: 'magic' }
+        ],
+        phase2Skill: { name: '☠️ ANCIENT LICH OBLIVION REAPER', mult: 4.5, type: 'magic' }
     }
 ];
 

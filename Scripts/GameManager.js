@@ -530,8 +530,7 @@ const GameManager = {
                     ${player.level >= 5 && !player.specialization ? `<div class="special-unlock-banner">⭐ SPECIALIZATION UNLOCKED! Pick your Level 5 Hero Mastery!</div>` : ''}
 
                     <div style="margin-top:24px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                        <button class="btn btn-potion" onclick="GameManager.closeModal(); GameManager.openUpgradeModal()">🔨 Upgrade Gear in Forge</button>
-                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.advanceMapNode()">Continue Map Exploration</button>
+                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.advanceMapNode()" style="padding:14px 28px; font-size:1.15rem;">🎉 Continue Map Exploration ➡️</button>
                     </div>
                 </div>
             </div>
@@ -952,26 +951,23 @@ const GameManager = {
         SoundEngine.playClick();
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeShrineModal()">
-                <div class="modal-card glass-panel" style="max-width:600px;">
+                <div class="modal-card glass-panel text-center" style="max-width:580px;">
                     <div class="modal-header">
-                        <h2 style="color:var(--mana-blue); font-size:2rem; margin:0;">🏛️ Ancient Rune Shrine</h2>
+                        <h2 style="color:var(--gold); font-size:2rem; margin:0;">🏛️ Ancient Rune Shrine</h2>
                         <button class="close-btn" onclick="GameManager.closeShrineModal()">&times;</button>
                     </div>
-                    <p style="color:var(--text-muted); margin:12px 0 20px 0;">Choose a permanent blessing to empower your hero for the remainder of this stage!</p>
+                    <p style="color:var(--text-muted); margin:12px 0 20px 0;">Touch an ancient glowing rune to receive a permanent stage blessing!</p>
 
-                    <div class="shrine-options">
-                        <div class="shrine-card" onclick="GameManager.claimShrine('crit')">
-                            <h4>🔥 Blessing of Precision</h4>
-                            <p>+20% Critical Hit Chance</p>
-                        </div>
-                        <div class="shrine-card" onclick="GameManager.claimShrine('maxHp')">
-                            <h4>🛡️ Blessing of Endurance</h4>
-                            <p>+30% Max HP & Full Heal</p>
-                        </div>
-                        <div class="shrine-card" onclick="GameManager.claimShrine('dodge')">
-                            <h4>⚡ Blessing of Swiftness</h4>
-                            <p>+15% Dodge Chance</p>
-                        </div>
+                    <div style="display:flex; flex-direction:column; gap:14px;">
+                        <button class="btn btn-potion" onclick="GameManager.claimShrine('crit')" style="padding:14px; text-align:left; font-size:1.05rem; width:100%;">
+                            ⚡ <strong>Rune of Lethality:</strong> +20% Critical Hit Rate & Critical Damage
+                        </button>
+                        <button class="btn btn-potion" onclick="GameManager.claimShrine('dodge')" style="padding:14px; text-align:left; font-size:1.05rem; width:100%;">
+                            🛡️ <strong>Rune of Evasion:</strong> +15% Dodge Chance & Evasion Speed
+                        </button>
+                        <button class="btn btn-potion" onclick="GameManager.claimShrine('maxHp')" style="padding:14px; text-align:left; font-size:1.05rem; width:100%;">
+                            ❤️ <strong>Rune of Vitality:</strong> +30% Max HP & 100% Full Health Restoration
+                        </button>
                     </div>
 
                     <div style="margin-top:24px; text-align:right;">

@@ -244,7 +244,7 @@ const GameManager = {
                 </div>
 
                 <div class="action-items">
-                    ${enemy && enemy.health <= 0 ? `<button class="btn btn-primary" onclick="GameManager.advanceMapNode()"><i class="fas fa-arrow-right"></i> ⏩ Skip Victory & Continue</button>` : `<button class="btn btn-secondary" onclick="GameManager.skipTurn()"><i class="fas fa-forward"></i> ⏩ Skip Turn</button>`}
+                    ${enemy && enemy.health <= 0 ? `<button class="btn btn-primary" onclick="GameManager.advanceMapNode()"><i class="fas fa-arrow-right"></i> Continue Expedition</button>` : ''}
                     <button class="btn btn-potion" onclick="GameManager.usePotion('hp')">❤️ HP (${player.potions.hpPotion})</button>
                     <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 MP (${player.potions.mpPotion})</button>
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()">🎒 Gear & Gems</button>
@@ -259,12 +259,6 @@ const GameManager = {
                 <div class="log-body" id="log-body"></div>
             </div>
         `;
-    },
-
-    skipTurn: function() {
-        if (this.isTurnInProgress || (enemy && enemy.health <= 0)) return;
-        this.logAction("⏩ Fast Attack / Skipped Turn!", "info");
-        this.useSkill(0);
     },
 
     renderSkillButtons: function() {

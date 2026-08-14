@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dungeon Crawl - Dark Fantasy RPG</title>
+  
+  <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="Game design.css">
+
+  <!-- JS Modules -->
+  <script defer src="Scripts/SoundEngine.js"></script>
+  <script defer src="Scripts/ParticleEngine.js"></script>
+  <script defer src="Scripts/player.js"></script>
+  <script defer src="Scripts/enemy.js"></script>
+  <script defer src="Scripts/GameManager.js"></script>
+</head>
+
+<body>
+  <!-- Ambient Particle Canvas Overlay -->
+  <canvas id="fx-canvas"></canvas>
+
+  <div class="game-container">
+    <!-- Top Navigation Header -->
+    <header class="game-header glass-panel">
+      <div class="brand">
+        <i class="fas fa-dragon" style="font-size: 1.8rem; color: var(--gold);"></i>
+        <h1>Dungeon Crawl</h1>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-chip gold-badge">
+          <i class="fas fa-coins"></i> <span id="hdr-gold">0</span> Gold
+        </div>
+        <div class="stat-chip stage-badge">
+          <i class="fas fa-dungeon"></i> Stage <span id="hdr-stage">1</span>
+        </div>
+        <div class="stat-chip high-badge">
+          <i class="fas fa-trophy"></i> Best: <span id="hdr-high">1</span>
+        </div>
+        <button class="btn btn-secondary" id="audio-btn" onclick="GameManager.toggleMuteAudio()" style="padding: 6px 14px; font-size: 0.85rem;">
+          <i class="fas fa-volume-up"></i> Sound ON
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic Main View (Character Selection / Battle Arena) -->
+    <main id="main-view" class="glass-panel" style="min-height: 580px;">
+      <!-- Populated dynamically by GameManager -->
+    </main>
+  </div>
+
+  <!-- Dynamic Modals Container (Shop, Inventory, Stat Point Allocation, Victory/Defeat) -->
+  <div id="modal-container"></div>
+</body>
+
+</html>

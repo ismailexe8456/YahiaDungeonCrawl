@@ -1,4 +1,4 @@
-// GameManager.js - Core Turn-Based RPG Engine, Roguelike Map, & Expansion Systems
+// GameManager.js - Core Turn-Based RPG Engine, Save/Load System, & Hardcore Mechanics
 const SHOP_ITEMS = {
     weapons: [
         { name: 'Steel Longsword', str: 20, int: 0, price: 100, desc: '+20 Strength' },
@@ -34,6 +34,7 @@ const GameManager = {
     currentNodeIndex: 0,
     stageNodes: [],
     isTurnInProgress: false,
+    difficulty: 'normal', // 'normal', 'hardcore', 'nightmare'
 
     init: function() {
         const viewContainer = document.getElementById('main-view');
@@ -44,7 +45,6 @@ const GameManager = {
         try {
             ParticleEngine.init('fx-canvas');
             this.loadSaveData();
-            this.renderHeroSelection();
             this.updateHeaderStats();
         } catch (e) {
             console.error("Game initialization error:", e);
@@ -60,6 +60,12 @@ const GameManager = {
         });
     },
 
+    setDifficulty: function(diffMode) {
+        this.difficulty = diffMode;
+        SoundEngine.playClick();
+        this.logAction(`Difficulty set to: <strong>${diffMode.toUpperCase()}</strong>!`, 'warning');
+    },
+
     startStageMap: function(stageNum) {
         this.currentStage = stageNum;
         if (stageNum > this.highScore) {
@@ -67,7 +73,6 @@ const GameManager = {
             this.saveGameData();
         }
 
-        // Generate 5 Map Nodes for the stage
         this.stageNodes = [
             { type: 'battle', title: 'Dungeon Skirmish', icon: 'fa-skull-crossbones' },
             { type: 'shrine', title: 'Ancient Rune Shrine', icon: 'fa-gavel' },
@@ -104,15 +109,23 @@ const GameManager = {
                 <h2 style="font-family:'Cinzel',serif; color:var(--gold); font-size:2rem; margin-bottom:6px;">
                     🗺️ Stage ${this.currentStage} Expedition Map
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:30px;">Navigate node paths to fight beasts, claim ancient shrine blessings, and challenge stage bosses!</p>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate node paths to fight beasts, claim ancient shrine blessings, and challenge stage bosses!</p>
+
+                <div class="difficulty-picker" style="margin-bottom:20px;">
+                    <span style="font-weight:700; margin-right:10px;">Difficulty:</span>
+                    <button class="btn btn-secondary ${this.difficulty === 'normal' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('normal'); GameManager.renderDungeonMap();">Normal</button>
+                    <button class="btn btn-secondary ${this.difficulty === 'hardcore' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('hardcore'); GameManager.renderDungeonMap();" style="color:#ff9900;">🔥 Hardcore (+50% HP)</button>
+                    <button class="btn btn-secondary ${this.difficulty === 'nightmare' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('nightmare'); GameManager.renderDungeonMap();" style="color:#ff2a5f;">💀 Nightmare (+100% HP)</button>
+                </div>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}
                 </div>
 
-                <div style="margin-top:40px; display:flex; gap:16px; justify-content:center;">
-                    <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Hero Inventory</button>
+                <div style="margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Gear & Gems</button>
                     <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
+                    <button class="btn btn-potion" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load Game</button>
                 </div>
             </div>
         `;
@@ -145,7 +158,8 @@ const GameManager = {
     },
 
     startCombat: function(isBossStage = false) {
-        let scale = 1.0 + (this.currentStage - 1) * 0.3;
+        let scale = 1.0 + (this.currentStage - 1) * 0.35;
+        let diffMult = this.difficulty === 'nightmare' ? 2.0 : (this.difficulty === 'hardcore' ? 1.5 : 1.0);
         let monsterData;
 
         if (isBossStage) {
@@ -155,13 +169,13 @@ const GameManager = {
             monsterData = regularMonsters[(this.currentStage + this.currentNodeIndex) % regularMonsters.length];
         }
 
-        enemy = new Enemy(monsterData, scale);
+        enemy = new Enemy(monsterData, scale, diffMult);
         player.shield = 0;
         player.skills.forEach(s => s.currentCD = 0);
 
         this.renderBattleArena();
         this.updateHeaderStats();
-        this.logAction(`Encountered: <span style="color:${enemy.isBoss ? '#ff3366' : '#ff9900'}">${enemy.name}</span>!`, 'warning');
+        this.logAction(`Encountered: <span style="color:${enemy.isBoss ? '#ff3366' : '#ff9900'}">${enemy.name}</span> (${enemy.maxHealth} HP)!`, 'warning');
         this.isTurnInProgress = false;
 
         DialogueEngine.triggerEncounterDialogue(enemy);
@@ -173,18 +187,14 @@ const GameManager = {
 
         viewContainer.innerHTML = `
             <div class="battle-stage">
-                <!-- Player & Companion Combat Unit -->
+                <!-- Player Unit -->
                 <div class="combat-unit glass-panel" id="player-unit">
                     <div class="unit-portrait-box">
                         <img src="${player.img}" alt="${player.classType}" class="unit-img" id="player-img">
                         <div class="shield-overlay" id="player-shield-badge" style="display:${player.shield > 0 ? 'block' : 'none'}">🛡️ ${player.shield}</div>
                     </div>
                     
-                    ${player.companion ? `
-                        <div class="companion-badge">
-                            🐾 ${player.companion.name} (${player.companion.title})
-                        </div>
-                    ` : ''}
+                    ${player.companion ? `<div class="companion-badge">🐾 ${player.companion.name} (${player.companion.title})</div>` : ''}
 
                     <div class="unit-info">
                         <h3>${player.classType} <span class="unit-lvl">Lvl ${player.level}</span></h3>
@@ -208,7 +218,7 @@ const GameManager = {
                     <div class="vs-circle">VS</div>
                 </div>
 
-                <!-- Enemy Combat Unit -->
+                <!-- Enemy Unit -->
                 <div class="combat-unit glass-panel" id="enemy-unit">
                     <div class="unit-portrait-box">
                         <img src="${enemy.img}" alt="${enemy.name}" class="unit-img" id="enemy-img">
@@ -216,7 +226,7 @@ const GameManager = {
                     </div>
                     <div class="unit-info">
                         <h3 style="color:${enemy.isBoss ? '#ff3366' : '#fff'}">${enemy.name}</h3>
-                        <p class="unit-sub" id="enemy-phase-txt">${enemy.inPhase2 ? '🔥 ENRAGED PHASE 2' : (enemy.isBoss ? 'Dungeon Overseer' : 'Wild Beast')}</p>
+                        <p class="unit-sub" id="enemy-phase-txt">${enemy.inPhase2 ? '🔥 ENRAGED PHASE 2' : (enemy.isBoss ? 'Dungeon Overseer' : `Def: ${enemy.defense}`)}</p>
 
                         <div class="stat-bar-group">
                             <div class="bar-label"><span>HP</span> <span id="enemy-hp-txt">${enemy.health}/${enemy.maxHealth}</span></div>
@@ -237,6 +247,7 @@ const GameManager = {
                     <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 MP (${player.potions.mpPotion})</button>
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()">🎒 Gear & Gems</button>
                     <button class="btn btn-secondary" onclick="GameManager.openShopModal()">🛒 Merchant</button>
+                    <button class="btn btn-potion" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save Game</button>
                 </div>
             </div>
 
@@ -297,13 +308,15 @@ const GameManager = {
                 this.spawnFloatingText(enemyImgEl, 'DODGED!', 'dodge');
                 this.logAction(`${enemy.name} dodged your ${skill.name}!`, 'warning');
             } else {
-                let baseDmg = skill.type === 'magic' ? (player.TotalInt * 2.8) : (player.TotalStr * 2.2);
+                // Hardcore Balanced Damage Calculation with Armor Reduction
+                let baseDmg = skill.type === 'magic' ? (player.TotalInt * 1.5) : (player.TotalStr * 1.3);
                 let hitMult = skill.mult || 1.0;
-                let damage = Math.floor(baseDmg * hitMult + (Math.random() * 8));
+                let rawDmg = Math.floor(baseDmg * hitMult + (Math.random() * 6));
+                let damage = Math.max(12, rawDmg - Math.floor(enemy.defense * 0.6));
 
                 let isCrit = Math.random() < player.CritChance;
                 if (isCrit) {
-                    damage = Math.floor(damage * 1.8);
+                    damage = Math.floor(damage * 1.6);
                     ParticleEngine.triggerShake(16);
                 }
 
@@ -314,7 +327,7 @@ const GameManager = {
 
                 enemy.health = Math.max(0, enemy.health - damage);
                 this.spawnFloatingText(enemyImgEl, `-${damage}${isCrit ? ' CRIT!' : ''}`, isCrit ? 'crit' : 'dmg');
-                this.logAction(`You cast <strong>${skill.name}</strong> dealing <span style="color:#ff3366">${damage} damage</span>!`, 'player');
+                this.logAction(`You cast <strong>${skill.name}</strong> dealing <span style="color:#ff3366">${damage} damage</span> (Enemy Def: ${enemy.defense})!`, 'player');
 
                 if (skill.lifesteal) {
                     const healAmt = Math.floor(damage * skill.lifesteal);
@@ -336,7 +349,6 @@ const GameManager = {
             this.logAction(`You cast <strong>${skill.name}</strong>!`, 'info');
         }
 
-        // Check Boss Phase 2 Transition
         if (enemy.checkPhase2()) {
             SoundEngine.playHeavyHit();
             ParticleEngine.triggerShake(20);
@@ -353,7 +365,6 @@ const GameManager = {
             return;
         }
 
-        // Companion Turn
         if (player.companion && enemy.health > 0) {
             const compRes = player.companion.act(player, enemy);
             if (compRes.dmg) this.spawnFloatingText(enemyImgEl, `-${compRes.dmg}`, compRes.type);
@@ -385,8 +396,8 @@ const GameManager = {
             this.spawnFloatingText(playerImgEl, 'DODGED!', 'dodge');
             this.logAction(`You dodged ${enemy.name}'s ${enemySkill.name}!`, 'info');
         } else {
-            let baseDmg = enemy.strength * 1.8;
-            let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 6));
+            let baseDmg = enemy.strength * 1.6;
+            let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 8));
             let isCrit = Math.random() < enemy.CritChance;
             if (isCrit) damage = Math.floor(damage * 1.5);
 
@@ -503,6 +514,152 @@ const GameManager = {
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    // Multi-Slot Save / Load System
+    openSaveLoadModal: function() {
+        SoundEngine.playClick();
+        let slotsHtml = '';
+        for (let i = 1; i <= 3; i++) {
+            const raw = localStorage.getItem(`dungeon_crawl_save_slot_${i}`);
+            let slotData = raw ? JSON.parse(raw) : null;
+
+            slotsHtml += `
+                <div class="save-slot-card glass-panel">
+                    <div class="slot-title">💾 Save Slot ${i}</div>
+                    ${slotData ? `
+                        <div class="slot-info">
+                            <strong>${slotData.playerData.classType}</strong> (Lvl ${slotData.playerData.level})<br>
+                            Stage ${slotData.currentStage} | 🪙 ${slotData.playerData.gold} Gold<br>
+                            <span class="slot-time">${slotData.timestamp || 'Saved'}</span>
+                        </div>
+                        <div class="slot-actions">
+                            <button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Overwrite Slot ${i}</button>
+                            <button class="btn btn-potion" onclick="GameManager.loadFromSlot(${i})">Load Slot ${i}</button>
+                            <button class="btn btn-secondary" onclick="GameManager.deleteSlot(${i})" style="color:#ff2a5f;">&times;</button>
+                        </div>
+                    ` : `
+                        <div class="slot-info" style="color:#888;">Empty Slot</div>
+                        <div class="slot-actions">
+                            ${player ? `<button class="btn btn-primary" onclick="GameManager.saveToSlot(${i})">Save to Slot ${i}</button>` : ''}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        const modalHtml = `
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel" style="max-width:650px;">
+                    <div class="modal-header">
+                        <h2>💾 Game Save & Load System</h2>
+                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                    </div>
+
+                    <div class="save-slots-list">${slotsHtml}</div>
+
+                    <div style="margin-top:20px; display:flex; gap:12px; justify-content:space-between; align-items:center;">
+                        <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Export Save Code</button>
+                        <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Save Code</button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
+    },
+
+    saveToSlot: function(slotIdx) {
+        if (!player) return;
+        const saveData = {
+            timestamp: new Date().toLocaleString(),
+            currentStage: this.currentStage,
+            currentNodeIndex: this.currentNodeIndex,
+            difficulty: this.difficulty,
+            playerData: {
+                classType: player.classType,
+                level: player.level,
+                xp: player.xp,
+                gold: player.gold,
+                str: player.str,
+                agi: player.agi,
+                int: player.int,
+                vit: player.vit,
+                statPoints: player.statPoints,
+                equipment: player.equipment,
+                companion: player.companion,
+                socketedGem: player.socketedGem,
+                specialization: player.specialization,
+                blessings: player.blessings,
+                achievements: player.achievements
+            }
+        };
+        localStorage.setItem(`dungeon_crawl_save_slot_${slotIdx}`, JSON.stringify(saveData));
+        SoundEngine.playLevelUp();
+        alert(`Saved successfully to Slot ${slotIdx}!`);
+        this.openSaveLoadModal();
+    },
+
+    loadFromSlot: function(slotIdx) {
+        const raw = localStorage.getItem(`dungeon_crawl_save_slot_${slotIdx}`);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const pData = data.playerData;
+
+        player = new Player(pData.classType);
+        player.level = pData.level;
+        player.xp = pData.xp;
+        player.gold = pData.gold;
+        player.str = pData.str;
+        player.agi = pData.agi;
+        player.int = pData.int;
+        player.vit = pData.vit;
+        player.statPoints = pData.statPoints;
+        player.equipment = pData.equipment;
+        player.companion = pData.companion;
+        player.socketedGem = pData.socketedGem;
+        player.specialization = pData.specialization;
+        player.blessings = pData.blessings || [];
+        player.achievements = pData.achievements || [];
+
+        if (player.specialization) player.setSpecialization(player.specialization);
+        player.recalculateStats();
+
+        this.currentStage = data.currentStage || 1;
+        this.currentNodeIndex = data.currentNodeIndex || 0;
+        this.difficulty = data.difficulty || 'normal';
+
+        SoundEngine.playLevelUp();
+        this.closeModal();
+        this.renderDungeonMap();
+        this.logAction(`Loaded Save Slot ${slotIdx}: <strong style="color:var(--gold)">Level ${player.level} ${player.classType}</strong> on Stage ${this.currentStage}!`, 'info');
+    },
+
+    deleteSlot: function(slotIdx) {
+        localStorage.removeItem(`dungeon_crawl_save_slot_${slotIdx}`);
+        SoundEngine.playClick();
+        this.openSaveLoadModal();
+    },
+
+    exportSaveCode: function() {
+        if (!player) return;
+        const raw = localStorage.getItem('dungeon_crawl_save_slot_1') || localStorage.getItem('antigravity_rpg_save');
+        if (!raw) return;
+        const code = btoa(raw);
+        navigator.clipboard.writeText(code);
+        alert("Save Code copied to clipboard! Paste it anytime to restore your game.");
+    },
+
+    importSaveCode: function() {
+        const code = prompt("Paste your Save Code below:");
+        if (!code) return;
+        try {
+            const raw = atob(code);
+            localStorage.setItem('dungeon_crawl_save_slot_1', raw);
+            this.loadFromSlot(1);
+        } catch (e) {
+            alert("Invalid Save Code!");
+        }
     },
 
     openShrineModal: function() {
@@ -901,6 +1058,7 @@ const GameManager = {
             const data = {
                 highScore: this.highScore,
                 currentStage: this.currentStage,
+                difficulty: this.difficulty,
                 playerData: player ? {
                     classType: player.classType,
                     level: player.level,
@@ -914,13 +1072,13 @@ const GameManager = {
                     achievements: player.achievements
                 } : null
             };
-            localStorage.setItem('antigravity_rpg_save', JSON.stringify(data));
+            localStorage.setItem('dungeon_crawl_save_slot_1', JSON.stringify(data));
         } catch (e) {}
     },
 
     loadSaveData: function() {
         try {
-            const raw = localStorage.getItem('antigravity_rpg_save');
+            const raw = localStorage.getItem('dungeon_crawl_save_slot_1') || localStorage.getItem('antigravity_rpg_save');
             if (raw) {
                 const data = JSON.parse(raw);
                 if (data.highScore) this.highScore = data.highScore;
@@ -929,8 +1087,10 @@ const GameManager = {
     }
 };
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => GameManager.init());
-} else {
-    GameManager.init();
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => GameManager.init());
+    } else {
+        GameManager.init();
+    }
 }

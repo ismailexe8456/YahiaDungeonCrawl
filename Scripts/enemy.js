@@ -1,4 +1,4 @@
-// enemy.js - Expanded RPG Monsters, Bosses, & Dynamic Scaling System
+// enemy.js - Expanded RPG Monsters, Bosses, Multi-Phase Bosses, & Scaling
 let enemy = null;
 
 const ENEMY_DATABASE = [
@@ -35,7 +35,7 @@ const ENEMY_DATABASE = [
         ]
     },
 
-    // Tier 2 Monsters
+    // Tier 2 Monsters & Boss
     {
         name: 'Orc Berserker',
         img: 'characters imgs/enemy/Troll.jpg',
@@ -58,37 +58,39 @@ const ENEMY_DATABASE = [
         img: 'characters imgs/enemy/Goblin.jpg',
         tier: 2,
         isBoss: true,
-        baseHp: 380,
+        baseHp: 420,
         baseMp: 80,
         str: 75,
         agi: 50,
         spd: 50,
         xpReward: 180,
-        goldReward: 120,
+        goldReward: 140,
         skills: [
             { name: 'Poison Dagger Volley', mult: 1.4, type: 'physical' },
             { name: 'Shadow Bomb', mult: 2.0, type: 'magic' }
-        ]
+        ],
+        phase2Skill: { name: '🔥 ENRAGED SHADOW STORM', mult: 2.8, type: 'magic' }
     },
 
-    // Tier 3 Monsters & Bosses
+    // Tier 3 Bosses
     {
         name: 'Void Dragon',
         img: 'characters imgs/enemy/Troll.jpg',
         tier: 3,
         isBoss: true,
-        baseHp: 650,
+        baseHp: 750,
         baseMp: 200,
-        str: 105,
+        str: 110,
         agi: 45,
         spd: 55,
-        xpReward: 400,
-        goldReward: 250,
+        xpReward: 450,
+        goldReward: 300,
         skills: [
             { name: 'Claw Slash', mult: 1.2, type: 'physical' },
             { name: 'Void Breath', mult: 2.3, type: 'magic' },
             { name: 'Cataclysm Shockwave', mult: 2.8, type: 'magic' }
-        ]
+        ],
+        phase2Skill: { name: '⚡ ANCIENT DRAGON CATACLYSM', mult: 3.5, type: 'magic' }
     }
 ];
 
@@ -112,8 +114,20 @@ class Enemy {
         this.xpReward = Math.floor(monsterData.xpReward * stageMultiplier);
         this.goldReward = Math.floor(monsterData.goldReward * stageMultiplier);
 
-        this.skills = monsterData.skills;
+        this.skills = [...monsterData.skills];
+        this.phase2Skill = monsterData.phase2Skill || null;
+        this.inPhase2 = false;
         this.speedGauge = 0;
+    }
+
+    checkPhase2() {
+        if (this.isBoss && !this.inPhase2 && this.health <= Math.floor(this.maxHealth * 0.5)) {
+            this.inPhase2 = true;
+            this.strength = Math.floor(this.strength * 1.3);
+            if (this.phase2Skill) this.skills.push(this.phase2Skill);
+            return true;
+        }
+        return false;
     }
 
     get CritChance() {
@@ -125,6 +139,9 @@ class Enemy {
     }
 
     getRandomSkill() {
+        if (this.inPhase2 && this.phase2Skill && Math.random() < 0.45) {
+            return this.phase2Skill;
+        }
         const randIndex = Math.floor(Math.random() * this.skills.length);
         return this.skills[randIndex];
     }

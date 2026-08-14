@@ -714,15 +714,24 @@ const GameManager = {
             let isCrit = Math.random() < enemy.CritChance;
             if (isCrit) damage = Math.floor(damage * 1.6);
 
+            // Item 5: Shield Absorption Bug Fix (100% absorption up to player.shield)
+            // Hardcore Counter-Balance: Bosses execute 25% Shield Piercing (25% of boss damage bypasses shield directly to test hero HP!)
             if (player.shield > 0) {
-                let shieldAbsorb = enemy.isBoss ? Math.floor(damage * 0.5) : damage;
-                if (player.shield >= shieldAbsorb) {
-                    player.shield -= shieldAbsorb;
-                    damage -= shieldAbsorb;
-                    this.spawnFloatingText(playerImgEl, `Absorbed (${shieldAbsorb})`, 'heal');
+                let piercingDmg = enemy.isBoss ? Math.floor(damage * 0.25) : 0;
+                let blockableDmg = damage - piercingDmg;
+
+                if (player.shield >= blockableDmg) {
+                    player.shield -= blockableDmg;
+                    damage = piercingDmg;
+                    this.spawnFloatingText(playerImgEl, `Absorbed (${blockableDmg})`, 'heal');
                 } else {
-                    damage -= player.shield;
+                    damage = (blockableDmg - player.shield) + piercingDmg;
+                    this.spawnFloatingText(playerImgEl, `Absorbed (${player.shield})`, 'heal');
                     player.shield = 0;
+                }
+
+                if (piercingDmg > 0) {
+                    this.logAction(`⚠️ ${enemy.name}'s Boss Strike pierced 25% of your shield! (${piercingDmg} Piercing Dmg)`, 'warning');
                 }
             }
 
@@ -773,12 +782,25 @@ const GameManager = {
         this.updateUI();
     },
 
+    farmCount: 0,
+
     handleVictory: function() {
         SoundEngine.playVictory();
-        const coinsReward = Math.floor(Math.random() * 10 + 15);
-        player.gold += enemy.goldReward;
-        player.coins = (player.coins || 0) + coinsReward;
-        const leveledUp = player.addXP(enemy.xpReward);
+
+        // Item 6: Diminishing Returns Multiplier for Farmed Stage Runs
+        // Multiplier = Math.max(0.20, Math.pow(0.50, farmCount))
+        // 0 farm runs: 1.0 (100% full rewards)
+        // 1 farm run: 0.50 (50% rewards)
+        // 2 farm runs: 0.25 (25% rewards)
+        // 3+ farm runs: 0.20 (20% floor minimum rewards)
+        const mult = this.farmCount > 0 ? Math.max(0.20, Math.pow(0.50, this.farmCount)) : 1.0;
+        const goldLoot = Math.max(1, Math.floor(enemy.goldReward * mult));
+        const xpLoot = Math.max(1, Math.floor(enemy.xpReward * mult));
+        const coinsLoot = Math.max(1, Math.floor((Math.random() * 10 + 15) * mult));
+
+        player.gold += goldLoot;
+        player.coins = (player.coins || 0) + coinsLoot;
+        const leveledUp = player.addXP(xpLoot);
 
         this.checkAchievement('first_win');
         if (enemy.name === 'Void Dragon') this.checkAchievement('dragon_slayer');
@@ -800,10 +822,16 @@ const GameManager = {
                     <h2 style="color:var(--gold); font-size:2.4rem;">🎉 VICTORY!</h2>
                     <p class="subtitle">Cleared Node ${this.currentNodeIndex + 1} - Defeated ${enemy.name}</p>
 
+                    ${this.farmCount > 0 ? `
+                        <div style="background:rgba(255,140,0,0.15); border:1px solid #ff8c00; border-radius:8px; padding:6px 12px; font-size:0.8rem; color:#ffb732; margin-bottom:12px;">
+                            ⚠️ Repeat Farm Clear (Yield: ${Math.floor(mult * 100)}% - Diminishing Returns Active)
+                        </div>
+                    ` : ''}
+
                     <div class="victory-rewards">
-                        <div class="reward-pill"><span>🪙 Gold:</span> <strong>+${enemy.goldReward}</strong></div>
-                        <div class="reward-pill"><span>⚔️ Victory Coins:</span> <strong>+${coinsReward}</strong></div>
-                        <div class="reward-pill"><span>⭐ EXP:</span> <strong>+${enemy.xpReward}</strong></div>
+                        <div class="reward-pill"><span>🪙 Gold:</span> <strong>+${goldLoot}</strong></div>
+                        <div class="reward-pill"><span>⚔️ Victory Coins:</span> <strong>+${coinsLoot}</strong></div>
+                        <div class="reward-pill"><span>⭐ EXP:</span> <strong>+${xpLoot}</strong></div>
                     </div>
 
                     ${leveledUp ? `<div class="level-up-banner">🔥 LEVEL UP! Reached Level ${player.level}! +3 Stat Points!</div>` : ''}
@@ -816,6 +844,56 @@ const GameManager = {
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    handleDefeat: function() {
+        SoundEngine.playDefeat();
+        if (player) {
+            player.health = player.maxHealth;
+            player.mana = player.maxMana;
+            player.shield = 0;
+        }
+
+        const modalHtml = `
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel text-center animate-bounce" style="max-width:520px; border:2px solid #ff2a5f; box-shadow:0 0 35px rgba(255,42,95,0.6);">
+                    <h2 style="color:#ff2a5f; font-family:'MedievalSharp',serif; font-size:2.5rem; margin-bottom:6px;">💀 VANQUISHED</h2>
+                    <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:18px;">
+                        Slain on Stage ${this.currentStage} - Node ${this.currentNodeIndex + 1}.
+                    </p>
+
+                    <div class="glass-panel" style="padding:14px; text-align:left; font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; border:1px solid rgba(255,255,255,0.1);">
+                        <strong style="color:var(--gold);"><i class="fas fa-shield-halved"></i> Hardcore Guidance:</strong>
+                        <div style="margin-top:6px; line-height:1.4;">
+                            You can retry this node directly, or farm earlier stage fights to collect Gold & XP to upgrade gear/stats.
+                            <br><span style="color:#ff3366; font-weight:700;">⚠️ Diminishing Returns:</span> Farmed node rewards scale down by 50% per repeat run (Min 20% floor). Grinding narrows the gap, but strategy is mandatory!
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.startCombat(enemy ? enemy.isBoss : false);" style="padding:12px 18px;">
+                            🔄 Retry Fight
+                        </button>
+                        <button class="btn btn-potion" onclick="GameManager.farmStageFights();" style="padding:12px 18px; background:linear-gradient(135deg, #ff8c00 0%, #d97706 100%); color:#fff; font-weight:800;">
+                            🌾 Farm Stage Fights
+                        </button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal(); GameManager.renderDungeonMap();" style="padding:12px 18px;">
+                            🗺️ Expedition Map
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
+    },
+
+    farmStageFights: function() {
+        this.farmCount = (this.farmCount || 0) + 1;
+        this.currentNodeIndex = 0;
+        this.closeModal();
+        const yieldPct = Math.max(20, Math.floor(Math.pow(0.50, this.farmCount) * 100));
+        this.showToast(`Stage reset for farming! Repeat clear rewards yield: ${yieldPct}% (Diminishing Returns)`, 'warning');
+        this.renderDungeonMap();
     },
 
     openUpgradeModal: function(isMapNode = false) {
@@ -1680,22 +1758,23 @@ const GameManager = {
                             </div>
                         </div>
 
-                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openUpgradeModal();" style="width:100%;">
-                            🔨 Open Blacksmith Forge & Gem Socketing
-                        </button>
+                        <div class="glass-panel text-center" style="padding:12px; border:1px dashed var(--gold); color:var(--text-muted); font-size:0.88rem; margin-top:10px;">
+                            <i class="fas fa-map-marker-alt" style="color:var(--gold); font-size:1.1rem; margin-bottom:4px;"></i><br>
+                            📍 <strong>Map Navigation Required</strong>: Visit the <strong>Blacksmith Forge at Node 3</strong> on the Expedition Map to refine gear & socket gems.
+                        </div>
                     </div>
 
                     <!-- Tab 3: Pets & Allies -->
                     <div id="inv-tab-pets" class="inv-tab-pane ${activeTab === 'pets' ? 'active' : ''}">
                         ${!player.companion ? `
-                            <div class="glass-panel text-center" style="padding:28px;">
-                                <i class="fas fa-paw" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                            <div class="glass-panel text-center" style="padding:24px;">
+                                <i class="fas fa-paw" style="font-size:2.4rem; color:var(--text-muted); margin-bottom:12px;"></i>
                                 <h4 style="color:var(--gold); margin-bottom:6px;">No Pet Companion Recruited</h4>
-                                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:16px;">Visit the Wandering Merchant at Node 6 to hire a loyal Dire Wolf, Arcane Golem, Holy Cleric, or Shadow Drake!</p>
-                                <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openShopModal();">🛒 Visit Merchant Shop</button>
+                                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">Visit the Wandering Merchant at Node 6 to hire a loyal Dire Wolf, Arcane Golem, Holy Cleric, or Shadow Drake!</p>
+                                <div style="font-size:0.85rem; color:var(--text-muted); font-style:italic;">📍 Visit Node 6 on Map to Recruit</div>
                             </div>
                         ` : `
-                            <div class="glass-panel" style="padding:16px; border:1px solid var(--gold); margin-bottom:16px;">
+                            <div class="glass-panel" style="padding:16px; border:1px solid var(--gold); margin-bottom:12px;">
                                 <div style="display:flex; gap:16px; align-items:center;">
                                     <img src="${player.companion.img || 'characters imgs/enemy/goblin_scout.jpg'}" alt="${player.companion.name}" style="width:70px; height:70px; border-radius:14px; object-fit:cover; border:2px solid var(--gold);">
                                     <div style="flex-grow:1;">
@@ -1708,9 +1787,10 @@ const GameManager = {
                                     </div>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.openUpgradeModal();" style="width:100%;">
-                                🐉 Open Pet Evolution Chamber
-                            </button>
+                            <div class="glass-panel text-center" style="padding:12px; border:1px dashed var(--mana-blue); color:var(--text-muted); font-size:0.88rem;">
+                                <i class="fas fa-map-marker-alt" style="color:var(--mana-blue); font-size:1.1rem; margin-bottom:4px;"></i><br>
+                                📍 <strong>Map Navigation Required</strong>: Visit the <strong>Blacksmith Forge at Node 3</strong> to evolve your Pet Companion.
+                            </div>
                         `}
                     </div>
 
@@ -1718,19 +1798,21 @@ const GameManager = {
                     <div id="inv-tab-potions" class="inv-tab-pane ${activeTab === 'potions' ? 'active' : ''}">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
                             <div class="glass-panel" style="padding:14px; text-align:center;">
-                                <div style="font-size:2rem; margin-bottom:4px;">❤️</div>
-                                <h4 style="color:var(--heal-green); margin-bottom:4px;">Health Potions</h4>
-                                <div style="font-size:1.2rem; font-weight:800; margin-bottom:10px;">${player.potions.hpPotion} Remaining</div>
-                                <button class="btn btn-potion" onclick="GameManager.usePotion('hp'); GameManager.openInventoryModal('potions');" ${player.potions.hpPotion <= 0 ? 'disabled' : ''} style="width:100%;">
+                                <div style="margin-bottom:6px;"><i class="fas fa-flask" style="color:#ff2a5f; font-size:2.2rem;"></i></div>
+                                <h4 style="color:var(--heal-green); margin-bottom:2px;">Health Potion</h4>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">Restores 50% Max HP</div>
+                                <div style="font-size:1.1rem; font-weight:800; margin-bottom:10px;">${player.potions.hpPotion} Remaining</div>
+                                <button class="btn btn-potion" onclick="GameManager.usePotion('hp'); GameManager.openInventoryModal('potions');" ${player.potions.hpPotion <= 0 ? 'disabled' : ''} style="width:100%; background:linear-gradient(135deg, #ff2a5f 0%, #b3002d 100%); color:#fff; font-weight:800;">
                                     Drink HP Potion
                                 </button>
                             </div>
 
                             <div class="glass-panel" style="padding:14px; text-align:center;">
-                                <div style="font-size:2rem; margin-bottom:4px;">🧪</div>
-                                <h4 style="color:var(--mana-blue); margin-bottom:4px;">Mana Potions</h4>
-                                <div style="font-size:1.2rem; font-weight:800; margin-bottom:10px;">${player.potions.mpPotion} Remaining</div>
-                                <button class="btn btn-potion" onclick="GameManager.usePotion('mp'); GameManager.openInventoryModal('potions');" ${player.potions.mpPotion <= 0 ? 'disabled' : ''} style="width:100%;">
+                                <div style="margin-bottom:6px;"><i class="fas fa-flask" style="color:#00d2ff; font-size:2.2rem;"></i></div>
+                                <h4 style="color:var(--mana-blue); margin-bottom:2px;">Mana Potion</h4>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">Restores 60% Max MP</div>
+                                <div style="font-size:1.1rem; font-weight:800; margin-bottom:10px;">${player.potions.mpPotion} Remaining</div>
+                                <button class="btn btn-potion" onclick="GameManager.usePotion('mp'); GameManager.openInventoryModal('potions');" ${player.potions.mpPotion <= 0 ? 'disabled' : ''} style="width:100%; background:linear-gradient(135deg, #00d2ff 0%, #0066cc 100%); color:#fff; font-weight:800;">
                                     Drink MP Potion
                                 </button>
                             </div>

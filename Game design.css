@@ -480,9 +480,11 @@ body {
 .bar-label {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 900;
     margin-bottom: 4px;
+    color: #ffffff;
+    text-shadow: 0 1px 3px #000, 0 0 6px #000;
 }
 
 .bar-bg {
@@ -1033,16 +1035,37 @@ body {
     transform: translateY(-2px) scale(0.98);
 }
 
+/* Custom Dark Glass Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 10, 20, 0.8);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--gold) 0%, #ff8c00 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ffe066 0%, #ffa500 100%);
+}
+
 /* Mana / Elixir Drop Badge (Top-Left of Clash Card) */
 .clash-elixir-badge {
     position: absolute;
     top: 6px;
     left: 6px;
     background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-    color: #fff;
+    color: #ffffff;
     font-weight: 900;
-    font-size: 0.78rem;
-    padding: 3px 8px;
+    font-size: 0.85rem;
+    padding: 3px 9px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 2px 8px rgba(0, 114, 255, 0.6);

@@ -2,7 +2,7 @@
 let enemy = null;
 
 const ENEMY_DATABASE = [
-    // Tier 1 Monsters
+    // Tier 1 Monsters & Boss
     {
         name: 'Goblin Scout',
         img: 'characters imgs/enemy/Goblin.jpg',
@@ -36,8 +36,25 @@ const ENEMY_DATABASE = [
             { name: 'Ground Slam', mult: 1.4, type: 'physical' }
         ]
     },
-
-    // Tier 2 Monsters & Boss
+    {
+        name: 'Gorgon Earthshaker',
+        img: 'characters imgs/enemy/Troll.jpg',
+        tier: 1,
+        isBoss: true,
+        baseHp: 750,
+        baseMp: 60,
+        str: 58,
+        agi: 25,
+        defense: 25,
+        spd: 32,
+        xpReward: 140,
+        goldReward: 100,
+        skills: [
+            { name: 'Earthshaker Slam', mult: 1.6, type: 'physical' },
+            { name: 'Stone Crush', mult: 2.1, type: 'physical' }
+        ],
+        phase2Skill: { name: '🔥 EARTH QUAKE CATACLYSM', mult: 2.8, type: 'physical' }
+    },
     {
         name: 'Orc Berserker',
         img: 'characters imgs/enemy/Troll.jpg',

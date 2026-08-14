@@ -170,7 +170,7 @@ const GameManager = {
         let monsterData;
 
         if (isBossStage) {
-            monsterData = ENEMY_DATABASE.find(m => m.isBoss && m.tier <= Math.ceil(this.currentStage / 2)) || ENEMY_DATABASE[ENEMY_DATABASE.length - 1];
+            monsterData = ENEMY_DATABASE.find(m => m.isBoss && m.tier === Math.min(this.currentStage, 3)) || ENEMY_DATABASE.find(m => m.isBoss);
         } else {
             const regularMonsters = ENEMY_DATABASE.filter(m => !m.isBoss);
             monsterData = regularMonsters[(this.currentStage + this.currentNodeIndex) % regularMonsters.length];
@@ -429,16 +429,17 @@ const GameManager = {
             this.logAction(`You dodged ${enemy.name}'s ${enemySkill.name}!`, 'info');
             DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_dodge'), true);
         } else {
-            let baseDmg = enemy.strength * 1.6;
-            let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 8));
+            let baseDmg = enemy.strength * (enemy.isBoss ? 2.5 : 1.6);
+            let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 12));
             let isCrit = Math.random() < enemy.CritChance;
-            if (isCrit) damage = Math.floor(damage * 1.5);
+            if (isCrit) damage = Math.floor(damage * 1.6);
 
             if (player.shield > 0) {
-                if (player.shield >= damage) {
-                    player.shield -= damage;
-                    this.spawnFloatingText(playerImgEl, `Absorbed (${damage})`, 'heal');
-                    damage = 0;
+                let shieldAbsorb = enemy.isBoss ? Math.floor(damage * 0.5) : damage;
+                if (player.shield >= shieldAbsorb) {
+                    player.shield -= shieldAbsorb;
+                    damage -= shieldAbsorb;
+                    this.spawnFloatingText(playerImgEl, `Absorbed (${shieldAbsorb})`, 'heal');
                 } else {
                     damage -= player.shield;
                     player.shield = 0;
@@ -453,7 +454,7 @@ const GameManager = {
 
                 player.health = Math.max(0, player.health - damage);
                 SoundEngine.playHeavyHit();
-                ParticleEngine.triggerShake(12);
+                ParticleEngine.triggerShake(enemy.isBoss ? 24 : 12);
                 ParticleEngine.spawnSlashFX(playerImgEl, '#ff0044');
                 this.spawnFloatingText(playerImgEl, `-${damage}`, isCrit ? 'crit' : 'dmg');
                 this.logAction(`${enemy.name} cast <strong>${enemySkill.name}</strong> dealing <span style="color:#ff3366">${damage} damage</span>!`, 'enemy');

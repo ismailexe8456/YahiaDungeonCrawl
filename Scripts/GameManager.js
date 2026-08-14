@@ -68,6 +68,11 @@ const GameManager = {
 
     startStageMap: function(stageNum) {
         this.currentStage = stageNum;
+        if (player) {
+            player.health = player.maxHealth;
+            player.mana = player.maxMana;
+            player.shield = 0;
+        }
         if (stageNum > this.highScore) {
             this.highScore = stageNum;
             this.saveGameData();
@@ -164,6 +169,8 @@ const GameManager = {
         }
 
         enemy = new Enemy(monsterData, scale, diffMult);
+        player.health = player.maxHealth;
+        player.mana = player.maxMana;
         player.shield = 0;
         player.skills.forEach(s => s.currentCD = 0);
 
@@ -602,6 +609,11 @@ const GameManager = {
 
     handleDefeat: function() {
         SoundEngine.playDefeat();
+        if (player) {
+            player.health = player.maxHealth;
+            player.mana = player.maxMana;
+            player.shield = 0;
+        }
         const modalHtml = `
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center">

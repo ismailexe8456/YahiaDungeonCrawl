@@ -563,15 +563,6 @@ const GameManager = {
         viewContainer.innerHTML = arenaHtml;
     },
 
-    renderSkillButtons: function() {
-        if (enemy && enemy.health <= 0) {
-            return `
-                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="padding: 16px; font-size: 1.2rem; font-weight: 800; width: 100%;">
-                    🎉 VICTORY! Click to Continue Expedition ➡️
-                </button>
-            `;
-        }
-        
     inspectedSkillIndex: null,
 
     toggleSkillInspect: function(skillIndex, event) {

@@ -54,6 +54,7 @@ const GameManager = {
     setGameStart: function(classType) {
         player = new Player(classType);
         SoundEngine.playClick();
+        this.saveGameData();
         this.logAction(`Hero selected: <strong style="color:var(--gold)">${player.classType}</strong> - ${player.title}!`, 'info');
         DialogueEngine.triggerHeroSelectQuote(classType, () => {
             this.startStageMap(this.currentStage);
@@ -158,6 +159,7 @@ const GameManager = {
         if (this.currentNodeIndex >= this.stageNodes.length) {
             this.startStageMap(this.currentStage + 1);
         } else {
+            this.saveGameData();
             this.renderDungeonMap();
         }
     },
@@ -1439,37 +1441,121 @@ const GameManager = {
         if (btn) btn.innerHTML = muted ? '<i class="fas fa-volume-mute"></i> Muted' : '<i class="fas fa-volume-up"></i> Sound ON';
     },
 
+    loadFromData: function(data) {
+        if (!data || !data.playerData) return false;
+        const pData = data.playerData;
+
+        player = new Player(pData.classType);
+        player.level = pData.level || 1;
+        player.xp = pData.xp || 0;
+        player.gold = pData.gold || 50;
+        player.coins = pData.coins || 0;
+        player.str = pData.str || 20;
+        player.agi = pData.agi || 20;
+        player.int = pData.int || 20;
+        player.vit = pData.vit || 20;
+        player.statPoints = pData.statPoints || 0;
+        if (pData.equipment) player.equipment = pData.equipment;
+        if (pData.companion && COMPANIONS[pData.companion]) player.companion = COMPANIONS[pData.companion];
+        if (pData.socketedGem && GEMS[pData.socketedGem]) player.socketedGem = GEMS[pData.socketedGem];
+        if (pData.specialization) player.specialization = pData.specialization;
+        player.blessings = pData.blessings || [];
+        player.achievements = pData.achievements || [];
+
+        if (player.specialization) player.setSpecialization(player.specialization);
+        player.recalculateStats();
+
+        this.currentStage = data.currentStage || 1;
+        this.currentNodeIndex = data.currentNodeIndex || 0;
+        this.difficulty = data.difficulty || 'hardcore';
+
+        return true;
+    },
+
+    setCookie: function(name, value, days = 365) {
+        try {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/;SameSite=Lax";
+        } catch (e) {}
+    },
+
+    getCookie: function(name) {
+        try {
+            const cname = name + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(cname) === 0) {
+                    return c.substring(cname.length, c.length);
+                }
+            }
+        } catch (e) {}
+        return "";
+    },
+
     saveGameData: function() {
+        if (!player) return;
         try {
             const data = {
                 highScore: this.highScore,
                 currentStage: this.currentStage,
+                currentNodeIndex: this.currentNodeIndex,
                 difficulty: this.difficulty,
-                playerData: player ? {
+                playerData: {
                     classType: player.classType,
                     level: player.level,
                     xp: player.xp,
                     gold: player.gold,
+                    coins: player.coins || 0,
                     str: player.str,
                     agi: player.agi,
                     int: player.int,
                     vit: player.vit,
                     statPoints: player.statPoints,
-                    achievements: player.achievements
-                } : null
+                    equipment: player.equipment,
+                    companion: player.companion ? player.companion.id : null,
+                    socketedGem: player.socketedGem ? player.socketedGem.id : null,
+                    specialization: player.specialization ? player.specialization.id : null,
+                    blessings: player.blessings || [],
+                    achievements: player.achievements || []
+                }
             };
-            localStorage.setItem('dungeon_crawl_save_slot_1', JSON.stringify(data));
+
+            const jsonStr = JSON.stringify(data);
+            localStorage.setItem('dungeon_crawl_save_slot_1', jsonStr);
+            this.setCookie('dungeon_crawl_session', jsonStr, 365);
+
+            if (typeof CloudDatabase !== 'undefined' && CloudDatabase.savePlayerData) {
+                CloudDatabase.savePlayerData(data.playerData);
+            }
         } catch (e) {}
     },
 
     loadSaveData: function() {
         try {
-            const raw = localStorage.getItem('dungeon_crawl_save_slot_1') || localStorage.getItem('antigravity_rpg_save');
+            let raw = this.getCookie('dungeon_crawl_session');
+            if (!raw) raw = localStorage.getItem('dungeon_crawl_save_slot_1') || localStorage.getItem('antigravity_rpg_save');
             if (raw) {
                 const data = JSON.parse(raw);
                 if (data.highScore) this.highScore = data.highScore;
+                if (data.playerData && data.playerData.classType) {
+                    if (this.loadFromData(data)) {
+                        this.startStageMap(this.currentStage);
+                        this.currentNodeIndex = data.currentNodeIndex || 0;
+                        this.renderDungeonMap();
+                        this.logAction(`Welcome back! Resumed cookie session: <strong style="color:var(--gold)">Level ${player.level} ${player.classType}</strong> on Stage ${this.currentStage}!`, 'info');
+                        return true;
+                    }
+                }
             }
         } catch (e) {}
+        return false;
     }
 };
 

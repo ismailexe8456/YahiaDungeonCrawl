@@ -494,81 +494,72 @@ const GameManager = {
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
 
-        viewContainer.innerHTML = `
-            <div class="battle-stage" style="padding-bottom:0;">
-                <!-- Player Unit -->
-                <div class="combat-unit glass-panel" id="player-unit">
-                    <div class="unit-portrait-box">
-                        <img src="${player.img}" alt="${player.classType}" class="unit-img" id="player-img">
-                        <div class="shield-overlay" id="player-shield-badge" style="display:${player.shield > 0 ? 'block' : 'none'}">🛡️ ${player.shield}</div>
-                    </div>
-                    
-                    ${player.companion ? `<div class="companion-badge">🐾 ${player.companion.name} (${player.companion.title})</div>` : ''}
-
-                    <div class="unit-info">
-                        <h3>${player.classType} <span class="unit-lvl">Lvl ${player.level}</span></h3>
-                        <p class="unit-sub">${player.specialization ? player.specialization.name : player.title}</p>
-
-                        <div class="stat-bar-group">
-                            <div class="bar-label"><span>HP</span> <span id="player-hp-txt">${player.health}/${player.maxHealth}</span></div>
-                            <div class="bar-bg"><div class="bar-fill bar-hp" id="player-hp-bar" style="width: ${(player.health/player.maxHealth)*100}%"></div></div>
+        const arenaHtml = `
+            <div class="battle-arena">
+                <!-- Clash Royale Compact Battle Stage -->
+                <div class="clash-battle-stage">
+                    <!-- Hero Unit Left -->
+                    <div class="clash-unit-card" id="player-unit">
+                        <div class="clash-portrait-box">
+                            <img src="${player.img}" alt="${player.classType}" class="unit-img" id="player-img">
+                            <div class="shield-overlay" id="player-shield-badge" style="display:${player.shield > 0 ? 'block' : 'none'}">🛡️ ${player.shield}</div>
                         </div>
-
-                        <div class="stat-bar-group">
-                            <div class="bar-label"><span>MP</span> <span id="player-mp-txt">${player.mana}/${player.maxMana}</span></div>
-                            <div class="bar-bg"><div class="bar-fill bar-mp" id="player-mp-bar" style="width: ${(player.mana/player.maxMana)*100}%"></div></div>
+                        <div class="clash-unit-details">
+                            <div class="clash-unit-title">${player.classType} <span class="unit-lvl">Lvl ${player.level}</span></div>
+                            <div class="stat-bar-group">
+                                <div class="bar-label"><span>HP</span> <span id="player-hp-txt">${player.health}/${player.maxHealth}</span></div>
+                                <div class="bar-bg"><div class="bar-fill bar-hp" id="player-hp-bar" style="width: ${(player.health/player.maxHealth)*100}%"></div></div>
+                            </div>
+                            <div class="stat-bar-group">
+                                <div class="bar-label"><span>MP</span> <span id="player-mp-txt">${player.mana}/${player.maxMana}</span></div>
+                                <div class="bar-bg"><div class="bar-fill bar-mp" id="player-mp-bar" style="width: ${(player.mana/player.maxMana)*100}%"></div></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- VS Divider -->
-                <div class="vs-divider">
-                    <span class="stage-tag">Stage ${this.currentStage} - Node ${this.currentNodeIndex + 1}</span>
-                    <div class="vs-circle">VS</div>
-                </div>
+                    <!-- VS Badge -->
+                    <div class="clash-vs-badge">VS</div>
 
-                <!-- Enemy Unit -->
-                <div class="combat-unit glass-panel" id="enemy-unit">
-                    <div class="unit-portrait-box">
-                        <img src="${enemy.img}" alt="${enemy.name}" class="unit-img" id="enemy-img">
-                        ${enemy.isBoss ? '<div class="boss-crown">👑 BOSS</div>' : ''}
-                    </div>
-                    <div class="unit-info">
-                        <h3 style="color:${enemy.isBoss ? '#ff3366' : '#fff'}">${enemy.name}</h3>
-                        <p class="unit-sub" id="enemy-phase-txt">${enemy.inPhase2 ? '🔥 ENRAGED PHASE 2' : (enemy.isBoss ? 'Dungeon Overseer' : `Def: ${enemy.defense}`)}</p>
-
-                        <div class="stat-bar-group">
-                            <div class="bar-label"><span>HP</span> <span id="enemy-hp-txt">${enemy.health}/${enemy.maxHealth}</span></div>
-                            <div class="bar-bg"><div class="bar-fill bar-hp" id="enemy-hp-bar" style="width: ${(enemy.health/enemy.maxHealth)*100}%"></div></div>
+                    <!-- Enemy Unit Right -->
+                    <div class="clash-unit-card" id="enemy-unit">
+                        <div class="clash-portrait-box">
+                            <img src="${enemy.img}" alt="${enemy.name}" class="unit-img" id="enemy-img">
+                            ${enemy.isBoss ? '<div class="boss-crown">👑 BOSS</div>' : ''}
+                        </div>
+                        <div class="clash-unit-details">
+                            <div class="clash-unit-title" style="color:${enemy.isBoss ? '#ff3366' : '#fff'}">${enemy.name}</div>
+                            <div class="stat-bar-group">
+                                <div class="bar-label"><span>HP</span> <span id="enemy-hp-txt">${enemy.health}/${enemy.maxHealth}</span></div>
+                                <div class="bar-bg"><div class="bar-fill bar-hp" id="enemy-hp-bar" style="width: ${(enemy.health/enemy.maxHealth)*100}%"></div></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Clash Royale Ability Card Hand Deck -->
-            <div class="action-panel glass-panel" style="padding:14px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="font-family:'MedievalSharp',cursive; color:var(--gold); font-size:0.95rem; font-weight:700;">
-                        ⚔️ Battle Action Deck (Mana: <span style="color:#00d2ff;">${player.mana}/${player.maxMana} MP</span>)
+                <!-- Clash Royale Action Deck Panel -->
+                <div class="action-panel glass-panel">
+                    <div class="clash-deck-header">
+                        <div class="clash-mana-title">⚔️ Deck (Mana: <span style="color:#00d2ff;">${player.mana}/${player.maxMana} MP</span>)</div>
+                        <div class="clash-potions-row">
+                            <button class="btn btn-potion" onclick="GameManager.usePotion('hp')">❤️ (${player.potions.hpPotion})</button>
+                            <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 (${player.potions.mpPotion})</button>
+                            <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000; font-weight:800;">🎒 Inv</button>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-potion" onclick="GameManager.usePotion('hp')" style="padding:6px 12px; font-size:0.8rem;">❤️ HP (${player.potions.hpPotion})</button>
-                        <button class="btn btn-potion" onclick="GameManager.usePotion('mp')" style="padding:6px 12px; font-size:0.8rem;">🧪 MP (${player.potions.mpPotion})</button>
-                        <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="padding:6px 12px; font-size:0.8rem; background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000; font-weight:800;">🎒 Inventory</button>
+
+                    <div id="skills-container">
+                        ${this.renderSkillButtons()}
                     </div>
                 </div>
 
-                <div id="skills-container">
-                    ${this.renderSkillButtons()}
+                <!-- 1-Line Compact Battle Ticker -->
+                <div class="clash-battle-ticker glass-panel" id="combat-ticker-box">
+                    <div class="ticker-content" id="log-body"></div>
                 </div>
-            </div>
-
-            <!-- Combat History Log -->
-            <div class="combat-log-container glass-panel" style="margin-top:0;">
-                <div class="log-header"><i class="fas fa-scroll"></i> Battle Log</div>
-                <div class="log-body" id="log-body"></div>
             </div>
         `;
+
+        viewContainer.innerHTML = arenaHtml;
     },
 
     renderSkillButtons: function() {

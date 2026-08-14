@@ -1351,6 +1351,225 @@ body {
     pointer-events: auto;
 }
 
+/* Clash Royale Zero-Scroll Battle Arena System */
+.battle-arena {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-height: calc(100vh - 80px);
+    overflow: hidden;
+    justify-content: space-between;
+}
+
+.clash-battle-stage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(15, 12, 30, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 10px 14px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.clash-unit-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.clash-portrait-box {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+}
+
+.clash-portrait-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.clash-unit-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.clash-unit-title {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--gold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.clash-vs-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1f1f2e 0%, #0a0a12 100%);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'MedievalSharp', cursive;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: var(--gold);
+    box-shadow: 0 0 14px var(--gold-glow);
+    flex-shrink: 0;
+}
+
+.clash-deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.clash-mana-title {
+    font-family: 'MedievalSharp', cursive;
+    color: var(--gold);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.clash-potions-row {
+    display: flex;
+    gap: 6px;
+}
+
+.clash-potions-row .btn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+}
+
+.clash-deck {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .clash-deck {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .clash-battle-stage {
+        padding: 8px;
+    }
+    
+    .clash-portrait-box {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .clash-unit-title {
+        font-size: 0.85rem;
+    }
+    
+    .bar-label {
+        font-size: 0.78rem;
+    }
+}
+
+.clash-card {
+    background: linear-gradient(145deg, rgba(30, 25, 50, 0.85) 0%, rgba(12, 10, 22, 0.95) 100%);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    min-height: 90px;
+    justify-content: center;
+}
+
+.clash-card:hover:not(.disabled) {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px var(--gold-glow);
+}
+
+.clash-elixir-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+    color: #fff;
+    font-weight: 900;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 210, 255, 0.6);
+    border: 1px solid #fff;
+}
+
+.clash-elixir-badge.zero-cost {
+    background: linear-gradient(135deg, #00ff9d 0%, #00b36b 100%);
+    box-shadow: 0 2px 8px rgba(0, 255, 157, 0.6);
+}
+
+.clash-card-icon {
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin-bottom: 4px;
+}
+
+.clash-card-title {
+    font-weight: 800;
+    font-size: 0.82rem;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.clash-card-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+}
+
+.clash-cd-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 8, 20, 0.88);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--crimson);
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+.clash-battle-ticker {
+    padding: 8px 14px;
+    max-height: 48px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-radius: 10px;
+}
+
 
 
 

@@ -127,6 +127,7 @@ const GameManager = {
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Gear & Gems</button>
                     <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
                     <button class="btn btn-secondary" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load</button>
+                    <button class="btn btn-danger" onclick="GameManager.resetGameSession()" style="background:#ff2a5f; color:#fff; border:none; padding:10px 18px; font-weight:700; border-radius:8px; cursor:pointer;"><i class="fas fa-undo"></i> 🔄 New Game / Reset</button>
                 </div>
             </div>
         `;
@@ -714,12 +715,86 @@ const GameManager = {
                         <button class="btn btn-secondary" onclick="GameManager.openLeaderboardModal()"><i class="fas fa-trophy"></i> Global Leaderboard</button>
                         <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Copy Save Code</button>
                         <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Code</button>
+                        <button class="btn btn-danger" onclick="GameManager.resetGameSession()" style="background:#ff2a5f; color:#fff; border:none; padding:10px 16px; font-weight:700; border-radius:8px; cursor:pointer;"><i class="fas fa-undo"></i> 🔄 Reset & New Game</button>
                         <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    resetGameSession: function() {
+        if (confirm("🔄 Are you sure you want to reset your progress and start a NEW hero journey from scratch?")) {
+            try {
+                this.setCookie('dungeon_crawl_session', '', -1);
+                localStorage.removeItem('dungeon_crawl_save_slot_1');
+                localStorage.removeItem('antigravity_rpg_save');
+            } catch(e) {}
+
+            player = null;
+            this.currentStage = 1;
+            this.currentNodeIndex = 0;
+            this.closeModal();
+
+            SoundEngine.playClick();
+            const viewContainer = document.getElementById('main-view');
+            if (viewContainer) {
+                viewContainer.innerHTML = `
+                    <div class="hero-select-screen text-center animate-fade-in">
+                        <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.4rem; margin-bottom:8px;">
+                            ⚔️ Choose Your Hero Class
+                        </h2>
+                        <p style="color:var(--text-muted); margin-bottom:28px;">Select a legendary warrior to begin your adventure in the dungeon depths!</p>
+
+                        <div style="margin-bottom:20px;">
+                            <button class="btn btn-secondary" onclick="TutorialEngine.openTutorial(0)" style="color:var(--gold);">
+                                <i class="fas fa-question-circle"></i> How to Play & Guide
+                            </button>
+                        </div>
+
+                        <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('warrior')">
+                                <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Warrior"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Warrior</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Warrior</button>
+                            </div>
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('rogue')">
+                                <div class="hero-avatar"><img src="characters imgs/Rouge.jpg" alt="Rogue"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Rogue</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Rogue</button>
+                            </div>
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('wizard')">
+                                <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Wizard"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Wizard</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Wizard</button>
+                            </div>
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('hunter')">
+                                <div class="hero-avatar"><img src="characters imgs/Hunter.jpg" alt="Hunter"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Hunter</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Hunter</button>
+                            </div>
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('paladin')">
+                                <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Paladin"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Paladin</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Paladin</button>
+                            </div>
+                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('necromancer')">
+                                <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Necromancer"></div>
+                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Necromancer</h3>
+                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
+                                <button class="btn btn-primary" style="width:100%;">Select Necromancer</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
     },
 
     saveToCloudDB: async function() {

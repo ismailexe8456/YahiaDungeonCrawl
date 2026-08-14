@@ -2,6 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@700;900&display=swap');
 
 :root {
+    --bg-dark:      #0b0912;
+    --bg-card:      #17121e;
     --bg-void:      #0b0912;
     --bg-panel:     #17121e;
     --bg-panel-2:   #1e1826;
@@ -19,6 +21,8 @@
     --ink:          #ece3d2;
     --ink-dim:      #a89bb0;
     --ink-faint:    #6d6278;
+    --text-main:    #ece3d2;
+    --text-muted:   #a89bb0;
     --font-display: 'Cinzel', serif;
     --font-body:    'Inter', sans-serif;
     --font-mono:    'JetBrains Mono', monospace;
@@ -37,13 +41,10 @@
 }
 
 body {
-    background-color: var(--bg-dark);
-    background-image: 
-        radial-gradient(circle at 50% 10%, rgba(138, 43, 226, 0.18) 0%, transparent 60%),
-        radial-gradient(circle at 80% 90%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
-    color: var(--text-main);
-    font-family: 'Almendra', serif;
-    font-size: 1.1rem;
+    background-color: #0b0912;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, #241a30 0%, #0b0912 60%);
+    color: var(--ink);
+    font-family: var(--font-body);
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -57,23 +58,21 @@ body {
 }
 
 .game-container {
-    position: relative;
-    z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .glass-panel {
-    background: var(--bg-card);
+    background: linear-gradient(180deg, var(--bg-panel-2), var(--bg-panel));
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-rune);
+    border-radius: 14px;
+    box-shadow: 0 10px 26px rgba(0,0,0,.5);
     padding: 24px;
 }
 

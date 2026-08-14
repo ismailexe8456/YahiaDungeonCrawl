@@ -307,6 +307,7 @@ const GameManager = {
             if (Math.random() < enemy.DodgeChance) {
                 this.spawnFloatingText(enemyImgEl, 'DODGED!', 'dodge');
                 this.logAction(`${enemy.name} dodged your ${skill.name}!`, 'warning');
+                DialogueEngine.spawnSpeechBubble('enemy-unit', DialogueEngine.getRandomDialogue('enemy_dodge'), false);
             } else {
                 // Hardcore Balanced Damage Calculation with Armor Reduction
                 let baseDmg = skill.type === 'magic' ? (player.TotalInt * 1.5) : (player.TotalStr * 1.3);
@@ -318,12 +319,22 @@ const GameManager = {
                 if (isCrit) {
                     damage = Math.floor(damage * 1.6);
                     ParticleEngine.triggerShake(16);
+                    DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_crit'), true);
+                } else {
+                    DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_attack'), true);
                 }
 
                 if (enemyImgEl) {
                     enemyImgEl.classList.add('anim-recoil');
                     setTimeout(() => enemyImgEl.classList.remove('anim-recoil'), 400);
                 }
+
+                // Enemy reaction dialogue ("Doesn't even hurt!" vs heavy damage groans)
+                setTimeout(() => {
+                    if (enemy.health > 0) {
+                        DialogueEngine.spawnSpeechBubble('enemy-unit', DialogueEngine.getRandomDialogue(damage < 60 ? 'enemy_low_dmg' : 'enemy_heavy_dmg'), false);
+                    }
+                }, 350);
 
                 enemy.health = Math.max(0, enemy.health - damage);
                 this.spawnFloatingText(enemyImgEl, `-${damage}${isCrit ? ' CRIT!' : ''}`, isCrit ? 'crit' : 'dmg');
@@ -346,6 +357,7 @@ const GameManager = {
                 this.spawnFloatingText(playerImgEl, `+${skill.mpRecover} MP`, 'mp');
             }
             ParticleEngine.spawnSpellFX(playerImgEl, 'holy');
+            DialogueEngine.spawnSpeechBubble('player-unit', "Power surging!", true);
             this.logAction(`You cast <strong>${skill.name}</strong>!`, 'info');
         }
 
@@ -353,6 +365,7 @@ const GameManager = {
             SoundEngine.playHeavyHit();
             ParticleEngine.triggerShake(20);
             ParticleEngine.spawnSpellFX(enemyImgEl, 'fireball');
+            DialogueEngine.spawnSpeechBubble('enemy-unit', DialogueEngine.getRandomDialogue('boss_enrage'), false);
             this.logAction(`🔥 WARNING! ${enemy.name} shifted into <strong>ENRAGED PHASE 2</strong>! Damage increased!`, 'warning');
             const phaseTxtEl = document.getElementById('enemy-phase-txt');
             if (phaseTxtEl) phaseTxtEl.innerHTML = '<span style="color:#ff3366; font-weight:800;">🔥 ENRAGED PHASE 2</span>';
@@ -392,9 +405,12 @@ const GameManager = {
             setTimeout(() => enemyImgEl.classList.remove('anim-lunge-left'), 450);
         }
 
+        DialogueEngine.spawnSpeechBubble('enemy-unit', DialogueEngine.getRandomDialogue('enemy_attack'), false);
+
         if (Math.random() < player.DodgeChance) {
             this.spawnFloatingText(playerImgEl, 'DODGED!', 'dodge');
             this.logAction(`You dodged ${enemy.name}'s ${enemySkill.name}!`, 'info');
+            DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_dodge'), true);
         } else {
             let baseDmg = enemy.strength * 1.6;
             let damage = Math.floor(baseDmg * enemySkill.mult + (Math.random() * 8));
@@ -444,6 +460,7 @@ const GameManager = {
             const restored = player.useHpPotion();
             if (restored) {
                 this.spawnFloatingText(playerImgEl, `+${restored} HP`, 'heal');
+                DialogueEngine.spawnSpeechBubble('player-unit', DialogueEngine.getRandomDialogue('hero_heal'), true);
                 this.logAction(`Used Health Potion, restored ${restored} HP.`, 'info');
                 this.checkAchievement('potion_hoarder');
             }
@@ -451,6 +468,7 @@ const GameManager = {
             const restored = player.useMpPotion();
             if (restored) {
                 this.spawnFloatingText(playerImgEl, `+${restored} MP`, 'mp');
+                DialogueEngine.spawnSpeechBubble('player-unit', "Mana restored!", true);
                 this.logAction(`Used Mana Potion, restored ${restored} MP.`, 'info');
             }
         }

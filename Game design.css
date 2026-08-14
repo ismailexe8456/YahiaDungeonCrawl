@@ -782,4 +782,65 @@ body {
 .rank-silver { border-color: #c0c0c0; background: rgba(192, 192, 192, 0.15); }
 .rank-bronze { border-color: #cd7f32; background: rgba(205, 127, 50, 0.15); }
 
+/* In-Combat Comic Speech Bubble Styling */
+.speech-bubble {
+    position: absolute;
+    top: -65px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: rgba(14, 14, 26, 0.95);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 20px var(--gold-glow);
+    padding: 8px 16px;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    animation: bubblePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: var(--gold) transparent;
+    display: block;
+    width: 0;
+}
+
+.speech-bubble-player {
+    border-color: var(--mana-blue);
+    box-shadow: 0 0 20px var(--mana-glow);
+}
+.speech-bubble-player::after { border-color: var(--mana-blue) transparent; }
+
+.speech-bubble-enemy {
+    border-color: var(--crimson);
+    box-shadow: 0 0 20px var(--crimson-glow);
+}
+.speech-bubble-enemy::after { border-color: var(--crimson) transparent; }
+
+.bubble-fade-out {
+    animation: bubbleFadeOut 0.4s ease-out forwards;
+}
+
+@keyframes bubblePopIn {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.7); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@keyframes bubbleFadeOut {
+    0% { opacity: 1; transform: translateX(-50%) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-15px) scale(0.8); }
+}
+
+
 

@@ -106,26 +106,20 @@ const GameManager = {
 
         viewContainer.innerHTML = `
             <div class="map-screen text-center">
-                <h2 style="font-family:'Cinzel',serif; color:var(--gold); font-size:2rem; margin-bottom:6px;">
+                <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.2rem; margin-bottom:6px;">
                     🗺️ Stage ${this.currentStage} Expedition Map
                 </h2>
                 <p style="color:var(--text-muted); margin-bottom:20px;">Navigate node paths to fight beasts, claim ancient shrine blessings, and challenge stage bosses!</p>
-
-                <div class="difficulty-picker" style="margin-bottom:20px;">
-                    <span style="font-weight:700; margin-right:10px;">Difficulty:</span>
-                    <button class="btn btn-secondary ${this.difficulty === 'normal' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('normal'); GameManager.renderDungeonMap();">Normal</button>
-                    <button class="btn btn-secondary ${this.difficulty === 'hardcore' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('hardcore'); GameManager.renderDungeonMap();" style="color:#ff9900;">🔥 Hardcore (+50% HP)</button>
-                    <button class="btn btn-secondary ${this.difficulty === 'nightmare' ? 'btn-active-diff' : ''}" onclick="GameManager.setDifficulty('nightmare'); GameManager.renderDungeonMap();" style="color:#ff2a5f;">💀 Nightmare (+100% HP)</button>
-                </div>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}
                 </div>
 
                 <div style="margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-potion" onclick="GameManager.openUpgradeModal()"><i class="fas fa-hammer"></i> Blacksmith Forge & Upgrades</button>
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Gear & Gems</button>
                     <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
-                    <button class="btn btn-potion" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load Game</button>
+                    <button class="btn btn-secondary" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load</button>
                 </div>
             </div>
         `;
@@ -477,7 +471,9 @@ const GameManager = {
 
     handleVictory: function() {
         SoundEngine.playVictory();
+        const coinsReward = Math.floor(Math.random() * 10 + 15);
         player.gold += enemy.goldReward;
+        player.coins = (player.coins || 0) + coinsReward;
         const leveledUp = player.addXP(enemy.xpReward);
 
         this.checkAchievement('first_win');
@@ -501,6 +497,7 @@ const GameManager = {
 
                     <div class="victory-rewards">
                         <div class="reward-pill"><span>🪙 Gold:</span> <strong>+${enemy.goldReward}</strong></div>
+                        <div class="reward-pill"><span>⚔️ Victory Coins:</span> <strong>+${coinsReward}</strong></div>
                         <div class="reward-pill"><span>⭐ EXP:</span> <strong>+${enemy.xpReward}</strong></div>
                     </div>
 
@@ -508,13 +505,99 @@ const GameManager = {
                     ${player.level >= 5 && !player.specialization ? `<div class="special-unlock-banner">⭐ SPECIALIZATION UNLOCKED! Pick your Level 5 Hero Mastery!</div>` : ''}
 
                     <div style="margin-top:24px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                        <button class="btn btn-potion" onclick="GameManager.closeModal(); GameManager.openUpgradeModal()">🔨 Upgrade Gear in Forge</button>
                         <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.advanceMapNode()">Continue Map Exploration</button>
-                        ${player.level >= 5 && !player.specialization ? `<button class="btn btn-potion" onclick="GameManager.closeModal(); GameManager.openSpecializationModal()">Pick Class Mastery</button>` : ''}
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    openUpgradeModal: function() {
+        SoundEngine.playClick();
+        if (!player) return;
+
+        const wLvl = player.equipment.weaponLevel || 0;
+        const aLvl = player.equipment.armorLevel || 0;
+        const accLvl = player.equipment.accessoryLevel || 0;
+
+        const wCost = (wLvl + 1) * 10;
+        const aCost = (aLvl + 1) * 10;
+        const accCost = (accLvl + 1) * 10;
+
+        const modalHtml = `
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel" style="max-width:650px;">
+                    <div class="modal-header">
+                        <h2>🔨 Blacksmith Forge & Gear Upgrades</h2>
+                        <span class="stat-chip coin-badge">⚔️ ${player.coins || 0} Victory Coins</span>
+                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                    </div>
+
+                    <p style="color:var(--text-muted); margin-bottom:16px;">Spend Victory Coins earned from battle victories to upgrade weapon, armor, and accessories up to +10!</p>
+
+                    <div class="upgrade-grid">
+                        <div class="upgrade-card glass-panel">
+                            <div class="upgrade-top">
+                                <strong>⚔️ Weapon (+${wLvl})</strong>
+                                <span class="upgrade-stat" style="color:var(--gold);">+${Math.floor(wLvl * 15)}% STR/INT</span>
+                            </div>
+                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.weapon ? player.equipment.weapon.name : 'Weapon'}</div>
+                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('weapon')" ${(player.coins || 0) < wCost || wLvl >= 10 ? 'disabled' : ''} style="width:100%;">
+                                ${wLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${wCost} Coins`}
+                            </button>
+                        </div>
+
+                        <div class="upgrade-card glass-panel">
+                            <div class="upgrade-top">
+                                <strong>🛡️ Armor (+${aLvl})</strong>
+                                <span class="upgrade-stat" style="color:var(--heal-green);">+${Math.floor(aLvl * 15)}% VIT/HP</span>
+                            </div>
+                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.armor ? player.equipment.armor.name : 'Armor'}</div>
+                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('armor')" ${(player.coins || 0) < aCost || aLvl >= 10 ? 'disabled' : ''} style="width:100%;">
+                                ${aLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${aCost} Coins`}
+                            </button>
+                        </div>
+
+                        <div class="upgrade-card glass-panel">
+                            <div class="upgrade-top">
+                                <strong>💍 Accessory (+${accLvl})</strong>
+                                <span class="upgrade-stat" style="color:var(--mana-blue);">+${Math.floor(accLvl * 15)}% AGI/Crit</span>
+                            </div>
+                            <div class="item-name" style="margin:8px 0; font-weight:700;">${player.equipment.accessory ? player.equipment.accessory.name : 'Accessory'}</div>
+                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('accessory')" ${(player.coins || 0) < accCost || accLvl >= 10 ? 'disabled' : ''} style="width:100%;">
+                                ${accLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${accCost} Coins`}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Exit Forge</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
+    },
+
+    upgradeGearSlot: function(slot) {
+        if (!player) return;
+        const currentLvl = player.equipment[slot + 'Level'] || 0;
+        const cost = (currentLvl + 1) * 10;
+
+        if ((player.coins || 0) < cost) {
+            alert("Not enough Victory Coins! Win more battles to earn coins.");
+            return;
+        }
+
+        player.coins -= cost;
+        player.equipment[slot + 'Level'] = currentLvl + 1;
+        player.recalculateStats();
+        SoundEngine.playLevelUp();
+        this.logAction(`Forged <strong>${slot.toUpperCase()} +${currentLvl + 1}</strong>! Stats boosted!`, 'info');
+        this.saveGameData();
+        this.openUpgradeModal();
     },
 
     handleDefeat: function() {
@@ -1203,10 +1286,12 @@ const GameManager = {
 
     updateHeaderStats: function() {
         const goldEl = document.getElementById('hdr-gold');
+        const coinsEl = document.getElementById('hdr-coins');
         const stageEl = document.getElementById('hdr-stage');
         const highEl = document.getElementById('hdr-high');
 
         if (goldEl) goldEl.innerText = player ? player.gold : 0;
+        if (coinsEl) coinsEl.innerText = player ? (player.coins || 0) : 0;
         if (stageEl) stageEl.innerText = this.currentStage;
         if (highEl) highEl.innerText = this.highScore;
     },

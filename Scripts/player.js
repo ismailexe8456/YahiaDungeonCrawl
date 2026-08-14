@@ -1,4 +1,4 @@
-// player.js - Complete Hero Classes, Skills, Stats, Companions, Gems, & Masteries
+// player.js - Complete Hero Classes, Skills, Stats, Companions, Gems, Masteries & Gear Upgrades
 let player = null;
 
 // Companions Database
@@ -60,7 +60,7 @@ const COMPANIONS = {
     }
 };
 
-// Gem Gems Database
+// Gem Database
 const GEMS = {
     ruby: { id: 'ruby', name: 'Fire Ruby', stat: '+30 Fire Damage', price: 120, extraDmg: 30, color: '#ff3300' },
     emerald: { id: 'emerald', name: 'Life Emerald', stat: '+15% Lifesteal', price: 150, lifesteal: 0.15, color: '#00ff66' },
@@ -100,57 +100,50 @@ const CLASS_SPECIALIZATIONS = {
     ],
     Wizard: [
         {
-            id: 'wiz_arch',
-            name: 'Archmage Elementalist',
-            desc: 'Boosts Intelligence and reduces spell mana costs by 20%.',
-            skill: { id: 'm_spec', name: 'Cataclysm Meteor', manaCost: 50, cooldown: 4, desc: 'Summons a colossal meteor dealing 360% Fire magic damage!', sound: 'fireball', type: 'magic', mult: 3.6, element: 'fire' }
-        },
-        {
-            id: 'wiz_frost',
-            name: 'Frost Sovereign',
-            desc: 'Freezes attackers and gains +100 Max Mana.',
-            skill: { id: 'm_spec2', name: 'Absolute Zero', manaCost: 40, cooldown: 3, desc: 'Freezes foe dealing 250% Ice damage and granting 70 Shield.', sound: 'fireball', type: 'magic', mult: 2.5, element: 'ice', shieldVal: 70 }
+            id: 'wiz_archmage',
+            name: 'Arcane Archmage',
+            desc: 'Multiplies spell power and reduces all mana costs by 20%.',
+            skill: { id: 'wiz_spec', name: 'Supernova Collapse', manaCost: 50, cooldown: 4, desc: 'Unleash cosmic explosion dealing 320% elemental magic damage!', sound: 'fireball', type: 'magic', mult: 3.2, element: 'fire' }
         }
     ],
     Hunter: [
         {
-            id: 'hunt_hawk',
-            name: 'Sniper Hawk Eye',
-            desc: 'Increases Crit Chance by 20% and attack range.',
-            skill: { id: 'h_spec', name: 'Orbital Arrow Flare', manaCost: 35, cooldown: 3, desc: 'Fires flare arrow dealing 300% armor-piercing damage.', sound: 'heavyHit', type: 'physical', mult: 3.0 }
+            id: 'hunt_sniper',
+            name: 'Deadeye Sniper',
+            desc: '+20% Critical Hit Chance and armor piercing shots.',
+            skill: { id: 'h_spec', name: 'Headshot Annihilation', manaCost: 40, cooldown: 3, desc: 'Precision sniper shot dealing 300% critical physical damage!', sound: 'slash', type: 'physical', mult: 3.0 }
         }
     ],
     Paladin: [
         {
-            id: 'pal_sun',
-            name: 'Sun Champion',
-            desc: 'Infuses hits with Holy light and gains +25 STR.',
-            skill: { id: 'p_spec', name: 'Solar Wrath Smite', manaCost: 40, cooldown: 3, desc: 'Holy pillar dealing 320% Holy damage + heals hero 20%.', sound: 'heal', type: 'magic', mult: 3.2, element: 'holy', healPercent: 0.2 }
+            id: 'pal_crusader',
+            name: 'High Templar Crusader',
+            desc: 'Empowers holy healing and smite bursts by 40%.',
+            skill: { id: 'p_spec', name: 'Wrath of the Heavens', manaCost: 45, cooldown: 4, desc: 'Call down holy wrath dealing 280% radiant damage + 60 Heal.', sound: 'heal', type: 'magic', mult: 2.8, healPercent: 0.2, element: 'holy' }
         }
     ],
     Necromancer: [
         {
             id: 'nec_lich',
-            name: 'Lich Sovereign',
-            desc: 'Increases Lifesteal by 25% and Dark magic power.',
-            skill: { id: 'n_spec', name: 'Soul Annihilation', manaCost: 50, cooldown: 4, desc: 'Drains soul: 350% dark damage and steals 40% as HP!', sound: 'fireball', type: 'magic', mult: 3.5, lifesteal: 0.4, element: 'dark' }
+            name: 'Lich King Sovereign',
+            desc: 'Drains soul essence to boost lifesteal and dark spell power.',
+            skill: { id: 'n_spec', name: 'Soul Cataclysm', manaCost: 50, cooldown: 4, desc: 'Devour enemy soul: 300% dark damage + 40% lifesteal!', sound: 'fireball', type: 'magic', mult: 3.0, lifesteal: 0.4, element: 'dark' }
         }
     ]
 };
 
-// Hero Class Definitions & Skill Database
 const HERO_CLASSES = {
     Warrior: {
         name: 'Warrior',
         title: 'The Vanguard Berserker',
         desc: 'Warriors possess mighty strength and heavy armor, tearing through foes with devastating melee strikes and shield defenses.',
         img: 'characters imgs/player/Warrior.jpg',
-        baseStats: { hp: 220, mp: 40, str: 45, agi: 20, int: 10, vit: 40, spd: 35 },
+        baseStats: { hp: 220, mp: 40, str: 45, agi: 20, int: 15, vit: 45, spd: 30 },
         skills: [
-            { id: 'w1', name: 'Heavy Slash', manaCost: 0, cooldown: 0, desc: 'A powerful sword strike dealing 120% physical damage.', sound: 'slash', type: 'physical', mult: 1.2 },
-            { id: 'w2', name: 'Berserk Rampage', manaCost: 20, cooldown: 2, desc: 'Unleash wild fury hitting 2 times for 90% physical damage each.', sound: 'heavyHit', type: 'physical', mult: 0.9, hits: 2 },
-            { id: 'w3', name: 'Iron Wall', manaCost: 15, cooldown: 3, desc: 'Raise a heavy shield to absorb incoming damage for 2 turns.', sound: 'shield', type: 'buff', shieldVal: 60 },
-            { id: 'w4', name: 'Execute', manaCost: 30, cooldown: 4, desc: 'A devastating finisher dealing 250% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.5 }
+            { id: 'w1', name: 'Heavy Slash', manaCost: 0, cooldown: 0, desc: 'Strike enemy dealing 120% physical damage.', sound: 'slash', type: 'physical', mult: 1.2 },
+            { id: 'w2', name: 'Berserk Rampage', manaCost: 20, cooldown: 2, desc: 'Unleash wild frenzy dealing 180% damage.', sound: 'heavyHit', type: 'physical', mult: 1.8 },
+            { id: 'w3', name: 'Iron Wall', manaCost: 15, cooldown: 3, desc: 'Gain 50 Shield points to absorb damage.', sound: 'shield', type: 'buff', shieldVal: 50 },
+            { id: 'w4', name: 'Execute', manaCost: 30, cooldown: 4, desc: 'Devastating strike dealing 250% damage.', sound: 'heavyHit', type: 'physical', mult: 2.5 }
         ]
     },
     Rogue: {
@@ -158,12 +151,12 @@ const HERO_CLASSES = {
         title: 'Shadow Assassin',
         desc: 'Masters of speed and lethal precision. Rogues strike swiftly with high critical hit rates and deadly poisons.',
         img: 'characters imgs/player/Rouge.jpg',
-        baseStats: { hp: 140, mp: 60, str: 35, agi: 55, int: 20, vit: 20, spd: 65 },
+        baseStats: { hp: 140, mp: 60, str: 35, agi: 55, int: 20, vit: 25, spd: 50 },
         skills: [
-            { id: 'r1', name: 'Dual Strike', manaCost: 0, cooldown: 0, desc: 'Swift twin blade attack dealing 2 hits of 65% damage.', sound: 'slash', type: 'physical', mult: 0.65, hits: 2 },
-            { id: 'r2', name: 'Venom Dagger', manaCost: 15, cooldown: 2, desc: 'Strike with a poisoned blade dealing 110% damage + applies Bleed.', sound: 'slash', type: 'physical', mult: 1.1, dot: 15 },
-            { id: 'r3', name: 'Shadow Dance', manaCost: 25, cooldown: 3, desc: 'Vanish into shadows, boosting agility and guaranteeing critical hit next turn.', sound: 'shield', type: 'buff', critBuff: true },
-            { id: 'r4', name: 'Assassinate', manaCost: 40, cooldown: 4, desc: 'Lethal ambush from the shadows dealing 300% critical damage!', sound: 'heavyHit', type: 'physical', mult: 3.0 }
+            { id: 'r1', name: 'Quick Dagger', manaCost: 0, cooldown: 0, desc: 'Swift strike dealing 100% physical damage.', sound: 'slash', type: 'physical', mult: 1.0 },
+            { id: 'r2', name: 'Poison Ambush', manaCost: 15, cooldown: 2, desc: 'Strike for 150% damage + 20% Lifesteal.', sound: 'slash', type: 'physical', mult: 1.5, lifesteal: 0.2 },
+            { id: 'r3', name: 'Shadow Dance', manaCost: 20, cooldown: 3, desc: 'Increase Crit Chance by 35% for next turn.', sound: 'shield', type: 'buff', critBuff: true },
+            { id: 'r4', name: 'Shadowblade Flurry', manaCost: 35, cooldown: 4, desc: 'Multi-hit strike dealing 260% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.6 }
         ]
     },
     Wizard: {
@@ -171,12 +164,12 @@ const HERO_CLASSES = {
         title: 'Master Arcane Weaver',
         desc: 'Wizards command elemental destructive magic from afar, burning and freezing enemies with high burst damage.',
         img: 'characters imgs/player/Wizard.jpg',
-        baseStats: { hp: 120, mp: 220, str: 15, agi: 25, int: 60, vit: 18, spd: 40 },
+        baseStats: { hp: 120, mp: 220, str: 15, agi: 25, int: 60, vit: 20, spd: 35 },
         skills: [
-            { id: 'mz1', name: 'Arcane Bolt', manaCost: 10, cooldown: 0, desc: 'Fires a glowing energy orb dealing 130% magical damage.', sound: 'fireball', type: 'magic', mult: 1.3, element: 'dark' },
-            { id: 'mz2', name: 'Inferno Fireball', manaCost: 35, cooldown: 2, desc: 'Launches a massive blazing fireball dealing 220% fire damage.', sound: 'fireball', type: 'magic', mult: 2.2, element: 'fire' },
-            { id: 'mz3', name: 'Frost Nova', manaCost: 30, cooldown: 3, desc: 'Freezes target dealing 140% ice damage and reducing enemy speed.', sound: 'fireball', type: 'magic', mult: 1.4, element: 'ice', slow: true },
-            { id: 'mz4', name: 'Arcane Barrier', manaCost: 40, cooldown: 4, desc: 'Converts mana into a protective magical shield and recovers 30 MP.', sound: 'heal', type: 'buff', shieldVal: 80, mpRecover: 30 }
+            { id: 'm1', name: 'Arcane Bolt', manaCost: 0, cooldown: 0, desc: 'Cast energy bolt dealing 110% magic damage.', sound: 'fireball', type: 'magic', mult: 1.1 },
+            { id: 'm2', name: 'Inferno Fireball', manaCost: 30, cooldown: 2, desc: 'Blast enemy dealing 200% elemental fire damage.', sound: 'fireball', type: 'magic', mult: 2.0, element: 'fire' },
+            { id: 'm3', name: 'Mana Barrier', manaCost: 25, cooldown: 3, desc: 'Convert mana into 65 Shield points & recover MP.', sound: 'shield', type: 'buff', shieldVal: 65, mpRecover: 30 },
+            { id: 'm4', name: 'Lightning Storm', manaCost: 50, cooldown: 4, desc: 'Summon cataclysmic storm dealing 280% magic damage.', sound: 'fireball', type: 'magic', mult: 2.8, element: 'lightning' }
         ]
     },
     Hunter: {
@@ -184,12 +177,12 @@ const HERO_CLASSES = {
         title: 'Master Sharpshooter',
         desc: 'Versatile marksmen who excel in precision ranged combat, multiple arrow volleys, and survival instincts.',
         img: 'characters imgs/player/hunter.jpg',
-        baseStats: { hp: 160, mp: 80, str: 38, agi: 45, int: 25, vit: 25, spd: 55 },
+        baseStats: { hp: 160, mp: 80, str: 38, agi: 45, int: 22, vit: 32, spd: 45 },
         skills: [
-            { id: 'h1', name: 'Quick Shot', manaCost: 0, cooldown: 0, desc: 'Fire a rapid arrow dealing 110% physical damage.', sound: 'slash', type: 'physical', mult: 1.1 },
-            { id: 'h2', name: 'Multi-Shot Volley', manaCost: 20, cooldown: 2, desc: 'Unleash a hail of arrows hitting 3 times for 60% damage each.', sound: 'slash', type: 'physical', mult: 0.6, hits: 3 },
-            { id: 'h3', name: 'Eagle Eye', manaCost: 15, cooldown: 3, desc: 'Focus target weak points, gaining +25% Crit Chance for 3 turns.', sound: 'shield', type: 'buff' },
-            { id: 'h4', name: 'Sniper Piercing Arrow', manaCost: 35, cooldown: 4, desc: 'A lethal armor-piercing shot dealing 240% damage ignoring armor.', sound: 'heavyHit', type: 'physical', mult: 2.4 }
+            { id: 'h1', name: 'Piercing Arrow', manaCost: 0, cooldown: 0, desc: 'Ranged shot dealing 115% physical damage.', sound: 'slash', type: 'physical', mult: 1.15 },
+            { id: 'h2', name: 'Multi-Arrow Volley', manaCost: 20, cooldown: 2, desc: 'Fire array of arrows dealing 170% damage.', sound: 'slash', type: 'physical', mult: 1.7 },
+            { id: 'h3', name: 'Eagle Focus', manaCost: 15, cooldown: 3, desc: '+25% Crit chance and gain 30 Shield.', sound: 'shield', type: 'buff', shieldVal: 30, critBuff: true },
+            { id: 'h4', name: 'Sniper Assassinate', manaCost: 40, cooldown: 4, desc: 'Lethal headshot dealing 270% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.7 }
         ]
     },
     Paladin: {
@@ -199,10 +192,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Paladin.jpg',
         baseStats: { hp: 200, mp: 100, str: 38, agi: 22, int: 35, vit: 38, spd: 32 },
         skills: [
-            { id: 'p1', name: 'Righteous Hammer', manaCost: 0, cooldown: 0, desc: 'Strike with holy force dealing 110% physical + 20% holy damage.', sound: 'slash', type: 'physical', mult: 1.3 },
+            { id: 'p1', name: 'Righteous Hammer', manaCost: 0, cooldown: 0, desc: 'Strike with holy force dealing 110% physical damage.', sound: 'slash', type: 'physical', mult: 1.1 },
             { id: 'p2', name: 'Divine Smite', manaCost: 25, cooldown: 2, desc: 'Call down holy pillar dealing 180% radiant magic damage.', sound: 'fireball', type: 'magic', mult: 1.8, element: 'holy' },
             { id: 'p3', name: 'Lay on Hands', manaCost: 35, cooldown: 3, desc: 'Channel holy light to heal 35% of max HP.', sound: 'heal', type: 'heal', healPercent: 0.35 },
-            { id: 'p4', name: 'Aegis of Light', manaCost: 40, cooldown: 4, desc: 'Grant a holy shield that blocks 100 damage and reflects 20% back.', sound: 'shield', type: 'buff', shieldVal: 100 }
+            { id: 'p4', name: 'Aegis of Light', manaCost: 40, cooldown: 4, desc: 'Grant a holy shield that blocks 100 damage.', sound: 'shield', type: 'buff', shieldVal: 100 }
         ]
     },
     Necromancer: {
@@ -233,6 +226,7 @@ class Player {
         this.nextLevelXp = 100;
         this.statPoints = 0;
         this.gold = 50;
+        this.coins = 15; // Victory Coins for Gear Upgrades
 
         // Base Stats
         this.str = classDef.baseStats.str;
@@ -250,18 +244,21 @@ class Player {
         // Active Skills & Cooldowns
         this.skills = classDef.skills.map(s => ({ ...s, currentCD: 0 }));
 
-        // Phase 2 Expansions
-        this.companion = null; // COMPANIONS obj
-        this.socketedGem = null; // GEMS obj
-        this.specialization = null; // Specialization obj
-        this.blessings = []; // Shrine blessings
-        this.achievements = []; // Unlocked trophies
+        // Phase 2 & 3 Expansions
+        this.companion = null;
+        this.socketedGem = null;
+        this.specialization = null;
+        this.blessings = [];
+        this.achievements = [];
 
-        // Equipment Slots
+        // Equipment & Smithing Upgrade Levels (+0 to +10)
         this.equipment = {
             weapon: { name: 'Iron Sword', str: 10, int: 0, price: 0 },
             armor: { name: 'Leather Vest', vit: 8, price: 0 },
-            accessory: { name: 'Wooden Ring', agi: 5, price: 0 }
+            accessory: { name: 'Wooden Ring', agi: 5, price: 0 },
+            weaponLevel: 0,
+            armorLevel: 0,
+            accessoryLevel: 0
         };
 
         // Inventory
@@ -270,22 +267,29 @@ class Player {
             mpPotion: 2
         };
 
-        // Status Effects (Shield, Buffs)
+        // Status Effects
         this.shield = 0;
         this.buffCrit = false;
         this.speedGauge = 0;
     }
 
     recalculateStats() {
-        const weaponStr = this.equipment.weapon ? (this.equipment.weapon.str || 0) : 0;
-        const weaponInt = this.equipment.weapon ? (this.equipment.weapon.int || 0) : 0;
-        const armorVit = this.equipment.armor ? (this.equipment.armor.vit || 0) : 0;
-        const accAgi = this.equipment.accessory ? (this.equipment.accessory.agi || 0) : 0;
+        const wLevel = this.equipment.weaponLevel || 0;
+        const aLevel = this.equipment.armorLevel || 0;
+        const accLevel = this.equipment.accessoryLevel || 0;
+
+        const rawWeaponStr = this.equipment.weapon ? (this.equipment.weapon.str || 0) : 0;
+        const rawWeaponInt = this.equipment.weapon ? (this.equipment.weapon.int || 0) : 0;
+        const rawArmorVit = this.equipment.armor ? (this.equipment.armor.vit || 0) : 0;
+
+        const weaponStr = Math.floor(rawWeaponStr * (1 + wLevel * 0.15));
+        const weaponInt = Math.floor(rawWeaponInt * (1 + wLevel * 0.15));
+        const armorVit = Math.floor(rawArmorVit * (1 + aLevel * 0.15));
 
         const totalVit = this.vit + armorVit + (this.hasBlessing('vit') ? 20 : 0);
         const totalInt = this.int + weaponInt + (this.hasBlessing('int') ? 20 : 0);
 
-        let hpMult = 1.0;
+        let hpMult = 1.0 + (aLevel * 0.05);
         if (this.specialization && this.specialization.bonusHpPercent) hpMult += this.specialization.bonusHpPercent;
         if (this.hasBlessing('maxHp')) hpMult += 0.30;
 
@@ -301,32 +305,45 @@ class Player {
     }
 
     get TotalStr() {
-        let val = this.str + (this.equipment.weapon ? (this.equipment.weapon.str || 0) : 0);
+        const wLevel = this.equipment.weaponLevel || 0;
+        let baseW = this.equipment.weapon ? (this.equipment.weapon.str || 0) : 0;
+        let val = this.str + Math.floor(baseW * (1 + wLevel * 0.15));
         if (this.socketedGem && this.socketedGem.extraDmg) val += this.socketedGem.extraDmg;
         return val;
     }
+
     get TotalAgi() {
-        return this.agi + (this.equipment.accessory ? (this.equipment.accessory.agi || 0) : 0);
+        const accLevel = this.equipment.accessoryLevel || 0;
+        let baseAcc = this.equipment.accessory ? (this.equipment.accessory.agi || 0) : 0;
+        return this.agi + Math.floor(baseAcc * (1 + accLevel * 0.15));
     }
+
     get TotalInt() {
-        return this.int + (this.equipment.weapon ? (this.equipment.weapon.int || 0) : 0);
+        const wLevel = this.equipment.weaponLevel || 0;
+        let baseW = this.equipment.weapon ? (this.equipment.weapon.int || 0) : 0;
+        return this.int + Math.floor(baseW * (1 + wLevel * 0.15));
     }
+
     get TotalVit() {
-        return this.vit + (this.equipment.armor ? (this.equipment.armor.vit || 0) : 0);
+        const aLevel = this.equipment.armorLevel || 0;
+        let baseA = this.equipment.armor ? (this.equipment.armor.vit || 0) : 0;
+        return this.vit + Math.floor(baseA * (1 + aLevel * 0.15));
     }
 
     get CritChance() {
-        let chance = 0.05 + (this.TotalAgi * 0.004);
+        const accLevel = this.equipment.accessoryLevel || 0;
+        let chance = 0.05 + (this.TotalAgi * 0.004) + (accLevel * 0.02);
         if (this.buffCrit) chance += 0.35;
-        if (this.hasBlessing('crit')) chance += 0.20;
         if (this.socketedGem && this.socketedGem.crit) chance += this.socketedGem.crit;
-        return Math.min(chance, 0.85);
+        if (this.hasBlessing('crit')) chance += 0.20;
+        return Math.min(chance, 0.75);
     }
 
     get DodgeChance() {
-        let dodge = 0.03 + (this.TotalAgi * 0.003);
-        if (this.hasBlessing('dodge')) dodge += 0.15;
-        return Math.min(dodge, 0.50);
+        const accLevel = this.equipment.accessoryLevel || 0;
+        let chance = 0.03 + (this.TotalAgi * 0.003) + (accLevel * 0.015);
+        if (this.hasBlessing('dodge')) chance += 0.15;
+        return Math.min(chance, 0.50);
     }
 
     addXP(amount) {
@@ -334,15 +351,37 @@ class Player {
         let leveledUp = false;
         while (this.xp >= this.nextLevelXp) {
             this.xp -= this.nextLevelXp;
-            this.level += 1;
+            this.level++;
             this.statPoints += 3;
             this.nextLevelXp = Math.floor(this.nextLevelXp * 1.5);
+            this.recalculateStats();
+            this.health = this.maxHealth;
+            this.mana = this.maxMana;
             leveledUp = true;
         }
-        this.recalculateStats();
-        this.health = this.maxHealth;
-        this.mana = this.maxMana;
         return leveledUp;
+    }
+
+    useHpPotion() {
+        if (this.potions.hpPotion <= 0) return 0;
+        this.potions.hpPotion--;
+        const restored = Math.floor(this.maxHealth * 0.50);
+        this.health = Math.min(this.maxHealth, this.health + restored);
+        return restored;
+    }
+
+    useMpPotion() {
+        if (this.potions.mpPotion <= 0) return 0;
+        this.potions.mpPotion--;
+        const restored = Math.floor(this.maxMana * 0.60);
+        this.mana = Math.min(this.maxMana, this.mana + restored);
+        return restored;
+    }
+
+    updateCooldowns() {
+        this.skills.forEach(s => {
+            if (s.currentCD > 0) s.currentCD--;
+        });
     }
 
     setSpecialization(specObj) {
@@ -351,29 +390,5 @@ class Player {
             this.skills.push({ ...specObj.skill, currentCD: 0 });
         }
         this.recalculateStats();
-    }
-
-    useHpPotion() {
-        if (this.potions.hpPotion <= 0) return false;
-        this.potions.hpPotion--;
-        const healAmt = Math.floor(this.maxHealth * 0.5);
-        this.health = Math.min(this.health + healAmt, this.maxHealth);
-        SoundEngine.playHeal();
-        return healAmt;
-    }
-
-    useMpPotion() {
-        if (this.potions.mpPotion <= 0) return false;
-        this.potions.mpPotion--;
-        const mpAmt = Math.floor(this.maxMana * 0.6);
-        this.mana = Math.min(this.mana + mpAmt, this.maxMana);
-        SoundEngine.playHeal();
-        return mpAmt;
-    }
-
-    updateCooldowns() {
-        this.skills.forEach(s => {
-            if (s.currentCD > 0) s.currentCD--;
-        });
     }
 }

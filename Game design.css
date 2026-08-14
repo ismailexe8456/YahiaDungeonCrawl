@@ -832,15 +832,123 @@ body {
     animation: bubbleFadeOut 0.4s ease-out forwards;
 }
 
-@keyframes bubblePopIn {
-    0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.7); }
-    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+.coin-badge { color: #ff9900; }
+
+.upgrade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
 }
 
-@keyframes bubbleFadeOut {
-    0% { opacity: 1; transform: translateX(-50%) scale(1); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-15px) scale(0.8); }
+.upgrade-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    background: rgba(25, 25, 45, 0.8);
+    border: 1px solid var(--glass-border);
 }
+
+.upgrade-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+/* 100% Mobile & Touch Friendly Responsiveness */
+.btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .game-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        text-align: center;
+    }
+
+    .header-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .stat-chip {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .battle-stage {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .unit-portrait-box {
+        width: 140px;
+        height: 140px;
+        margin-bottom: 10px;
+    }
+
+    .speech-bubble {
+        top: -50px;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    .map-nodes-container {
+        gap: 10px;
+    }
+
+    .map-node {
+        width: 110px;
+        height: 110px;
+        padding: 8px;
+    }
+
+    .node-icon {
+        font-size: 1.6rem;
+    }
+
+    .node-connector {
+        width: 15px;
+    }
+
+    .action-skills {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-skill {
+        padding: 12px 14px;
+    }
+
+    .modal-card {
+        padding: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .brand h1 {
+        font-size: 1.6rem;
+    }
+}
+
 
 
 

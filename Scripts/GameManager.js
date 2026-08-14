@@ -461,6 +461,9 @@ const GameManager = {
                     <button class="icon-btn" onclick="GameManager.openShopModal()" style="padding:8px 16px; border:1px solid var(--gold); color:var(--gold-bright);">
                         🛒 Visit Wandering Merchant (Potions)
                     </button>
+                    <button class="icon-btn" onclick="GameManager.claimEmergencyGold()" style="padding:8px 16px; border:1.5px solid var(--gold-bright); background:linear-gradient(135deg, rgba(217,168,60,0.35), rgba(221,107,44,0.35)); color:var(--gold-bright); font-weight:700; box-shadow:0 0 12px rgba(217,168,60,0.3);">
+                        🎁 Claim Free Supply Bounty (+100 Gold, +20 Coins)
+                    </button>
                 </div>
 
                 <div class="map-nodes-container">
@@ -468,6 +471,17 @@ const GameManager = {
                 </div>
             </div>
         `;
+    },
+
+    claimEmergencyGold: function() {
+        SoundEngine.playLevelUp();
+        if (!player) return;
+        player.gold = (player.gold || 0) + 100;
+        player.coins = (player.coins || 0) + 20;
+        this.saveGameData();
+        this.updateHeaderStats();
+        this.renderDungeonMap();
+        this.showToast("🎁 Claimed Free Supply Bounty (+100 Gold, +20 Coins)!", "success");
     },
 
     reFightNode: function(nodeIndex) {
@@ -914,11 +928,10 @@ const GameManager = {
         // 0 farm runs: 1.0 (100% full rewards)
         // 1 farm run: 0.50 (50% rewards)
         // 2 farm runs: 0.25 (25% rewards)
-        // 3+ farm runs: 0.20 (20% floor minimum rewards)
-        const mult = this.farmCount > 0 ? Math.max(0.20, Math.pow(0.50, this.farmCount)) : 1.0;
-        const goldLoot = Math.max(1, Math.floor(enemy.goldReward * mult));
-        const xpLoot = Math.max(1, Math.floor(enemy.xpReward * mult));
-        const coinsLoot = Math.max(1, Math.floor((Math.random() * 10 + 15) * mult));
+        const mult = 1.0;
+        const goldLoot = Math.max(15, Math.floor(enemy.goldReward));
+        const xpLoot = Math.max(25, Math.floor(enemy.xpReward));
+        const coinsLoot = Math.max(10, Math.floor(Math.random() * 10 + 15));
 
         player.gold += goldLoot;
         player.coins = (player.coins || 0) + coinsLoot;

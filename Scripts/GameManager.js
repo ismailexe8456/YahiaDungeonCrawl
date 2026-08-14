@@ -39,6 +39,8 @@ const GameManager = {
     renderHeroSelect: function() {
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
+        player = null;
+        this.updateHeaderStats();
         viewContainer.innerHTML = `
             <div class="hero-select-screen text-center animate-fade-in">
                 <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.4rem; margin-bottom:4px;">
@@ -260,13 +262,16 @@ const GameManager = {
     },
 
     setGameStart: function(classType) {
-        player = new Player(classType);
         SoundEngine.playClick();
+        player = new Player(classType);
+        player.gold = 50;
+        player.coins = 0;
+        this.currentStage = 1;
+        this.currentNodeIndex = 0;
         this.saveGameData();
-        this.logAction(`Hero selected: <strong style="color:var(--gold)">${player.classType}</strong> - ${player.title}!`, 'info');
-        DialogueEngine.triggerHeroSelectQuote(classType, () => {
-            this.startStageMap(this.currentStage);
-        });
+        this.updateHeaderStats();
+        this.logAction(`Hero selected: <strong style="color:var(--gold)">${player.classType.toUpperCase()}</strong>!`, 'info');
+        this.startStageMap(1);
     },
 
     setDifficulty: function(diffMode) {

@@ -768,16 +768,18 @@ const GameManager = {
 
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeForgeModal()">
-                <div class="modal-card glass-panel" style="max-width:650px;">
+                <div class="modal-card glass-panel" style="max-width:720px;">
                     <div class="modal-header">
-                        <h2>🔨 Blacksmith Forge & Gear Upgrades</h2>
+                        <h2>🔨 Blacksmith Forge, Gem Workbench & Pet Evolution</h2>
                         <span class="stat-chip coin-badge">⚔️ ${player.coins || 0} Victory Coins</span>
                         <button class="close-btn" onclick="GameManager.closeForgeModal()">&times;</button>
                     </div>
 
-                    <p style="color:var(--text-muted); margin-bottom:16px;">Spend Victory Coins earned from battle victories to upgrade weapon, armor, and accessories up to +10!</p>
+                    <p style="color:var(--text-muted); margin-bottom:16px;">Forge gear upgrades, socket elemental gems, and evolve pet companions into mythic legendary beasts!</p>
 
-                    <div class="upgrade-grid">
+                    <!-- Section 1: Gear Upgrades -->
+                    <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-hammer"></i> Gear Refinement (+1 to +10)</h3>
+                    <div class="upgrade-grid" style="margin-bottom:20px;">
                         <div class="upgrade-card glass-panel">
                             <div class="upgrade-top">
                                 <strong>⚔️ Weapon (+${wLvl})</strong>
@@ -810,6 +812,53 @@ const GameManager = {
                                 ${accLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${accCost} Coins`}
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Section 2: Elemental Gem Workbench -->
+                    <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-gem"></i> ✨ Elemental Gem Socketing</h3>
+                    <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; margin-bottom:20px; border:1px solid var(--glass-border);">
+                        <div style="margin-bottom:10px; font-size:0.9rem;">
+                            Current Socketed Gem: <strong style="color:${player.socketedGem ? player.socketedGem.color : '#aaa'}">${player.socketedGem ? player.socketedGem.name : 'Empty Socket'}</strong>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                            ${Object.values(GEMS).map(gem => `
+                                <div class="glass-panel" style="padding:10px; border-radius:8px; border:1px solid ${gem.color}; text-align:center;">
+                                    <div style="font-weight:700; color:${gem.color}; font-size:0.85rem;">${gem.name}</div>
+                                    <div style="color:var(--text-muted); font-size:0.75rem; margin:4px 0;">${gem.stat}</div>
+                                    <button class="btn btn-potion" onclick="GameManager.socketGem('${gem.id}')" ${player.gold < gem.price ? 'disabled' : ''} style="width:100%; font-size:0.8rem; padding:6px;">
+                                        Socket (${gem.price} Gold)
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Pet Evolution Chamber -->
+                    <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-dragon"></i> 🐉 Pet Evolution Chamber</h3>
+                    <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:10px; border:1px solid var(--glass-border);">
+                        ${!player.companion ? `
+                            <div style="color:var(--text-muted); font-size:0.9rem;">You don't have a Pet Companion yet! Visit the Wandering Merchant at Node 6 to adopt one.</div>
+                        ` : `
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                <div>
+                                    <strong style="color:var(--gold); font-size:1rem;">${player.companion.name} (Tier ${player.companion.tier || 1})</strong>
+                                    <div style="color:var(--text-muted); font-size:0.8rem;">${player.companion.desc}</div>
+                                </div>
+                                <div>
+                                    ${(player.companion.tier || 1) >= 3 ? `
+                                        <span class="stat-chip" style="color:var(--gold); background:rgba(245,197,24,0.2);">MAX TIER 3 MYTHIC</span>
+                                    ` : `
+                                        <button class="btn btn-primary" onclick="GameManager.evolveCompanion()" 
+                                                ${(player.coins || 0) < (player.companion.evolveCost || 30) || player.level < ((player.companion.tier || 1) === 1 ? 5 : 10) ? 'disabled' : ''}>
+                                            🐉 Evolve to Tier ${(player.companion.tier || 1) + 1} (⚔️ ${player.companion.evolveCost || 30} Coins)
+                                        </button>
+                                        <div style="font-size:0.75rem; color:var(--text-muted); text-align:right; margin-top:2px;">
+                                            Requires Level ${(player.companion.tier || 1) === 1 ? 5 : 10} (Current: Lvl ${player.level})
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        `}
                     </div>
 
                     <div style="margin-top:20px; text-align:right;">
@@ -845,6 +894,58 @@ const GameManager = {
         SoundEngine.playLevelUp();
         this.logAction(`Forged <strong>${slot.toUpperCase()} +${currentLvl + 1}</strong>! Stats boosted!`, 'info');
         this.saveGameData();
+        this.openUpgradeModal(this.isCurrentNodeForge);
+    },
+
+    socketGem: function(gemKey) {
+        if (!player) return;
+        const gem = GEMS[gemKey];
+        if (!gem) return;
+
+        if (player.gold < gem.price) {
+            this.logAction(`Not enough gold to socket ${gem.name}!`, 'warning');
+            return;
+        }
+
+        player.gold -= gem.price;
+        player.socketedGem = gem;
+        SoundEngine.playLevelUp();
+        this.logAction(`Socketed <strong>${gem.name}</strong>! Passive active in combat!`, 'info');
+        this.saveGameData();
+        this.updateHeaderStats();
+        this.openUpgradeModal(this.isCurrentNodeForge);
+    },
+
+    evolveCompanion: function() {
+        if (!player || !player.companion) return;
+        const currentTier = player.companion.tier || 1;
+        if (currentTier >= 3) return;
+
+        const reqLevel = currentTier === 1 ? 5 : 10;
+        if (player.level < reqLevel) {
+            this.logAction(`Pet evolution requires Hero Level ${reqLevel}!`, 'warning');
+            return;
+        }
+
+        const cost = player.companion.evolveCost || 30;
+        if ((player.coins || 0) < cost) {
+            this.logAction(`Not enough Victory Coins to evolve pet! Need ⚔️ ${cost} Coins.`, 'warning');
+            return;
+        }
+
+        player.coins -= cost;
+        player.companion.tier = currentTier + 1;
+        const compKey = player.companion.id;
+        const evoList = COMPANION_EVOLUTIONS[compKey];
+        if (evoList && evoList[currentTier]) {
+            player.companion.name = evoList[currentTier].name;
+        }
+        player.companion.evolveCost = cost * 2;
+        SoundEngine.playLevelUp();
+        ParticleEngine.triggerShake(20);
+        this.logAction(`🐉 MYTHIC EVOLUTION! Pet evolved into <strong>${player.companion.name} (Tier ${player.companion.tier})</strong>!`, 'info');
+        this.saveGameData();
+        this.updateHeaderStats();
         this.openUpgradeModal(this.isCurrentNodeForge);
     },
 

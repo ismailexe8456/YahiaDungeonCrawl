@@ -1,70 +1,106 @@
 // player.js - Complete Hero Classes, Skills, Stats, Companions, Gems, Masteries & Gear Upgrades
 let player = null;
 
-// Companions Database
+// Companions Database & Evolution Branches
 const COMPANIONS = {
     wolf: {
         id: 'wolf',
         name: 'Dire Wolf',
+        tier: 1,
         title: 'Fierce Beast',
         desc: 'Attacks enemy every turn dealing 75% physical damage and inflicting Bleed.',
         price: 150,
-        img: 'characters imgs/enemy/Goblin.jpg',
+        evolveCost: 30,
+        img: 'characters imgs/enemy/goblin_scout.jpg',
         act: function(hero, target) {
-            const dmg = Math.floor(hero.TotalStr * 0.75);
+            const mult = this.tier === 3 ? 1.5 : (this.tier === 2 ? 1.0 : 0.75);
+            const dmg = Math.floor(hero.TotalStr * mult);
             target.health = Math.max(0, target.health - dmg);
             SoundEngine.playSlash();
-            return { msg: `Dire Wolf lunged at ${target.name} dealing <span style="color:#ff3366">${dmg} damage</span>!`, dmg: dmg, type: 'dmg' };
+            return { msg: `${this.name} lunged at ${target.name} dealing <span style="color:#ff3366">${dmg} damage</span>!`, dmg: dmg, type: 'dmg' };
         }
     },
     golem: {
         id: 'golem',
         name: 'Arcane Golem',
+        tier: 1,
         title: 'Rune Guardian',
-        desc: 'Grants hero 40 Shield points every 2 turns.',
+        desc: 'Grants hero Shield points every turn.',
         price: 200,
-        img: 'characters imgs/enemy/Troll.jpg',
+        evolveCost: 35,
+        img: 'characters imgs/enemy/forest_troll.jpg',
         act: function(hero, target) {
-            hero.shield += 40;
+            const val = this.tier === 3 ? 100 : (this.tier === 2 ? 65 : 40);
+            hero.shield += val;
             SoundEngine.playShield();
-            return { msg: `Arcane Golem granted <span style="color:#00d2ff">+40 Shield</span>!`, shield: 40, type: 'heal' };
+            return { msg: `${this.name} granted <span style="color:#00d2ff">+${val} Shield</span>!`, shield: val, type: 'heal' };
         }
     },
     cleric: {
         id: 'cleric',
         name: 'Holy Cleric',
+        tier: 1,
         title: 'Divine Companion',
-        desc: 'Heals hero for 18% of max HP every turn.',
+        desc: 'Heals hero every turn.',
         price: 220,
+        evolveCost: 40,
         img: 'characters imgs/player/Paladin.jpg',
         act: function(hero, target) {
-            const heal = Math.floor(hero.maxHealth * 0.18);
+            const pct = this.tier === 3 ? 0.30 : (this.tier === 2 ? 0.22 : 0.18);
+            const heal = Math.floor(hero.maxHealth * pct);
             hero.health = Math.min(hero.maxHealth, hero.health + heal);
             SoundEngine.playHeal();
-            return { msg: `Holy Cleric healed hero for <span style="color:#00ffaa">+${heal} HP</span>!`, heal: heal, type: 'heal' };
+            return { msg: `${this.name} healed hero for <span style="color:#00ffaa">+${heal} HP</span>!`, heal: heal, type: 'heal' };
         }
     },
     drake: {
         id: 'drake',
         name: 'Shadow Drake',
+        tier: 1,
         title: 'Void Hatchling',
-        desc: 'Fires dark magic blasts for 95% magic damage.',
+        desc: 'Fires dark magic blasts every turn.',
         price: 250,
-        img: 'characters imgs/player/Necromancer.jpg',
+        evolveCost: 45,
+        img: 'characters imgs/enemy/void_dragon.jpg',
         act: function(hero, target) {
-            const dmg = Math.floor(hero.TotalInt * 0.95);
+            const mult = this.tier === 3 ? 2.0 : (this.tier === 2 ? 1.3 : 0.95);
+            const dmg = Math.floor(hero.TotalInt * mult);
             target.health = Math.max(0, target.health - dmg);
             SoundEngine.playFireball();
-            return { msg: `Shadow Drake blasted ${target.name} for <span style="color:#aa00ff">${dmg} dark magic damage</span>!`, dmg: dmg, type: 'crit' };
+            return { msg: `${this.name} blasted ${target.name} for <span style="color:#aa00ff">${dmg} dark magic damage</span>!`, dmg: dmg, type: 'crit' };
         }
     }
 };
 
-// Gem Database
+const COMPANION_EVOLUTIONS = {
+    wolf: [
+        { tier: 1, name: 'Dire Wolf', cost: 0, levelReq: 1 },
+        { tier: 2, name: 'Dire Fenrir Wolf', cost: 30, levelReq: 5 },
+        { tier: 3, name: 'Mythic Alpha Fenrir', cost: 60, levelReq: 10 }
+    ],
+    golem: [
+        { tier: 1, name: 'Arcane Golem', cost: 0, levelReq: 1 },
+        { tier: 2, name: 'Titan Rune Golem', cost: 35, levelReq: 5 },
+        { tier: 3, name: 'Ancient Titan Guardian', cost: 70, levelReq: 10 }
+    ],
+    cleric: [
+        { tier: 1, name: 'Holy Cleric', cost: 0, levelReq: 1 },
+        { tier: 2, name: 'Radiant Archangel', cost: 40, levelReq: 5 },
+        { tier: 3, name: 'Seraphim Divine Sovereign', cost: 80, levelReq: 10 }
+    ],
+    drake: [
+        { tier: 1, name: 'Shadow Drake', cost: 0, levelReq: 1 },
+        { tier: 2, name: 'Void Hell-Drake', cost: 45, levelReq: 5 },
+        { tier: 3, name: 'Cosmic Abyssal Dragon', cost: 90, levelReq: 10 }
+    ]
+};
+
+// Elemental Socketable Gem Database
 const GEMS = {
-    ruby: { id: 'ruby', name: 'Fire Ruby', stat: '+30 Fire Damage', price: 120, extraDmg: 30, color: '#ff3300' },
-    emerald: { id: 'emerald', name: 'Life Emerald', stat: '+15% Lifesteal', price: 150, lifesteal: 0.15, color: '#00ff66' },
-    topaz: { id: 'topaz', name: 'Thunder Topaz', stat: '+20% Speed & +10% Crit', price: 160, crit: 0.10, color: '#ffcc00' }
+    ruby: { id: 'ruby', name: '🔴 Ruby of Infernal Flame', stat: '+25% Skill Damage & Burn', price: 120, extraDmgMult: 0.25, color: '#ff3366' },
+    sapphire: { id: 'sapphire', name: '🔷 Sapphire of Frost Shield', stat: '+35 Shield on skill cast', price: 130, shieldBonus: 35, color: '#00d2ff' },
+    emerald: { id: 'emerald', name: '🟢 Emerald of Venom Lifesteal', stat: '+20% Lifesteal on hits', price: 150, lifestealPct: 0.20, color: '#00ff66' },
+    diamond: { id: 'diamond', name: '🟡 Diamond of Holy Radiance', stat: '+20% Crit Rate & +25 MP/turn', price: 180, critBonus: 0.20, mpRegen: 25, color: '#ffcc00' }
 };
 
 // Level 5 Specializations / Masteries

@@ -46,11 +46,11 @@ const GameManager = {
                 <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.4rem; margin-bottom:4px;">
                     ⚔️ Choose Your Hero Class (World ${this.activeWorld})
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:24px;">Select a legendary warrior for World ${this.activeWorld} to begin your adventure!</p>
+                <p style="color:var(--text-muted); margin-bottom:24px;">Select a legendary champion for World ${this.activeWorld} to begin your expedition!</p>
 
                 <div style="margin-bottom:20px; display:flex; gap:12px; justify-content:center;">
-                    <button class="btn btn-potion" onclick="GameManager.openSaveLoadModal()">
-                        🌐 Switch World (Currently World ${this.activeWorld})
+                    <button class="btn btn-potion" onclick="GameManager.openSettingsModal()">
+                        ⚙️ Settings & World Switcher (World ${this.activeWorld})
                     </button>
                     <button class="btn btn-secondary" onclick="TutorialEngine.openTutorial(0)" style="color:var(--gold);">
                         <i class="fas fa-question-circle"></i> How to Play
@@ -58,38 +58,38 @@ const GameManager = {
                 </div>
 
                 <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('warrior')">
-                        <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Warrior"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Warrior')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/Warrior.jpg" alt="Warrior"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Warrior</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
                         <button class="btn btn-primary" style="width:100%;">Select Warrior</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('rogue')">
-                        <div class="hero-avatar"><img src="characters imgs/Rouge.jpg" alt="Rogue"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Rogue')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/Rouge.jpg" alt="Rogue"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Rogue</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
                         <button class="btn btn-primary" style="width:100%;">Select Rogue</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('wizard')">
-                        <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Wizard"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Wizard')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/Wizard.jpg" alt="Wizard"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Wizard</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
                         <button class="btn btn-primary" style="width:100%;">Select Wizard</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('hunter')">
-                        <div class="hero-avatar"><img src="characters imgs/Hunter.jpg" alt="Hunter"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Hunter')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/hunter.jpg" alt="Hunter"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Hunter</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
                         <button class="btn btn-primary" style="width:100%;">Select Hunter</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('paladin')">
-                        <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Paladin"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Paladin')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/Paladin.jpg" alt="Paladin"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Paladin</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
                         <button class="btn btn-primary" style="width:100%;">Select Paladin</button>
                     </div>
-                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('necromancer')">
-                        <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Necromancer"></div>
+                    <div class="hero-card glass-panel" onclick="GameManager.setGameStart('Necromancer')" onmouseenter="SoundEngine.playHover()">
+                        <div class="hero-avatar"><img src="characters imgs/player/Necromancer.jpg" alt="Necromancer"></div>
                         <h3 style="color:var(--gold); margin:10px 0 4px 0;">Necromancer</h3>
                         <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
                         <button class="btn btn-primary" style="width:100%;">Select Necromancer</button>
@@ -100,6 +100,10 @@ const GameManager = {
     },
 
     openSaveLoadModal: function() {
+        this.openSettingsModal();
+    },
+
+    openSettingsModal: function() {
         SoundEngine.playClick();
         if (player) this.saveGameData();
 
@@ -113,13 +117,25 @@ const GameManager = {
 
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
-                <div class="modal-card glass-panel" style="max-width:720px; max-height:88vh; overflow-y:auto;">
+                <div class="modal-card glass-panel" style="max-width:740px; max-height:88vh; overflow-y:auto;">
                     <div class="modal-header">
-                        <h2><i class="fas fa-globe" style="color:#00e5ff;"></i> Dual World Game Save Manager</h2>
+                        <h2>⚙️ Game Settings & World Save Manager</h2>
                         <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
                     </div>
-                    <p style="color:var(--text-muted); margin-bottom:16px;">Play in 2 separate independent game worlds! Switch worlds or create a new hero run anytime.</p>
 
+                    <!-- Audio Control Section -->
+                    <div class="glass-panel" style="padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--gold);">
+                        <div>
+                            <strong style="color:var(--gold); font-size:1.05rem;"><i class="fas fa-volume-up"></i> Sound Engine & Audio Controls</strong>
+                            <div style="font-size:0.85rem; color:var(--text-muted);">Toggle dark fantasy combat sound effects and background audio ambience.</div>
+                        </div>
+                        <button class="btn ${SoundEngine.isMuted ? 'btn-secondary' : 'btn-potion'}" id="audio-btn" onclick="GameManager.toggleMuteAudio(); GameManager.openSettingsModal();" style="padding:8px 16px;">
+                            ${SoundEngine.isMuted ? '🔇 Sound OFF' : '🔊 Sound ON'}
+                        </button>
+                    </div>
+
+                    <!-- Dual World Save Manager -->
+                    <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-globe"></i> Independent Game Worlds</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
                         <!-- World 1 Card -->
                         <div class="glass-panel" style="padding:16px; border:2px solid ${this.activeWorld === 1 ? '#00e5ff' : 'rgba(255,255,255,0.1)'}; border-radius:12px; background:rgba(0,30,60,0.4);">
@@ -168,7 +184,7 @@ const GameManager = {
                         </div>
                     </div>
 
-                    <!-- Cloud Database Realtime Sync Box -->
+                    <!-- Cloud Sync & Backup Box -->
                     <div class="cloud-db-box glass-panel" style="margin-bottom:16px; padding:14px; border:1px solid var(--gold);">
                         <h4 style="color:var(--gold); margin-bottom:6px;"><i class="fas fa-cloud-upload-alt"></i> Online Cloud Database Sync</h4>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -179,11 +195,17 @@ const GameManager = {
                         <div id="cloud-status-msg" style="font-size:0.85rem; font-weight:700; margin-top:6px;"></div>
                     </div>
 
+                    <!-- Actions Bar -->
                     <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                        <button class="btn btn-secondary" onclick="GameManager.openLeaderboardModal()"><i class="fas fa-trophy"></i> Leaderboard</button>
-                        <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Copy Code</button>
-                        <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Code</button>
-                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()">📋 Copy Code</button>
+                            <button class="btn btn-secondary" onclick="GameManager.importSaveCode()">📥 Import Code</button>
+                            <button class="btn btn-secondary" onclick="GameManager.openLeaderboardModal()"><i class="fas fa-trophy"></i> Leaderboard</button>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            ${player ? `<button class="btn btn-danger" onclick="GameManager.resetGameSession()" style="background:#ff2a5f; color:#fff;"><i class="fas fa-undo"></i> 🔄 New Game / Reset</button>` : ''}
+                            <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,25 +247,29 @@ const GameManager = {
     },
 
     deleteWorldSlot: function(worldNum) {
-        if (confirm(`🗑️ Are you sure you want to reset and delete World ${worldNum}?`)) {
-            try {
-                this.setCookie(`dungeon_crawl_world_${worldNum}`, '', -1);
-                localStorage.removeItem(`dungeon_crawl_save_slot_${worldNum}`);
-            } catch(e) {}
+        this.showConfirmModal({
+            title: `Delete & Reset World ${worldNum}`,
+            message: `Are you sure you want to reset all progress for World ${worldNum}? This hero run will be permanently erased.`,
+            confirmText: `Delete World ${worldNum}`,
+            danger: true,
+            onConfirm: () => {
+                try {
+                    this.setCookie(`dungeon_crawl_world_${worldNum}`, '', -1);
+                    localStorage.removeItem(`dungeon_crawl_save_slot_${worldNum}`);
+                } catch(e) {}
 
-            SoundEngine.playClick();
-            if (this.activeWorld === worldNum) {
-                player = null;
-                this.currentStage = 1;
-                this.currentNodeIndex = 0;
-                this.renderHeroSelect();
+                SoundEngine.playClick();
+                this.showToast(`World ${worldNum} reset successfully.`, 'info');
+                if (this.activeWorld === worldNum) {
+                    player = null;
+                    this.currentStage = 1;
+                    this.currentNodeIndex = 0;
+                    this.renderHeroSelect();
+                } else {
+                    this.openSettingsModal();
+                }
             }
-            this.openSaveLoadModal();
-        }
-    },
-
-    resetGameSession: function() {
-        this.deleteWorldSlot(this.activeWorld);
+        });
     },
 
     init: function() {
@@ -256,6 +282,15 @@ const GameManager = {
             ParticleEngine.init('fx-canvas');
             this.loadSaveData();
             this.updateHeaderStats();
+
+            // Keyboard accessibility: ESC key closes all active modals
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    GameManager.closeConfirmModal();
+                    GameManager.closeInputModal();
+                    GameManager.closeModal();
+                }
+            });
         } catch (e) {
             console.error("Game initialization error:", e);
         }
@@ -337,10 +372,9 @@ const GameManager = {
                 </div>
 
                 <div style="margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()"><i class="fas fa-user-shield"></i> Gear & Gems</button>
+                    <button class="btn btn-primary" onclick="GameManager.openInventoryModal()" style="background: linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color: #000; font-weight: 800;"><i class="fas fa-briefcase"></i> Inventory</button>
                     <button class="btn btn-secondary" onclick="GameManager.openAchievementsModal()"><i class="fas fa-trophy"></i> Achievements</button>
-                    <button class="btn btn-secondary" onclick="GameManager.openSaveLoadModal()"><i class="fas fa-save"></i> Save / Load</button>
-                    <button class="btn btn-danger" onclick="GameManager.resetGameSession()" style="background:#ff2a5f; color:#fff; border:none; padding:10px 18px; font-weight:700; border-radius:8px; cursor:pointer;"><i class="fas fa-undo"></i> 🔄 New Game / Reset</button>
+                    <button class="btn btn-potion" onclick="GameManager.openSettingsModal()"><i class="fas fa-cog"></i> Settings</button>
                 </div>
             </div>
         `;
@@ -1072,76 +1106,29 @@ const GameManager = {
     },
 
     resetGameSession: function() {
-        if (confirm("🔄 Are you sure you want to reset your progress and start a NEW hero journey from scratch?")) {
-            try {
-                this.setCookie('dungeon_crawl_session', '', -1);
-                localStorage.removeItem('dungeon_crawl_save_slot_1');
-                localStorage.removeItem('antigravity_rpg_save');
-            } catch(e) {}
+        this.showConfirmModal({
+            title: "New Game / Reset Run",
+            message: "Are you sure you want to reset your hero progress and start a new run from scratch? All active stage progress for this world will be cleared.",
+            confirmText: "Reset & Start New Run",
+            danger: true,
+            onConfirm: () => {
+                try {
+                    this.setCookie(`dungeon_crawl_world_${this.activeWorld}`, '', -1);
+                    this.setCookie('dungeon_crawl_session', '', -1);
+                    localStorage.removeItem(`dungeon_crawl_save_slot_${this.activeWorld}`);
+                    localStorage.removeItem('antigravity_rpg_save');
+                } catch(e) {}
 
-            player = null;
-            this.currentStage = 1;
-            this.currentNodeIndex = 0;
-            this.closeModal();
+                player = null;
+                this.currentStage = 1;
+                this.currentNodeIndex = 0;
+                this.closeModal();
 
-            SoundEngine.playClick();
-            const viewContainer = document.getElementById('main-view');
-            if (viewContainer) {
-                viewContainer.innerHTML = `
-                    <div class="hero-select-screen text-center animate-fade-in">
-                        <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.4rem; margin-bottom:8px;">
-                            ⚔️ Choose Your Hero Class
-                        </h2>
-                        <p style="color:var(--text-muted); margin-bottom:28px;">Select a legendary warrior to begin your adventure in the dungeon depths!</p>
-
-                        <div style="margin-bottom:20px;">
-                            <button class="btn btn-secondary" onclick="TutorialEngine.openTutorial(0)" style="color:var(--gold);">
-                                <i class="fas fa-question-circle"></i> How to Play & Guide
-                            </button>
-                        </div>
-
-                        <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('warrior')">
-                                <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Warrior"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Warrior</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Heavy Melee & Iron Shield</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Warrior</button>
-                            </div>
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('rogue')">
-                                <div class="hero-avatar"><img src="characters imgs/Rouge.jpg" alt="Rogue"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Rogue</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">High Criticals & Stealth Dodge</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Rogue</button>
-                            </div>
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('wizard')">
-                                <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Wizard"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Wizard</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Elemental Spells & Mana Barrier</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Wizard</button>
-                            </div>
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('hunter')">
-                                <div class="hero-avatar"><img src="characters imgs/Hunter.jpg" alt="Hunter"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Hunter</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Precision Bows & Pet Companion</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Hunter</button>
-                            </div>
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('paladin')">
-                                <div class="hero-avatar"><img src="characters imgs/Warrior.jpg" alt="Paladin"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Paladin</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Holy Shield & Light Restoration</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Paladin</button>
-                            </div>
-                            <div class="hero-card glass-panel" onclick="GameManager.setGameStart('necromancer')">
-                                <div class="hero-avatar"><img src="characters imgs/Wizard.jpg" alt="Necromancer"></div>
-                                <h3 style="color:var(--gold); margin:10px 0 4px 0;">Necromancer</h3>
-                                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Shadow Lifesteal & Undead Army</div>
-                                <button class="btn btn-primary" style="width:100%;">Select Necromancer</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                SoundEngine.playClick();
+                this.showToast("Hero run reset successfully! Choose your champion.", "info");
+                this.renderHeroSelect();
             }
-        }
+        });
     },
 
     saveToCloudDB: async function() {
@@ -1302,8 +1289,8 @@ const GameManager = {
         };
         localStorage.setItem(`dungeon_crawl_save_slot_${slotIdx}`, JSON.stringify(saveData));
         SoundEngine.playLevelUp();
-        alert(`Saved successfully to Slot ${slotIdx}!`);
-        this.openSaveLoadModal();
+        this.showToast(`Saved progress successfully to Local Slot ${slotIdx}!`, 'success');
+        this.openSettingsModal();
     },
 
     loadFromSlot: function(slotIdx) {
@@ -1339,33 +1326,56 @@ const GameManager = {
         this.closeModal();
         this.renderDungeonMap();
         this.logAction(`Loaded Save Slot ${slotIdx}: <strong style="color:var(--gold)">Level ${player.level} ${player.classType}</strong> on Stage ${this.currentStage}!`, 'info');
+        this.showToast(`Loaded Hero Run (Slot ${slotIdx})`, 'success');
     },
 
     deleteSlot: function(slotIdx) {
-        localStorage.removeItem(`dungeon_crawl_save_slot_${slotIdx}`);
-        SoundEngine.playClick();
-        this.openSaveLoadModal();
+        this.showConfirmModal({
+            title: `Delete Slot ${slotIdx}`,
+            message: `Are you sure you want to delete Local Save Slot ${slotIdx}?`,
+            confirmText: `Delete Slot ${slotIdx}`,
+            danger: true,
+            onConfirm: () => {
+                localStorage.removeItem(`dungeon_crawl_save_slot_${slotIdx}`);
+                SoundEngine.playClick();
+                this.showToast(`Slot ${slotIdx} deleted.`, 'info');
+                this.openSettingsModal();
+            }
+        });
     },
 
     exportSaveCode: function() {
-        if (!player) return;
+        if (!player) {
+            this.showToast("No active hero to export!", "error");
+            return;
+        }
         const raw = localStorage.getItem('dungeon_crawl_save_slot_1') || localStorage.getItem('antigravity_rpg_save');
-        if (!raw) return;
+        if (!raw) {
+            this.showToast("Please save your game first before exporting code!", "warning");
+            return;
+        }
         const code = btoa(raw);
         navigator.clipboard.writeText(code);
-        alert("Save Code copied to clipboard! Paste it anytime to restore your game.");
+        this.showToast("📋 Save Code copied to clipboard!", "success");
     },
 
     importSaveCode: function() {
-        const code = prompt("Paste your Save Code below:");
-        if (!code) return;
-        try {
-            const raw = atob(code);
-            localStorage.setItem('dungeon_crawl_save_slot_1', raw);
-            this.loadFromSlot(1);
-        } catch (e) {
-            alert("Invalid Save Code!");
-        }
+        this.showInputModal({
+            title: "📥 Import Game Save Code",
+            message: "Paste your base64 encoded save code below to restore your hero expedition:",
+            placeholder: "Paste Save Code here...",
+            onSubmit: (code) => {
+                if (!code || !code.trim()) return;
+                try {
+                    const raw = atob(code.trim());
+                    localStorage.setItem('dungeon_crawl_save_slot_1', raw);
+                    this.loadFromSlot(1);
+                    this.showToast("Imported Save Code successfully!", "success");
+                } catch (e) {
+                    this.showToast("Invalid Save Code format!", "error");
+                }
+            }
+        });
     },
 
     openShrineModal: function() {
@@ -2168,6 +2178,102 @@ const GameManager = {
             }
         } catch (e) {}
         return false;
+    },
+
+    showConfirmModal: function({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', cancelText = 'Cancel', onConfirm, danger = false }) {
+        const modalHtml = `
+            <div class="modal-overlay animate-fade-in" id="confirm-modal-overlay" onclick="if(event.target === this) GameManager.closeConfirmModal()">
+                <div class="modal-card glass-panel text-center animate-bounce" style="max-width:440px; border: 2px solid ${danger ? '#ff2a5f' : 'var(--gold)'}; box-shadow: 0 0 35px ${danger ? 'rgba(255,42,95,0.5)' : 'var(--gold-glow)'};">
+                    <div style="font-size: 2.4rem; margin-bottom: 6px;">${danger ? '⚠️' : '❓'}</div>
+                    <h3 style="color: ${danger ? '#ff2a5f' : 'var(--gold)'}; font-family:'MedievalSharp',serif; font-size: 1.5rem; margin-bottom: 10px;">${title}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 22px;">${message}</p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeConfirmModal()" style="flex: 1;">${cancelText}</button>
+                        <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" id="confirm-modal-yes-btn" style="flex: 1; ${danger ? 'background:#ff2a5f; color:#fff; font-weight:800;' : ''}">${confirmText}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        let confirmContainer = document.getElementById('confirm-modal-container');
+        if (!confirmContainer) {
+            confirmContainer = document.createElement('div');
+            confirmContainer.id = 'confirm-modal-container';
+            document.body.appendChild(confirmContainer);
+        }
+        confirmContainer.innerHTML = modalHtml;
+        const yesBtn = document.getElementById('confirm-modal-yes-btn');
+        if (yesBtn) {
+            yesBtn.onclick = () => {
+                GameManager.closeConfirmModal();
+                if (onConfirm) onConfirm();
+            };
+        }
+    },
+
+    closeConfirmModal: function() {
+        const confirmContainer = document.getElementById('confirm-modal-container');
+        if (confirmContainer) confirmContainer.innerHTML = '';
+    },
+
+    showToast: function(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = 'position:fixed; bottom:24px; right:24px; z-index:99999; display:flex; flex-direction:column; gap:10px; pointer-events:none;';
+            document.body.appendChild(toastContainer);
+        }
+        const toast = document.createElement('div');
+        toast.className = `glass-panel animate-bounce`;
+        const borderColor = type === 'error' ? '#ff2a5f' : (type === 'success' ? '#00ff9d' : 'var(--gold)');
+        const icon = type === 'error' ? '❌' : (type === 'success' ? '✅' : 'ℹ️');
+        toast.style.cssText = `padding:12px 20px; border-radius:12px; border:1px solid ${borderColor}; background:rgba(15,15,28,0.95); color:#fff; font-weight:700; font-size:0.9rem; box-shadow:0 10px 25px rgba(0,0,0,0.8); pointer-events:auto; display:flex; align-items:center; gap:10px;`;
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    },
+
+    showInputModal: function({ title = 'Input Required', message = '', placeholder = '', defaultValue = '', onSubmit }) {
+        const modalHtml = `
+            <div class="modal-overlay animate-fade-in" onclick="if(event.target === this) GameManager.closeInputModal()">
+                <div class="modal-card glass-panel" style="max-width:460px; border:1px solid var(--gold);">
+                    <h3 style="color:var(--gold); font-family:'MedievalSharp',serif; font-size:1.4rem; margin-bottom:8px;">${title}</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">${message}</p>
+                    <input type="text" id="input-modal-field" value="${defaultValue}" placeholder="${placeholder}" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.6); color:#fff; font-size:1rem; margin-bottom:18px;">
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeInputModal()">Cancel</button>
+                        <button class="btn btn-primary" id="input-modal-submit-btn">Submit</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        let inputContainer = document.getElementById('input-modal-container');
+        if (!inputContainer) {
+            inputContainer = document.createElement('div');
+            inputContainer.id = 'input-modal-container';
+            document.body.appendChild(inputContainer);
+        }
+        inputContainer.innerHTML = modalHtml;
+        const field = document.getElementById('input-modal-field');
+        if (field) field.focus();
+        const submitBtn = document.getElementById('input-modal-submit-btn');
+        if (submitBtn) {
+            submitBtn.onclick = () => {
+                const val = field ? field.value : '';
+                GameManager.closeInputModal();
+                if (onSubmit) onSubmit(val);
+            };
+        }
+    },
+
+    closeInputModal: function() {
+        const inputContainer = document.getElementById('input-modal-container');
+        if (inputContainer) inputContainer.innerHTML = '';
     }
 };
 

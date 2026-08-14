@@ -103,16 +103,16 @@ const GameManager = {
         viewContainer.innerHTML = `
             <div class="hero-select-screen text-center animate-fade-in" style="padding:16px;">
                 <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2.2rem; margin-bottom:6px;">
-                    ⚔ Choose Your Champion (World ${this.activeWorld})
+                    Choose Your Champion (World ${this.activeWorld})
                 </h2>
                 <p style="color:var(--ink-dim); margin-bottom:20px; font-size:0.95rem;">Select a legendary hero for World ${this.activeWorld} to begin your dungeon expedition!</p>
 
                 <div style="margin-bottom:20px; display:flex; gap:12px; justify-content:center;">
                     <button class="icon-btn" onclick="GameManager.openSettingsModal()" style="padding:8px 16px;">
-                        ⚙ Settings & World Save Manager
+                        Settings & World Save Manager
                     </button>
                     <button class="icon-btn" onclick="TutorialEngine.openTutorial(0)" style="padding:8px 16px; color:var(--gold-bright);">
-                        ❔ How to Play Guide
+                        How to Play Guide
                     </button>
                 </div>
 
@@ -533,7 +533,7 @@ const GameManager = {
                                     <img src="${enemy.img}" alt="${enemy.name}" id="enemy-img">
                                 </div>
                                 <div class="id" style="text-align:right;">
-                                    <div class="lvl" style="font-size:10px; color:var(--ink-faint); font-weight:600;">${enemy.isBoss ? '👑 BOSS' : 'BEAST'}</div>
+                                    <div class="lvl" style="font-size:10px; color:var(--ink-faint); font-weight:600;">${enemy.isBoss ? 'BOSS GATE' : 'BEAST'}</div>
                                     <div class="nm" style="font-family:var(--font-display); font-size:14px; color:var(--ink);">${enemy.name}</div>
                                 </div>
                             </div>
@@ -549,13 +549,13 @@ const GameManager = {
                 <div class="dock">
                     <div class="dock-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <div class="mana" style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:14px;">💧</span>
+                            <img src="characters imgs/items/sapphire_gem.jpg" style="width:16px; height:16px; border-radius:50%; object-fit:cover;">
                             <span class="mana-val" style="font-family:var(--font-mono); font-size:12px; color:var(--arcane); font-weight:700;">${player.mana} / ${player.maxMana} MP</span>
                         </div>
                         <div class="badges" style="display:flex; gap:6px;">
-                            <button class="badge-sm" onclick="GameManager.usePotion('hp')" title="Drink Health Potion">❤️ ${player.potions.hpPotion}</button>
-                            <button class="badge-sm" onclick="GameManager.usePotion('mp')" title="Drink Mana Potion">🧪 ${player.potions.mpPotion}</button>
-                            <button class="badge-sm" onclick="GameManager.openInventoryModal()" title="Open Inventory">🎒</button>
+                            <button class="badge-sm" onclick="GameManager.usePotion('hp')" title="Drink Health Potion"><img src="characters imgs/items/health_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> ${player.potions.hpPotion}</button>
+                            <button class="badge-sm" onclick="GameManager.usePotion('mp')" title="Drink Mana Potion"><img src="characters imgs/items/mana_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> ${player.potions.mpPotion}</button>
+                            <button class="badge-sm" onclick="GameManager.openInventoryModal()" title="Open Inventory"><img src="characters imgs/items/leather_vest.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"></button>
                         </div>
                     </div>
 
@@ -584,7 +584,7 @@ const GameManager = {
         if (enemy && enemy.health <= 0) {
             return `
                 <button class="cta animate-bounce" onclick="GameManager.advanceMapNode()" style="padding:14px; font-size:1.1rem; width:100%;">
-                    🎉 VICTORY! Continue Expedition ➡️
+                    VICTORY! Continue Expedition ➡️
                 </button>
             `;
         }
@@ -602,24 +602,26 @@ const GameManager = {
             const disabled = isCooldown || isInsufficientMana;
             const isSelected = this.selectedSkillIndex === index;
 
-            let iconClass = '🗡️';
-            if (skill.type === 'magic' || skill.element === 'fire') iconClass = '🔥';
-            else if (skill.element === 'dark') iconClass = '☠️';
-            else if (skill.element === 'holy') iconClass = '✨';
-            else if (skill.sound === 'heal') iconClass = '💚';
-            else if (skill.sound === 'shield' || skill.type === 'buff') iconClass = '🛡️';
+            let skillImg = 'characters imgs/items/iron_sword.jpg';
+            if (skill.name.includes('Heavy Slash') || skill.name.includes('Slash')) skillImg = 'characters imgs/items/heavy_slash.jpg';
+            else if (skill.name.includes('Berserk') || skill.name.includes('Rampage')) skillImg = 'characters imgs/items/berserk_rampage.jpg';
+            else if (skill.name.includes('Iron Wall') || skill.name.includes('Shield') || skill.name.includes('Guard')) skillImg = 'characters imgs/items/iron_wall.jpg';
+            else if (skill.element === 'fire') skillImg = 'characters imgs/items/ruby_gem.jpg';
+            else if (skill.element === 'dark') skillImg = 'characters imgs/items/diamond_gem.jpg';
 
             return `
                 <div class="skill ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" 
                      onclick="GameManager.selectSkill(${index})"
-                     style="position:relative; background:var(--bg-inset); border:1px solid ${isSelected ? 'var(--gold)' : 'var(--border-rune)'}; border-radius:10px; padding:8px 6px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;">
+                     style="position:relative; background:var(--bg-inset); border:1px solid ${isSelected ? 'var(--gold)' : 'var(--border-rune)'}; border-radius:10px; padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;">
                     
                     <div class="cost ${skill.manaCost === 0 ? 'free' : (isInsufficientMana ? 'locked' : '')}"
                          style="position:absolute; top:-6px; right:-6px; font-family:var(--font-mono); font-size:9.5px; font-weight:700; background:${skill.manaCost === 0 ? 'var(--gold)' : (isInsufficientMana ? '#3a3040' : 'var(--arcane)')}; color:${skill.manaCost === 0 ? '#241a06' : '#eaf4fb'}; border-radius:5px; padding:1px 4px;">
                         ${skill.manaCost > 0 ? skill.manaCost : 'FREE'}
                     </div>
 
-                    <div class="glyph" style="font-size:20px;">${iconClass}</div>
+                    <div class="glyph" style="width:32px; height:32px; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                        <img src="${skillImg}" alt="${skill.name}" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
                     <div class="name" style="font-size:10.5px; font-weight:600; color:${isSelected ? 'var(--gold-bright)' : 'var(--ink-dim)'}; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${skill.name}</div>
 
                     ${isCooldown ? `<div style="position:absolute; inset:0; background:rgba(10,8,20,0.85); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--crimson); font-weight:800; font-size:10px;">⌛ ${skill.currentCD}T</div>` : ''}
@@ -628,9 +630,9 @@ const GameManager = {
         }).join('');
 
         const isCastDisabled = selectedSkill.currentCD > 0 || player.mana < selectedSkill.manaCost || (enemy && enemy.health <= 0);
-        let btnText = `⚔ CAST ${selectedSkill.name.toUpperCase()}`;
-        if (selectedSkill.currentCD > 0) btnText = `⌛ COOLDOWN (${selectedSkill.currentCD} TURNS)`;
-        else if (player.mana < selectedSkill.manaCost) btnText = `💧 NOT ENOUGH MP (${selectedSkill.manaCost} MP)`;
+        let btnText = `CAST ${selectedSkill.name.toUpperCase()}`;
+        if (selectedSkill.currentCD > 0) btnText = `COOLDOWN (${selectedSkill.currentCD} TURNS)`;
+        else if (player.mana < selectedSkill.manaCost) btnText = `NOT ENOUGH MP (${selectedSkill.manaCost} MP)`;
 
         return `
             <div class="skills-row" style="display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:10px;">

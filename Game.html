@@ -21,17 +21,19 @@
     <!-- Top Navigation Header -->
     <header class="game-header panel" style="padding:10px 16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div class="brand" style="display:flex; align-items:center; gap:8px;">
-        <div class="crest" style="width:30px; height:30px; border-radius:8px; background:linear-gradient(160deg,var(--gold-bright),var(--ember)); display:flex; align-items:center; justify-content:center; font-size:16px;">⚔</div>
+        <div class="crest" style="width:30px; height:30px; border-radius:8px; background:linear-gradient(160deg,var(--gold-bright),var(--ember)); display:flex; align-items:center; justify-content:center; font-size:16px;">
+          <i class="fas fa-dragon" style="color:#000; font-size:14px;"></i>
+        </div>
         <h1 style="font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--ink); margin:0;">Dungeon Crawl</h1>
       </div>
 
       <div class="header-stats" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <div class="pill stage-badge" style="color:var(--gold);">Stage <span id="hdr-stage">1</span></div>
-        <div class="pill gold-c">🪙 <span id="hdr-gold">0</span> Gold</div>
-        <div class="pill coin-c" onclick="GameManager.openInventoryModal('gear')" style="cursor:pointer;">💎 <span id="hdr-coins">0</span> Coins</div>
-        <button class="icon-btn" onclick="GameManager.openInventoryModal()" style="padding:6px 12px;">🎒 Inventory</button>
-        <button class="icon-btn" onclick="GameManager.openSettingsModal()" style="padding:6px 12px;">⚙ Settings</button>
-        <button class="icon-btn" onclick="TutorialEngine.openTutorial(0)" style="padding:6px 12px;">❔ Guide</button>
+        <div class="pill gold-c"><img src="characters imgs/items/ruby_gem.jpg" style="width:14px; height:14px; border-radius:50%; object-fit:cover;"> <span id="hdr-gold">0</span> Gold</div>
+        <div class="pill coin-c" onclick="GameManager.openInventoryModal('gear')" style="cursor:pointer;"><img src="characters imgs/items/diamond_gem.jpg" style="width:14px; height:14px; border-radius:50%; object-fit:cover;"> <span id="hdr-coins">0</span> Coins</div>
+        <button class="icon-btn" onclick="GameManager.openInventoryModal()" style="padding:6px 12px;">Inventory</button>
+        <button class="icon-btn" onclick="GameManager.openSettingsModal()" style="padding:6px 12px;">Settings</button>
+        <button class="icon-btn" onclick="TutorialEngine.openTutorial(0)" style="padding:6px 12px;">Guide</button>
       </div>
     </header>
 

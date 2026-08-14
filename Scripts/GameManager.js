@@ -80,8 +80,11 @@ const GameManager = {
 
         this.stageNodes = [
             { type: 'battle', title: 'Dungeon Skirmish', icon: 'fa-skull-crossbones' },
+            { type: 'battle', title: 'Beast Patrol', icon: 'fa-paw' },
             { type: 'shrine', title: 'Ancient Rune Shrine', icon: 'fa-gavel' },
-            { type: 'treasure', title: 'Hidden Treasure Vault', icon: 'fa-gem' },
+            { type: 'battle', title: 'Shadow Depths', icon: 'fa-ghost' },
+            { type: 'rest', title: 'Campfire Rest Site', icon: 'fa-fire' },
+            { type: 'battle', title: 'Vanguard Mini-Boss', icon: 'fa-khanda' },
             { type: 'merchant', title: 'Wandering Merchant', icon: 'fa-store' },
             { type: 'boss', title: 'Stage Boss Gate', icon: 'fa-dragon' }
         ];
@@ -114,7 +117,7 @@ const GameManager = {
                 <h2 style="font-family:'MedievalSharp',serif; color:var(--gold); font-size:2.2rem; margin-bottom:6px;">
                     🗺️ Stage ${this.currentStage} Expedition Map
                 </h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate node paths to fight beasts, claim ancient shrine blessings, and challenge stage bosses!</p>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Navigate 8 node paths to fight beasts, rest at campfires, trade with merchants, and vanquish stage bosses!</p>
 
                 <div class="map-nodes-container">
                     ${nodesHtml}
@@ -142,6 +145,8 @@ const GameManager = {
             this.openShrineModal();
         } else if (node.type === 'treasure') {
             this.openTreasureModal();
+        } else if (node.type === 'rest') {
+            this.openRestModal();
         } else if (node.type === 'merchant') {
             this.openShopModal(true);
         }
@@ -977,6 +982,55 @@ const GameManager = {
         SoundEngine.playLevelUp();
         this.closeModal();
         this.logAction(`Claimed Shrine Blessing: <strong>${type}</strong>!`, 'info');
+        this.advanceMapNode();
+    },
+
+    openRestModal: function() {
+        SoundEngine.playClick();
+        const modalHtml = `
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeRestModal()">
+                <div class="modal-card glass-panel text-center" style="max-width:550px;">
+                    <div class="modal-header">
+                        <h2 style="color:#ff9900; font-size:2rem; margin:0;">🏕️ Campfire Rest Site</h2>
+                        <button class="close-btn" onclick="GameManager.closeRestModal()">&times;</button>
+                    </div>
+                    <p style="color:var(--text-muted); margin:12px 0 20px 0;">Warm fire crackles in the dungeon depths. Rest your weary bones before proceeding further!</p>
+
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <button class="btn btn-potion" onclick="GameManager.restAtCampfire('heal')" style="padding:14px; font-size:1.1rem;">
+                            ❤️ <strong>Rest & Recover:</strong> Restore 100% HP & MP
+                        </button>
+                        <button class="btn btn-primary" onclick="GameManager.restAtCampfire('buff')" style="padding:14px; font-size:1.1rem;">
+                            ⚔️ <strong>Sharpen Blade:</strong> Gain +15% Damage Boost for Next Battle
+                        </button>
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeRestModal()">Skip Rest & Continue</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
+    },
+
+    restAtCampfire: function(option) {
+        if (option === 'heal') {
+            player.health = player.maxHealth;
+            player.mana = player.maxMana;
+            SoundEngine.playHeal();
+            this.logAction("Rested at Campfire: <strong>HP & MP 100% Restored!</strong>", "heal");
+        } else if (option === 'buff') {
+            player.buffCrit = true;
+            SoundEngine.playLevelUp();
+            this.logAction("Sharpened Blade: <strong>+15% Critical Damage Boosted!</strong>", "info");
+        }
+        this.closeModal();
+        this.advanceMapNode();
+    },
+
+    closeRestModal: function() {
+        this.closeModal();
         this.advanceMapNode();
     },
 

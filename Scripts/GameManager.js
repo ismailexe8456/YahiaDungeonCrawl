@@ -563,16 +563,11 @@ const GameManager = {
         viewContainer.innerHTML = arenaHtml;
     },
 
-    inspectedSkillIndex: null,
+    selectedSkillIndex: 0,
 
-    toggleSkillInspect: function(skillIndex, event) {
-        if (event) event.stopPropagation();
+    selectSkill: function(index) {
         SoundEngine.playClick();
-        if (this.inspectedSkillIndex === skillIndex) {
-            this.inspectedSkillIndex = null;
-        } else {
-            this.inspectedSkillIndex = skillIndex;
-        }
+        this.selectedSkillIndex = index;
         const skillsContainer = document.getElementById('skills-container');
         if (skillsContainer) {
             skillsContainer.innerHTML = this.renderSkillButtons();
@@ -587,12 +582,19 @@ const GameManager = {
                 </button>
             `;
         }
-        
+
+        if (!player || !player.skills || player.skills.length === 0) return '';
+        if (this.selectedSkillIndex >= player.skills.length) {
+            this.selectedSkillIndex = 0;
+        }
+
+        const selectedSkill = player.skills[this.selectedSkillIndex] || player.skills[0];
+
         let cardsHtml = player.skills.map((skill, index) => {
             const isCooldown = skill.currentCD > 0;
             const isInsufficientMana = player.mana < skill.manaCost;
-            const disabled = isCooldown || isInsufficientMana || (enemy && enemy.health <= 0);
-            const isInspected = this.inspectedSkillIndex === index;
+            const disabled = isCooldown || isInsufficientMana;
+            const isSelected = this.selectedSkillIndex === index;
 
             let iconClass = 'fa-khanda';
             if (skill.type === 'magic' || skill.element === 'fire') iconClass = 'fa-fire-flame-curved';
@@ -609,17 +611,12 @@ const GameManager = {
             else if (skill.type === 'buff') elemClass = 'elem-buff';
 
             return `
-                <div class="clash-skill-card ${elemClass} ${disabled ? 'disabled' : ''}" 
-                     onclick="${disabled ? '' : `GameManager.useSkill(${index})`}" 
-                     onmouseenter="SoundEngine.playHover()">
+                <div class="clash-skill-card ${elemClass} ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" 
+                     onclick="GameManager.selectSkill(${index})">
                     
                     <div class="skill-mana-badge ${skill.manaCost === 0 ? 'free' : ''}">
-                        ${skill.manaCost > 0 ? `${skill.manaCost} 💧` : 'Free'}
+                        ${skill.manaCost > 0 ? `${skill.manaCost}💧` : 'Free'}
                     </div>
-
-                    <button class="skill-star-btn ${isInspected ? 'active' : ''}" onclick="GameManager.toggleSkillInspect(${index}, event)" title="Inspect Skill Details">
-                        ${isInspected ? '★' : '☆'}
-                    </button>
 
                     <div class="skill-art-container">
                         <i class="fas ${iconClass}"></i>
@@ -631,32 +628,38 @@ const GameManager = {
 
                     ${isCooldown ? `
                         <div class="skill-lock-overlay">
-                            <i class="fas fa-hourglass-half" style="font-size:1.4rem; margin-bottom:4px;"></i>
-                            <span>${skill.currentCD} TURNS</span>
+                            <i class="fas fa-hourglass-half" style="font-size:1.1rem; margin-bottom:2px;"></i>
+                            <span>${skill.currentCD}T</span>
                         </div>
                     ` : ''}
 
                     ${!isCooldown && isInsufficientMana ? `
                         <div class="skill-lock-overlay">
-                            <i class="fas fa-lock" style="font-size:1.4rem; margin-bottom:4px;"></i>
+                            <i class="fas fa-lock" style="font-size:1.1rem; margin-bottom:2px;"></i>
                             <span>NO MP</span>
-                        </div>
-                    ` : ''}
-
-                    ${isInspected ? `
-                        <div class="skill-inspect-popover animate-bounce" onclick="event.stopPropagation()">
-                            <strong style="color:var(--gold); display:block; margin-bottom:4px; font-size:0.85rem;">${skill.name}</strong>
-                            <p style="margin:0; font-size:0.75rem; color:#eee; line-height:1.3;">${skill.desc}</p>
                         </div>
                     ` : ''}
                 </div>
             `;
         }).join('');
 
+        const isCastDisabled = selectedSkill.currentCD > 0 || player.mana < selectedSkill.manaCost || (enemy && enemy.health <= 0);
+        let btnText = `⚔️ CAST ${selectedSkill.name.toUpperCase()}`;
+        if (selectedSkill.currentCD > 0) btnText = `⌛ COOLDOWN (${selectedSkill.currentCD} TURNS)`;
+        else if (player.mana < selectedSkill.manaCost) btnText = `💧 NOT ENOUGH MP (${selectedSkill.manaCost} REQUIRED)`;
+
         return `
-            <div class="clash-card-row">${cardsHtml}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:6px;">
-                <i class="fas fa-hand-pointer" style="color:var(--gold);"></i> Tap ☆ on any card to reveal details
+            <div class="clash-deck-4col">${cardsHtml}</div>
+            
+            <div class="skill-confirm-panel glass-panel" style="margin-top:8px; padding:10px 14px; border:1.5px solid var(--gold); border-radius:12px; background:rgba(12,10,22,0.85);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <strong style="color:var(--gold); font-size:0.95rem; font-family:'MedievalSharp',serif;">${selectedSkill.name}</strong>
+                    <span style="font-size:0.8rem; color:var(--mana-blue); font-weight:800;">Cost: ${selectedSkill.manaCost > 0 ? `${selectedSkill.manaCost} MP` : 'FREE'}</span>
+                </div>
+                <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px; line-height:1.35;">${selectedSkill.desc}</div>
+                <button class="btn btn-primary" onclick="GameManager.useSkill(${this.selectedSkillIndex})" ${isCastDisabled ? 'disabled' : ''} style="width:100%; padding:10px; font-weight:900; font-size:0.95rem; background:linear-gradient(135deg, #f5c518 0%, #ff8c00 100%); color:#000;">
+                    ${btnText}
+                </button>
             </div>
         `;
     },

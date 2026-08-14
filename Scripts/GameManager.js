@@ -591,22 +591,24 @@ const GameManager = {
             return `
                 <div class="clash-card ${elemClass} ${disabled ? 'disabled' : ''}" 
                      onclick="${disabled ? '' : `GameManager.useSkill(${index})`}" 
-                     onmouseenter="SoundEngine.playHover()">
+                     onmouseenter="SoundEngine.playHover()"
+                     title="${skill.name}: ${skill.desc}">
                     
-                    <div class="clash-elixir-badge ${skill.manaCost === 0 ? 'zero-cost' : ''}">
-                        <i class="fas fa-droplet"></i> ${skill.manaCost > 0 ? skill.manaCost : 'FREE'}
-                    </div>
-
-                    <div class="clash-card-icon">
+                    <div class="clash-card-art-bg">
                         <i class="fas ${iconClass}"></i>
                     </div>
 
-                    <div class="clash-card-title">${skill.name}</div>
-                    <div class="clash-card-desc">${skill.desc}</div>
+                    <div class="clash-elixir-badge ${skill.manaCost === 0 ? 'zero-cost' : ''}">
+                        ${skill.manaCost > 0 ? skill.manaCost : 'FREE'} <i class="fas fa-droplet" style="font-size:0.75rem;"></i>
+                    </div>
+
+                    <div class="clash-card-banner">
+                        <span class="clash-card-title">${skill.name}</span>
+                    </div>
 
                     ${skill.currentCD > 0 ? `
                         <div class="clash-cd-overlay">
-                            <i class="fas fa-hourglass-half" style="font-size:1.2rem; margin-bottom:4px;"></i>
+                            <i class="fas fa-hourglass-half" style="font-size:1.4rem; margin-bottom:4px;"></i>
                             <span>${skill.currentCD} TURNS</span>
                         </div>
                     ` : ''}

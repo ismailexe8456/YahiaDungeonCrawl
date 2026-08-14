@@ -244,6 +244,7 @@ const GameManager = {
                 </div>
 
                 <div class="action-items">
+                    ${enemy && enemy.health <= 0 ? `<button class="btn btn-primary" onclick="GameManager.advanceMapNode()"><i class="fas fa-arrow-right"></i> Continue Expedition</button>` : ''}
                     <button class="btn btn-potion" onclick="GameManager.usePotion('hp')">❤️ HP (${player.potions.hpPotion})</button>
                     <button class="btn btn-potion" onclick="GameManager.usePotion('mp')">🧪 MP (${player.potions.mpPotion})</button>
                     <button class="btn btn-secondary" onclick="GameManager.openInventoryModal()">🎒 Gear & Gems</button>
@@ -261,8 +262,15 @@ const GameManager = {
     },
 
     renderSkillButtons: function() {
+        if (enemy && enemy.health <= 0) {
+            return `
+                <button class="btn btn-primary animate-bounce" onclick="GameManager.advanceMapNode()" style="grid-column: 1 / -1; padding: 16px; font-size: 1.3rem; font-weight: 800; width: 100%;">
+                    🎉 VICTORY! Click to Continue Expedition ➡️
+                </button>
+            `;
+        }
         return player.skills.map((skill, index) => {
-            const disabled = skill.currentCD > 0 || player.mana < skill.manaCost;
+            const disabled = skill.currentCD > 0 || player.mana < skill.manaCost || (enemy && enemy.health <= 0);
             return `
                 <button class="btn btn-skill ${disabled ? 'disabled' : ''}" 
                         onclick="GameManager.useSkill(${index})" 
@@ -495,6 +503,7 @@ const GameManager = {
         }
 
         this.saveGameData();
+        this.updateUI();
 
         const modalHtml = `
             <div class="modal-overlay">

@@ -991,7 +991,7 @@ const GameManager = {
 
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeForgeModal()">
-                <div class="modal-card glass-panel" style="max-width:720px;">
+                <div class="modal-card glass-panel" style="max-width:740px; max-height:88vh; overflow-y:auto;">
                     <div class="modal-header">
                         <h2>🔨 Blacksmith Forge, Gem Workbench & Pet Evolution</h2>
                         <span class="stat-chip coin-badge">⚔️ ${player.coins || 0} Victory Coins</span>

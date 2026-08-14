@@ -1,4 +1,4 @@
-// DialogueEngine.js - Animated Typewriter Text & RPG Encounter Dialogue System
+// DialogueEngine.js - Animated Typewriter Text & Hades-Style RPG Encounter Dialogue System
 const HERO_QUOTES = {
     Warrior: "My blade hungers for glory! Let none stand in my path!",
     Rogue: "In the shadows, death strikes swift and unseen.",
@@ -19,7 +19,7 @@ const BOSS_TAUNTS = {
 const DialogueEngine = {
     typingTimer: null,
 
-    typeText: function(targetEl, text, speed = 25, onComplete = null) {
+    typeText: function(targetEl, text, speakerName = 'Warrior', speed = 30, onComplete = null) {
         if (!targetEl) return;
         targetEl.innerHTML = '';
         let index = 0;
@@ -28,8 +28,12 @@ const DialogueEngine = {
 
         this.typingTimer = setInterval(() => {
             if (index < text.length) {
-                targetEl.innerHTML += text.charAt(index);
-                if (index % 3 === 0) SoundEngine.playClick();
+                const char = text.charAt(index);
+                targetEl.innerHTML += char;
+                // Play Hades-style pitch-shifting character voice blip on non-space characters
+                if (char !== ' ' && index % 2 === 0) {
+                    SoundEngine.playVoiceBlip(speakerName);
+                }
                 index++;
             } else {
                 clearInterval(this.typingTimer);
@@ -63,7 +67,7 @@ const DialogueEngine = {
         const textTarget = document.getElementById('dialogue-text-target');
         const nextBtn = document.getElementById('dialogue-next-btn');
 
-        this.typeText(textTarget, text, 25);
+        this.typeText(textTarget, text, speakerName, 30);
 
         nextBtn.onclick = () => {
             SoundEngine.playClick();

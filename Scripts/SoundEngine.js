@@ -1,4 +1,4 @@
-// SoundEngine.js - Procedural Web Audio API Sound Effects Engine
+// SoundEngine.js - Procedural Web Audio API Sound Effects & Hades-Style Voice Synthesizer
 const SoundEngine = {
     audioCtx: null,
     muted: false,
@@ -42,6 +42,61 @@ const SoundEngine = {
         } catch (e) {
             console.error("Audio error:", e);
         }
+    },
+
+    // Hades-Style Character Voice Blips (Dynamic Vocal Timbre & Pitch Inflexions per Speaker)
+    playVoiceBlip: function(speakerName = 'Warrior') {
+        if (this.muted) return;
+        this.init();
+        if (!this.audioCtx) return;
+
+        let baseFreq = 200;
+        let waveType = 'triangle';
+        let duration = 0.05;
+
+        // Custom pitch & timbre ranges for each speaker
+        if (speakerName === 'Warrior' || speakerName === 'Forest Troll' || speakerName === 'Orc Berserker') {
+            baseFreq = 120 + Math.random() * 45; // Deep resonant rumble
+            waveType = 'sawtooth';
+        } else if (speakerName === 'Rogue' || speakerName === 'Goblin Scout') {
+            baseFreq = 650 + Math.random() * 150; // Fast squeaky vocal blips
+            waveType = 'sine';
+        } else if (speakerName === 'Wizard' || speakerName === 'Shadow Goblin Warlord') {
+            baseFreq = 380 + Math.random() * 80; // Arcane warble
+            waveType = 'sine';
+        } else if (speakerName === 'Void Dragon') {
+            baseFreq = 75 + Math.random() * 25; // Demonic sub-bass
+            waveType = 'sawtooth';
+            duration = 0.08;
+        } else if (speakerName === 'Paladin') {
+            baseFreq = 300 + Math.random() * 60; // Radiant warm vocal tone
+            waveType = 'triangle';
+        } else if (speakerName === 'Necromancer') {
+            baseFreq = 180 + Math.random() * 50; // Spectral gravelly tone
+            waveType = 'sawtooth';
+        } else {
+            baseFreq = 220 + Math.random() * 60;
+        }
+
+        try {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+
+            osc.type = waveType;
+            // Hades dynamic intonation pitch bending
+            const endFreq = baseFreq * (Math.random() > 0.5 ? 0.92 : 1.08);
+            osc.frequency.setValueAtTime(baseFreq, this.audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(endFreq, this.audioCtx.currentTime + duration);
+
+            gain.gain.setValueAtTime(0.18, this.audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+
+            osc.start();
+            osc.stop(this.audioCtx.currentTime + duration);
+        } catch (e) {}
     },
 
     // Blade / Slash Sound

@@ -8,32 +8,32 @@ const ENEMY_DATABASE = [
         img: 'characters imgs/enemy/Goblin.jpg',
         tier: 1,
         isBoss: false,
-        baseHp: 280,
+        baseHp: 220,
         baseMp: 0,
-        str: 32,
-        agi: 35,
-        defense: 12,
-        spd: 42,
+        str: 26,
+        agi: 30,
+        defense: 8,
+        spd: 38,
         xpReward: 40,
         goldReward: 25,
-        skills: [{ name: 'Rusty Dagger', mult: 1.1, type: 'physical' }]
+        skills: [{ name: 'Rusty Dagger', mult: 1.0, type: 'physical' }]
     },
     {
         name: 'Forest Troll',
         img: 'characters imgs/enemy/Troll.jpg',
         tier: 1,
         isBoss: false,
-        baseHp: 480,
+        baseHp: 380,
         baseMp: 20,
-        str: 48,
+        str: 38,
         agi: 15,
-        defense: 25,
+        defense: 18,
         spd: 28,
         xpReward: 65,
         goldReward: 40,
         skills: [
-            { name: 'Club Smash', mult: 1.3, type: 'physical' },
-            { name: 'Ground Slam', mult: 1.6, type: 'physical' }
+            { name: 'Club Smash', mult: 1.2, type: 'physical' },
+            { name: 'Ground Slam', mult: 1.4, type: 'physical' }
         ]
     },
 
@@ -43,17 +43,17 @@ const ENEMY_DATABASE = [
         img: 'characters imgs/enemy/Troll.jpg',
         tier: 2,
         isBoss: false,
-        baseHp: 680,
+        baseHp: 540,
         baseMp: 30,
-        str: 65,
-        agi: 25,
-        defense: 35,
-        spd: 35,
+        str: 52,
+        agi: 22,
+        defense: 25,
+        spd: 32,
         xpReward: 100,
         goldReward: 70,
         skills: [
-            { name: 'Axe Chop', mult: 1.4, type: 'physical' },
-            { name: 'Blood Cleave', mult: 1.9, type: 'physical' }
+            { name: 'Axe Chop', mult: 1.3, type: 'physical' },
+            { name: 'Blood Cleave', mult: 1.7, type: 'physical' }
         ]
     },
     {

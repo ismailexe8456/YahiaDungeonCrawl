@@ -972,12 +972,28 @@ const GameManager = {
             if (skill.mpRecover) player.mana = Math.min(player.maxMana, player.mana + skill.mpRecover);
             this.updateUI(); // INSTANT HP/BAR DROP FIRST
             this.logAction(`Hero used <strong>${skill.name}</strong>! Gained Shield!`, 'info');
+        } else if (skill.type === 'heal') {
+            const healVal = skill.healPercent ? Math.floor(player.maxHealth * skill.healPercent) : (skill.healVal || 50);
+            player.health = Math.min(player.maxHealth, player.health + healVal);
+            this.updateUI();
+            this.logAction(`Hero used <strong>${skill.name}</strong>, restored <span style="color:#00ffaa">+${healVal} HP</span>!`, 'info');
         } else {
+            const mult = skill.mult || 1.0;
             const basePower = skill.type === 'magic' ? player.TotalInt : player.TotalStr;
             isCrit = Math.random() < player.CritChance;
-            dmg = Math.floor(basePower * skill.mult * (isCrit ? (1.75 + (player.critBonus || 0)) : 1.0));
+            dmg = Math.floor(basePower * mult * (isCrit ? (1.75 + (player.critBonus || 0)) : 1.0));
             const enemyDef = enemy.defense || 10;
             dmg = Math.max(1, dmg - Math.floor(enemyDef * 0.3));
+            if (isNaN(dmg) || dmg < 1) dmg = 1;
+
+            if (skill.debuffStrPct && enemy) {
+                enemy.strength = Math.max(5, Math.floor(enemy.strength * (1 - skill.debuffStrPct)));
+            }
+
+            if (skill.lifesteal && dmg > 0) {
+                const stolen = Math.floor(dmg * skill.lifesteal);
+                player.health = Math.min(player.maxHealth, player.health + stolen);
+            }
 
             enemy.health = Math.max(0, enemy.health - dmg);
 

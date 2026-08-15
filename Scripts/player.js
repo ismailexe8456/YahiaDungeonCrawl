@@ -243,7 +243,7 @@ const HERO_CLASSES = {
         skills: [
             { id: 'n1', name: 'Bone Spear', manaCost: 10, cooldown: 0, desc: 'Hurl sharp bone projectiles dealing 125% magic damage.', sound: 'fireball', type: 'magic', mult: 1.25, element: 'dark' },
             { id: 'n2', name: 'Siphon Life', manaCost: 25, cooldown: 2, desc: 'Drain life force: deals 150% damage and heals user for 50% of damage dealt.', sound: 'heal', type: 'magic', mult: 1.5, lifesteal: 0.5, element: 'dark' },
-            { id: 'n3', name: 'Curse of Decay', manaCost: 20, cooldown: 3, desc: 'Weaken enemy strength and agility by 20% for 3 turns.', sound: 'fireball', type: 'debuff' },
+            { id: 'n3', name: 'Curse of Decay', manaCost: 20, cooldown: 3, desc: 'Corrupt enemy: deals 140% dark magic damage & weakens enemy strength by 20% for 3 turns.', sound: 'fireball', type: 'magic', mult: 1.4, debuffStrPct: 0.2, element: 'dark' },
             { id: 'n4', name: 'Army of the Dead', manaCost: 45, cooldown: 4, desc: 'Summon spectral forces dealing 260% dark damage!', sound: 'heavyHit', type: 'magic', mult: 2.6, element: 'dark' }
         ]
     }

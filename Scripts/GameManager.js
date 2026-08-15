@@ -136,11 +136,14 @@ const GameManager = {
                 }
             });
 
-            if (!player) {
+            if (player && this.stageNodes && this.stageNodes.length > 0 && this.currentNodeIndex > 0) {
+                this.renderDungeonMap();
+            } else {
                 this.renderCampHub();
             }
         } catch (e) {
             console.error("Game initialization error:", e);
+            this.renderCampHub();
         }
     },
 
@@ -756,8 +759,8 @@ const GameManager = {
                             <span class="mana-val" style="font-family:var(--font-mono); font-size:12px; color:var(--arcane); font-weight:700;">${player.mana} / ${player.maxMana} MP</span>
                         </div>
                         <div class="badges" style="display:flex; gap:6px;">
-                            <button class="badge-sm" onclick="GameManager.usePotion('hp')" title="Drink Health Potion"><img src="characters imgs/items/health_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> ${player.potions.hpPotion}</button>
-                            <button class="badge-sm" onclick="GameManager.usePotion('mp')" title="Drink Mana Potion"><img src="characters imgs/items/mana_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> ${player.potions.mpPotion}</button>
+                            <button class="badge-sm" onclick="GameManager.usePotion('hp')" title="Drink Health Potion"><img src="characters imgs/items/health_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> <span id="cnt-hp-potion">${player.potions.hpPotion}</span></button>
+                            <button class="badge-sm" onclick="GameManager.usePotion('mp')" title="Drink Mana Potion"><img src="characters imgs/items/mana_potion.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"> <span id="cnt-mp-potion">${player.potions.mpPotion}</span></button>
                             <button class="badge-sm" onclick="GameManager.openInventoryModal()" title="Open Inventory"><img src="characters imgs/items/leather_vest.jpg" style="width:16px; height:16px; border-radius:3px; object-fit:cover;"></button>
                         </div>
                     </div>
@@ -1597,6 +1600,11 @@ const GameManager = {
 
         if (eHealthTxt) eHealthTxt.innerText = `${eHp}/${eMaxHp} HP`;
         if (eHealthBar) eHealthBar.style.width = `${Math.max(0, (eHp / eMaxHp) * 100)}%`;
+
+        const hpPotEl = document.getElementById('cnt-hp-potion');
+        const mpPotEl = document.getElementById('cnt-mp-potion');
+        if (hpPotEl) hpPotEl.innerText = player ? player.potions.hpPotion : 0;
+        if (mpPotEl) mpPotEl.innerText = player ? player.potions.mpPotion : 0;
 
         const skillsContainer = document.getElementById('skills-container');
         if (skillsContainer) skillsContainer.innerHTML = this.renderSkillButtons();

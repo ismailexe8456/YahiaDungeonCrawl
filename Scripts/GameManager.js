@@ -1561,6 +1561,18 @@ const GameManager = {
         if (el && el.parentNode) el.parentNode.removeChild(el);
     },
 
+    checkAchievement: function(id) {
+        if (!player) return;
+        if (!player.achievements) player.achievements = [];
+        if (!player.achievements.includes(id)) {
+            player.achievements.push(id);
+            const ach = ACHIEVEMENTS_LIST.find(a => a.id === id);
+            if (ach) {
+                this.showToast(`ACHIEVEMENT UNLOCKED: ${ach.title}! (${ach.bonus})`, 'success');
+            }
+        }
+    },
+
     updateUI: function() {
         if (typeof document === 'undefined') return;
         const pHealthTxt = document.getElementById('player-hp-txt');
@@ -1568,15 +1580,23 @@ const GameManager = {
         const pManaTxt = document.getElementById('player-mp-txt');
         const pManaBar = document.getElementById('player-mp-bar');
 
-        if (pHealthTxt) pHealthTxt.innerText = `${player ? player.health : 0}/${player ? player.maxHealth : 1}`;
-        if (pHealthBar) pHealthBar.style.width = `${Math.max(0, ((player ? player.health : 0) / (player ? player.maxHealth : 1)) * 100)}%`;
-        if (pManaTxt) pManaTxt.innerText = `${player ? player.mana : 0}/${player ? player.maxMana : 1}`;
-        if (pManaBar) pManaBar.style.width = `${Math.max(0, ((player ? player.mana : 0) / (player ? player.maxMana : 1)) * 100)}%`;
+        const pHp = (player && !isNaN(player.health)) ? Math.max(0, player.health) : 0;
+        const pMaxHp = (player && !isNaN(player.maxHealth)) ? player.maxHealth : 1;
+        const pMp = (player && !isNaN(player.mana)) ? Math.max(0, player.mana) : 0;
+        const pMaxMp = (player && !isNaN(player.maxMana)) ? player.maxMana : 1;
+
+        if (pHealthTxt) pHealthTxt.innerText = `${pHp}/${pMaxHp}`;
+        if (pHealthBar) pHealthBar.style.width = `${Math.max(0, (pHp / pMaxHp) * 100)}%`;
+        if (pManaTxt) pManaTxt.innerText = `${pMp}/${pMaxMp}`;
+        if (pManaBar) pManaBar.style.width = `${Math.max(0, (pMp / pMaxMp) * 100)}%`;
 
         const eHealthTxt = document.getElementById('enemy-hp-txt');
         const eHealthBar = document.getElementById('enemy-hp-bar');
-        if (eHealthTxt) eHealthTxt.innerText = `${enemy ? enemy.health : 0}/${enemy ? enemy.maxHealth : 1}`;
-        if (eHealthBar) eHealthBar.style.width = `${Math.max(0, ((enemy ? enemy.health : 0) / (enemy ? enemy.maxHealth : 1)) * 100)}%`;
+        const eHp = (enemy && !isNaN(enemy.health)) ? Math.max(0, enemy.health) : 0;
+        const eMaxHp = (enemy && !isNaN(enemy.maxHealth)) ? enemy.maxHealth : 1;
+
+        if (eHealthTxt) eHealthTxt.innerText = `${eHp}/${eMaxHp} HP`;
+        if (eHealthBar) eHealthBar.style.width = `${Math.max(0, (eHp / eMaxHp) * 100)}%`;
 
         const skillsContainer = document.getElementById('skills-container');
         if (skillsContainer) skillsContainer.innerHTML = this.renderSkillButtons();

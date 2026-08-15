@@ -1,4 +1,4 @@
-// GameManager.js - Procedural Roguelite Core Engine, Safe Camp, 10 Stages x 12 Levels, Blacksmith Limits & Shrines
+// GameManager.js - Procedural Roguelite Core Engine, Safe Camp, 10 Stages x 12 Levels, Town Summons & No-Emoji Dark Fantasy UI
 const SHOP_ITEMS = {
     weapons: [
         { name: 'Steel Longsword', str: 20, int: 0, price: 100, desc: '+20 Strength' },
@@ -21,11 +21,11 @@ const SHOP_ITEMS = {
 };
 
 const ACHIEVEMENTS_LIST = [
-    { id: 'first_win', title: '🗡️ First Blood', desc: 'Win your first dungeon battle.', bonus: '+5 STR' },
-    { id: 'dragon_slayer', title: '🐉 Dragon Slayer', desc: 'Defeat the terrifying Void Dragon boss.', bonus: '+15 All Stats' },
-    { id: 'potion_hoarder', title: '🧪 Alchemist', desc: 'Use 5 health or mana potions.', bonus: '+20 Max HP' },
-    { id: 'rich', title: '🪙 Wealthy Tycoon', desc: 'Accumulate over 300 Gold.', bonus: '+10% Gold Gain' },
-    { id: 'lvl5', title: '🔥 Class Master', desc: 'Reach Level 5 and unlock a Specialization.', bonus: '+1 Legendary Skill' }
+    { id: 'first_win', title: 'First Blood', desc: 'Win your first dungeon battle.', bonus: '+5 STR' },
+    { id: 'dragon_slayer', title: 'Dragon Slayer', desc: 'Defeat the terrifying Void Dragon boss.', bonus: '+15 All Stats' },
+    { id: 'potion_hoarder', title: 'Alchemist', desc: 'Use 5 health or mana potions.', bonus: '+20 Max HP' },
+    { id: 'rich', title: 'Wealthy Tycoon', desc: 'Accumulate over 300 Gold.', bonus: '+10% Gold Gain' },
+    { id: 'lvl5', title: 'Class Master', desc: 'Reach Level 5 and unlock a Specialization.', bonus: '+1 Legendary Skill' }
 ];
 
 const ITEM_DATABASE = {
@@ -93,12 +93,13 @@ const GameManager = {
     highScore: 1,
     currentNodeIndex: 0,
     runSeed: 48392017,
-    merchantSummonsRemaining: 2,
-    blacksmithSummonsRemaining: 2,
-    blacksmithUpgradesRemaining: 2,
+    townSummonsRemaining: 2, // Single combined summon pool for Merchant & Blacksmith (max 2/stage)
+    blacksmithUpgradesRemaining: 2, // Max 2 actual gear upgrades/stage
     stageNodes: [],
     isTurnInProgress: false,
     activeWorld: 1,
+    heroChosen: false,
+    isNaturalMapNode: false,
     permanentMeta: {
         maxHpRanks: 0,
         dmgRanks: 0,
@@ -117,6 +118,7 @@ const GameManager = {
     },
 
     init: function() {
+        if (typeof document === 'undefined') return;
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) {
             setTimeout(() => GameManager.init(), 50);
@@ -161,18 +163,44 @@ const GameManager = {
                         <i class="fas ${theme.icon}"></i> STAGE ${i}
                     </div>
                     <div style="font-weight:700; font-size:13px; margin:2px 0;">${theme.name}</div>
-                    <div style="font-size:10px;">${isUnlocked ? '👉 START EXPEDITION' : '🔒 CLEAR STAGE ' + (i-1)}</div>
+                    <div style="font-size:10px;">${isUnlocked ? '<i class="fas fa-play"></i> START EXPEDITION' : '<i class="fas fa-lock"></i> CLEAR STAGE ' + (i-1)}</div>
                 </button>
             `;
         }
 
         const darkOrbs = (this.permanentMeta && this.permanentMeta.darkOrbs !== undefined) ? this.permanentMeta.darkOrbs : (player ? player.coins : 0);
 
+        let heroSelectionHtml = '';
+        if (this.heroChosen && player && this.currentNodeIndex > 0) {
+            heroSelectionHtml = `
+                <div class="panel" style="padding:14px; border:1.5px solid var(--gold); background:rgba(217,168,60,0.1); border-radius:10px; display:flex; align-items:center; gap:12px;">
+                    <img src="${player.img}" alt="${player.classType}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);">
+                    <div>
+                        <div style="font-family:var(--font-display); font-size:15px; color:var(--gold-bright); font-weight:700;">
+                            <i class="fas fa-user-shield"></i> ACTIVE CHAMPION: ${player.classType.toUpperCase()} (LOCKED FOR RUN)
+                        </div>
+                        <div style="font-size:11px; color:var(--ink-dim);">Your champion choice is locked until victory or demise in combat.</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            heroSelectionHtml = `
+                <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
+                    ${this.renderCampClassCard('Warrior', 'Heavy Melee & Iron Shield', 'characters imgs/player/Warrior.jpg')}
+                    ${this.renderCampClassCard('Rogue', 'Critical Hit Assassin', 'characters imgs/player/Rouge.jpg')}
+                    ${this.renderCampClassCard('Wizard', 'Arcane Burst Sorcerer', 'characters imgs/player/Wizard.jpg')}
+                    ${this.renderCampClassCard('Hunter', 'Ranged Bow & Companion', 'characters imgs/player/hunter.jpg')}
+                    ${this.renderCampClassCard('Paladin', 'Holy Shield Crusader', 'characters imgs/player/Paladin.jpg')}
+                    ${this.renderCampClassCard('Necromancer', 'Shadow Lifesteal Lich', 'characters imgs/player/Necromancer.jpg')}
+                </div>
+            `;
+        }
+
         viewContainer.innerHTML = `
             <div class="camp-hub-screen animate-fade-in" style="padding:16px;">
                 <div style="text-align:center; margin-bottom:20px;">
                     <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2.2rem; font-weight:700; margin-bottom:4px;">
-                        🏕️ Safe Adventurers' Camp
+                        <i class="fas fa-campground"></i> Safe Adventurers' Camp
                     </h2>
                     <p style="color:var(--ink-dim); margin-top:4px;">Select your Hero, upgrade permanent meta-stats, and choose an unlocked stage for your procedural expedition!</p>
                 </div>
@@ -180,42 +208,35 @@ const GameManager = {
                 <!-- Section 1: Hero Class Selection -->
                 <div class="panel" style="padding:16px; margin-bottom:20px;">
                     <div class="eyebrow" style="margin-bottom:12px;">Step 1: Choose Your Hero Champion</div>
-                    <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
-                        ${this.renderCampClassCard('Warrior', 'Heavy Melee & Iron Shield', 'characters imgs/player/Warrior.jpg')}
-                        ${this.renderCampClassCard('Rogue', 'Critical Hit Assassin', 'characters imgs/player/Rouge.jpg')}
-                        ${this.renderCampClassCard('Wizard', 'Arcane Burst Sorcerer', 'characters imgs/player/Wizard.jpg')}
-                        ${this.renderCampClassCard('Hunter', 'Ranged Bow & Companion', 'characters imgs/player/hunter.jpg')}
-                        ${this.renderCampClassCard('Paladin', 'Holy Shield Crusader', 'characters imgs/player/Paladin.jpg')}
-                        ${this.renderCampClassCard('Necromancer', 'Shadow Lifesteal Lich', 'characters imgs/player/Necromancer.jpg')}
-                    </div>
+                    ${heroSelectionHtml}
                 </div>
 
                 <!-- Section 2: Permanent Metaprogression Upgrades -->
                 <div class="panel" style="padding:16px; margin-bottom:20px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <div class="eyebrow">Step 2: Permanent Meta-Progression (🔮 ${darkOrbs} Dark Orbs)</div>
+                        <div class="eyebrow">Step 2: Permanent Meta-Progression (<i class="fas fa-gem" style="color:var(--arcane);"></i> ${darkOrbs} Dark Orbs)</div>
                         <span style="font-size:11px; color:var(--gold-bright);">Persists across all runs & deaths!</span>
                     </div>
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px;">
                         <div class="glass-panel text-center" style="padding:10px;">
-                            <div style="font-weight:700; color:var(--gold);">❤️ Vitality (+2% HP)</div>
+                            <div style="font-weight:700; color:var(--gold);"><i class="fas fa-heart" style="color:#ff3366;"></i> Vitality (+2% HP)</div>
                             <div style="font-size:11px; color:var(--ink-dim); margin:4px 0;">Rank: ${this.permanentMeta.maxHpRanks || 0}</div>
                             <button class="btn btn-primary" onclick="GameManager.buyMetaUpgrade('maxHpRanks')" style="width:100%; padding:6px 8px; font-size:11px;">
-                                Upgrade (🔮 ${((this.permanentMeta.maxHpRanks || 0) + 1) * 20} Orbs)
+                                Upgrade (<i class="fas fa-gem"></i> ${((this.permanentMeta.maxHpRanks || 0) + 1) * 20} Orbs)
                             </button>
                         </div>
                         <div class="glass-panel text-center" style="padding:10px;">
-                            <div style="font-weight:700; color:var(--gold);">⚔️ Might (+1.5% Dmg)</div>
+                            <div style="font-weight:700; color:var(--gold);"><i class="fas fa-fist-raised" style="color:var(--gold-bright);"></i> Might (+1.5% Dmg)</div>
                             <div style="font-size:11px; color:var(--ink-dim); margin:4px 0;">Rank: ${this.permanentMeta.dmgRanks || 0}</div>
                             <button class="btn btn-primary" onclick="GameManager.buyMetaUpgrade('dmgRanks')" style="width:100%; padding:6px 8px; font-size:11px;">
-                                Upgrade (🔮 ${((this.permanentMeta.dmgRanks || 0) + 1) * 25} Orbs)
+                                Upgrade (<i class="fas fa-gem"></i> ${((this.permanentMeta.dmgRanks || 0) + 1) * 25} Orbs)
                             </button>
                         </div>
                         <div class="glass-panel text-center" style="padding:10px;">
-                            <div style="font-weight:700; color:var(--gold);">🎯 Precision (+1% Crit)</div>
+                            <div style="font-weight:700; color:var(--gold);"><i class="fas fa-bullseye" style="color:var(--arcane);"></i> Precision (+1% Crit)</div>
                             <div style="font-size:11px; color:var(--ink-dim); margin:4px 0;">Rank: ${this.permanentMeta.critRanks || 0}</div>
                             <button class="btn btn-primary" onclick="GameManager.buyMetaUpgrade('critRanks')" style="width:100%; padding:6px 8px; font-size:11px;">
-                                Upgrade (🔮 ${((this.permanentMeta.critRanks || 0) + 1) * 30} Orbs)
+                                Upgrade (<i class="fas fa-gem"></i> ${((this.permanentMeta.critRanks || 0) + 1) * 30} Orbs)
                             </button>
                         </div>
                     </div>
@@ -246,8 +267,13 @@ const GameManager = {
     },
 
     selectCampHero: function(className) {
+        if (this.heroChosen && player && this.currentNodeIndex > 0) {
+            this.showToast(`Hero choice is locked during an active run!`, 'warning');
+            return;
+        }
         SoundEngine.playClick();
         player = new Player(className);
+        this.heroChosen = true;
         this.applyPermanentMeta();
         this.saveGameData();
         this.renderCampHub();
@@ -262,7 +288,7 @@ const GameManager = {
 
         const currentOrbs = this.permanentMeta.darkOrbs || (player ? player.coins : 0);
         if (currentOrbs < cost) {
-            this.showToast(`Not enough Dark Orbs / Coins (Need 🔮 ${cost})!`, 'warning');
+            this.showToast(`Not enough Dark Orbs / Coins (Need ${cost})!`, 'warning');
             return;
         }
 
@@ -293,14 +319,14 @@ const GameManager = {
         if (stageNum > 10) stageNum = 10;
         if (!player) {
             player = new Player('Warrior');
+            this.heroChosen = true;
             this.applyPermanentMeta();
         }
 
         this.currentStage = stageNum;
         this.runSeed = seed || ProceduralEngine.generateRunSeed();
-        this.merchantSummonsRemaining = 2;
-        this.blacksmithSummonsRemaining = 2;
-        this.blacksmithUpgradesRemaining = 2;
+        this.townSummonsRemaining = 2; // Combined Merchant + Blacksmith summon pool
+        this.blacksmithUpgradesRemaining = 2; // Max 2 gear upgrades per stage
 
         const layoutObj = ProceduralEngine.generateStageLayout(stageNum, this.runSeed);
         this.stageNodes = layoutObj.levels;
@@ -316,6 +342,7 @@ const GameManager = {
     },
 
     renderDungeonMap: function() {
+        if (typeof document === 'undefined') return;
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
 
@@ -333,14 +360,14 @@ const GameManager = {
 
             if (isCurrent) {
                 badgeColor = 'var(--gold-bright)';
-                statusText = '👉 ENTER';
+                statusText = '<i class="fas fa-chevron-right"></i> ENTER';
                 clickHandler = `GameManager.enterMapNode(${index})`;
             } else if (isCompleted) {
                 badgeColor = '#00ffaa';
-                statusText = '✓ Cleared';
-                clickHandler = ''; // Strictly no backtracking! Cleared levels cannot be revisited.
+                statusText = '<i class="fas fa-check"></i> Cleared';
+                clickHandler = '';
             } else {
-                statusText = '🔒 Locked';
+                statusText = '<i class="fas fa-lock"></i> Locked';
             }
 
             return `
@@ -369,22 +396,20 @@ const GameManager = {
                         </div>
                     </div>
                     <button class="icon-btn" onclick="GameManager.renderCampHub()" style="padding:6px 12px;">
-                        🏕️ Return to Safe Camp
+                        <i class="fas fa-campground"></i> Return to Safe Camp
                     </button>
                 </div>
 
+                <!-- Combined Summon & Upgrade Status Bar -->
                 <div class="panel" style="padding:10px 14px; margin-bottom:16px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px; font-size:11.5px; border:1px solid var(--border-rune);">
-                    <div>🛒 <strong>MERCHANT SUMMONS:</strong> <span style="color:var(--gold-bright); font-family:var(--font-mono);">${this.merchantSummonsRemaining} / 2</span></div>
-                    <div>🔨 <strong>BLACKSMITH SUMMONS:</strong> <span style="color:var(--gold-bright); font-family:var(--font-mono);">${this.blacksmithSummonsRemaining} / 2</span></div>
-                    <div>⚡ <strong>BLACKSMITH UPGRADES:</strong> <span style="color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}; font-family:var(--font-mono);">${this.blacksmithUpgradesRemaining} / 2 ${this.blacksmithUpgradesRemaining === 0 ? '(EXHAUSTED)' : ''}</span></div>
+                    <div><i class="fas fa-store" style="color:var(--gold);"></i> <strong>TOWN SUMMONS:</strong> <span style="color:var(--gold-bright); font-family:var(--font-mono);">${this.townSummonsRemaining} / 2</span></div>
+                    <div><i class="fas fa-hammer" style="color:var(--gold);"></i> <strong>FORGE UPGRADES:</strong> <span style="color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}; font-family:var(--font-mono);">${this.blacksmithUpgradesRemaining} / 2 ${this.blacksmithUpgradesRemaining === 0 ? '(EXHAUSTED)' : ''}</span></div>
                 </div>
 
+                <!-- Action Hub: Single Combined Town Summon Button -->
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
-                    <button class="icon-btn" onclick="GameManager.summonMerchant()" ${this.merchantSummonsRemaining <= 0 || this.currentNodeIndex >= 11 ? 'disabled' : ''} style="padding:8px 14px; border:1px solid var(--gold); color:var(--gold-bright);">
-                        🛒 Summon Merchant (${this.merchantSummonsRemaining}/2)
-                    </button>
-                    <button class="icon-btn" onclick="GameManager.summonBlacksmith()" ${this.blacksmithSummonsRemaining <= 0 || this.currentNodeIndex >= 11 || this.blacksmithUpgradesRemaining <= 0 ? 'disabled' : ''} style="padding:8px 14px; border:1px solid var(--gold); color:var(--gold-bright);">
-                        🔨 Summon Blacksmith (${this.blacksmithSummonsRemaining}/2)
+                    <button class="icon-btn" onclick="GameManager.summonTownHub()" ${this.townSummonsRemaining <= 0 || this.currentNodeIndex >= 11 ? 'disabled' : ''} style="padding:8px 16px; border:1.5px solid var(--gold); color:var(--gold-bright); font-weight:700;">
+                        <i class="fas fa-store"></i> Summon Merchant & Blacksmith (${this.townSummonsRemaining}/2)
                     </button>
                 </div>
 
@@ -397,45 +422,125 @@ const GameManager = {
                         CURRENT LEVEL ${this.currentNodeIndex + 1}: ${currentNode.title.toUpperCase()}
                     </div>
                     <button class="cta animate-bounce" onclick="GameManager.enterMapNode(${this.currentNodeIndex})" style="padding:12px 24px; font-size:1.1rem; width:100%; max-width:360px;">
-                        👉 ENTER LEVEL ${this.currentNodeIndex + 1}
+                        <i class="fas fa-chevron-right"></i> ENTER LEVEL ${this.currentNodeIndex + 1}
                     </button>
                 </div>
             </div>
         `;
     },
 
-    summonMerchant: function() {
-        if (this.merchantSummonsRemaining <= 0) {
-            this.showToast("NO MERCHANT SUMMONS REMAINING FOR THIS STAGE!", "warning");
+    summonTownHub: function() {
+        if (this.townSummonsRemaining <= 0) {
+            this.showToast("NO TOWN SUMMONS REMAINING FOR THIS STAGE!", "warning");
             return;
         }
         if (this.currentNodeIndex >= 11) {
-            this.showToast("CANNOT SUMMON MERCHANT ON BOSS LEVEL!", "warning");
+            this.showToast("CANNOT SUMMON TOWN CAMP ON BOSS LEVEL!", "warning");
             return;
         }
         SoundEngine.playClick();
-        this.merchantSummonsRemaining--;
+        this.townSummonsRemaining--;
+        this.isNaturalMapNode = false;
         this.renderDungeonMap();
-        this.openShopModal(false);
+        this.openTownHubModal();
     },
 
-    summonBlacksmith: function() {
-        if (this.blacksmithSummonsRemaining <= 0) {
-            this.showToast("NO BLACKSMITH SUMMONS REMAINING FOR THIS STAGE!", "warning");
-            return;
-        }
-        if (this.currentNodeIndex >= 11) {
-            this.showToast("CANNOT SUMMON BLACKSMITH ON BOSS LEVEL!", "warning");
-            return;
-        }
-        if (this.blacksmithUpgradesRemaining <= 0) {
-            this.showToast("BLACKSMITH EXHAUSTED: Max 2 upgrades reached for this stage!", "warning");
-            return;
-        }
+    openTownHubModal: function() {
         SoundEngine.playClick();
-        this.blacksmithSummonsRemaining--;
-        this.renderDungeonMap();
-        this.openUpgradeModal(false);
+        if (!player) return;
+
+        const wLvl = player.equipment.weaponLevel || 0;
+        const aLvl = player.equipment.armorLevel || 0;
+        const accLvl = player.equipment.accessoryLevel || 0;
+
+        const wCost = (wLvl + 1) * 10;
+        const aCost = (aLvl + 1) * 10;
+        const accCost = (accLvl + 1) * 10;
+
+        let weaponOptions = SHOP_ITEMS.weapons.map((w, idx) => `
+            <div class="shop-item glass-panel" style="padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                <div><strong>${w.name}</strong> <div style="font-size:10.5px; color:var(--ink-dim);">${w.desc}</div></div>
+                <button class="btn btn-primary" onclick="GameManager.buyGear('weapon', ${idx})" ${player.gold < w.price ? 'disabled' : ''} style="padding:4px 10px; font-size:11px;">Buy <i class="fas fa-coins"></i> ${w.price}</button>
+            </div>
+        `).join('');
+
+        const modalHtml = `
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel" style="max-width:760px; max-height:88vh; overflow-y:auto;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-store"></i> Wandering Merchant & Blacksmith Camp</h2>
+                        <span class="gold-badge"><i class="fas fa-coins"></i> ${player.gold} Gold | <i class="fas fa-khanda"></i> ${player.coins || 0} Victory Coins</span>
+                        <button class="close-btn" onclick="GameManager.closeTownHubModal()">&times;</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+                        <!-- Left Column: Merchant Shop -->
+                        <div class="panel" style="padding:12px;">
+                            <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-prescription-bottle-alt"></i> Merchant Potions & Supplies</h4>
+                            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px; background:var(--bg-inset); border-radius:6px;">
+                                    <div><strong><img src="characters imgs/items/health_potion.jpg" style="width:18px; height:18px; border-radius:3px; vertical-align:middle;"> Health Potion</strong> (+150 HP)</div>
+                                    <button class="btn btn-primary" onclick="GameManager.buyPotion('hp')" ${player.gold < 15 ? 'disabled' : ''} style="padding:4px 8px; font-size:11px;">Buy 15 Gold</button>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px; background:var(--bg-inset); border-radius:6px;">
+                                    <div><strong><img src="characters imgs/items/mana_potion.jpg" style="width:18px; height:18px; border-radius:3px; vertical-align:middle;"> Mana Potion</strong> (+100 MP)</div>
+                                    <button class="btn btn-primary" onclick="GameManager.buyPotion('mp')" ${player.gold < 15 ? 'disabled' : ''} style="padding:4px 8px; font-size:11px;">Buy 15 Gold</button>
+                                </div>
+                            </div>
+
+                            <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-shield-alt"></i> Weapons & Armaments</h4>
+                            ${weaponOptions}
+                        </div>
+
+                        <!-- Right Column: Blacksmith Forge -->
+                        <div class="panel" style="padding:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <h4 style="color:var(--gold); margin:0;"><i class="fas fa-hammer"></i> Blacksmith Refinement</h4>
+                                <span style="font-size:10.5px; color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}; font-weight:700;">Upgrades: ${this.blacksmithUpgradesRemaining}/2</span>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:var(--bg-inset); border-radius:6px;">
+                                    <div><strong>⚔️ Weapon (+${wLvl})</strong> <div style="font-size:10px; color:var(--gold);">+${Math.floor(wLvl * 15)}% STR</div></div>
+                                    <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('weapon')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < wCost || wLvl >= 10 ? 'disabled' : ''} style="padding:4px 8px; font-size:11px;">
+                                        ${wLvl >= 10 ? 'MAX' : `Upgrade ⚔️ ${wCost}`}
+                                    </button>
+                                </div>
+
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:var(--bg-inset); border-radius:6px;">
+                                    <div><strong>🛡️ Armor (+${aLvl})</strong> <div style="font-size:10px; color:#00ffaa;">+${Math.floor(aLvl * 15)}% VIT</div></div>
+                                    <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('armor')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < aCost || aLvl >= 10 ? 'disabled' : ''} style="padding:4px 8px; font-size:11px;">
+                                        ${aLvl >= 10 ? 'MAX' : `Upgrade ⚔️ ${aCost}`}
+                                    </button>
+                                </div>
+
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:var(--bg-inset); border-radius:6px;">
+                                    <div><strong>💍 Accessory (+${accLvl})</strong> <div style="font-size:10px; color:var(--arcane);">+${Math.floor(accLvl * 15)}% AGI</div></div>
+                                    <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('accessory')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < accCost || accLvl >= 10 ? 'disabled' : ''} style="padding:4px 8px; font-size:11px;">
+                                        ${accLvl >= 10 ? 'MAX' : `Upgrade ⚔️ ${accCost}`}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:right;">
+                        <button class="cta" onclick="GameManager.closeTownHubModal()" style="padding:10px 20px; width:auto;">
+                            Exit Town & Continue Expedition <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
+    },
+
+    closeTownHubModal: function() {
+        this.closeModal();
+        if (this.isNaturalMapNode) {
+            this.isNaturalMapNode = false;
+            this.advanceMapNode();
+        }
     },
 
     enterMapNode: function(nodeIndex) {
@@ -449,10 +554,9 @@ const GameManager = {
             this.startCombatNode(node);
         } else if (node.type === 'shrine') {
             this.openShrineModal(node.shrineType);
-        } else if (node.type === 'merchant') {
-            this.openShopModal(true);
-        } else if (node.type === 'blacksmith') {
-            this.openUpgradeModal(true);
+        } else if (node.type === 'merchant' || node.type === 'blacksmith') {
+            this.isNaturalMapNode = true;
+            this.openTownHubModal();
         } else if (node.type === 'treasure') {
             this.openTreasureModal();
         } else if (node.type === 'event') {
@@ -462,7 +566,6 @@ const GameManager = {
 
     startCombatNode: function(node) {
         if (!player || !node.enemyData) return;
-        const isBoss = node.type === 'boss';
         enemy = new Enemy(node.enemyData, this.currentStage, node.isElite);
         this.renderBattleArena();
         this.logAction(`Encountered <strong>'${enemy.name}'</strong> (${enemy.health} HP)!`, 'warning');
@@ -479,13 +582,13 @@ const GameManager = {
                 <div class="modal-overlay">
                     <div class="modal-card glass-panel text-center" style="max-width:540px;">
                         <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2rem; margin-bottom:10px;">
-                            ${isCampaignClear ? '🎉 CAMPAIGN COMPLETE!' : '🏆 STAGE ' + this.currentStage + ' CLEARED!'}
+                            ${isCampaignClear ? '<i class="fas fa-trophy"></i> CAMPAIGN COMPLETE!' : '<i class="fas fa-crown"></i> STAGE ' + this.currentStage + ' CLEARED!'}
                         </h2>
                         <p style="color:var(--ink-dim); margin-bottom:16px;">
                             ${isCampaignClear ? 'You defeated the Lich King of the Abyss and saved the Realm!' : 'You vanquished the Stage Boss! Stage ' + (this.currentStage + 1) + ' is now unlocked in Camp.'}
                         </p>
                         <button class="cta" onclick="GameManager.closeModal(); GameManager.renderCampHub();" style="width:100%;">
-                            🏕️ Return to Safe Camp
+                            <i class="fas fa-campground"></i> Return to Safe Camp
                         </button>
                     </div>
                 </div>
@@ -502,25 +605,25 @@ const GameManager = {
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center" style="max-width:560px;">
                     <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:1.8rem; margin-bottom:6px;">
-                        ⛩️ Ancient ${shrineType ? shrineType.toUpperCase() : 'SACRED'} Shrine
+                        <i class="fas fa-place-of-worship"></i> Ancient ${shrineType ? shrineType.toUpperCase() : 'SACRED'} Shrine
                     </h2>
                     <p style="color:var(--ink-dim); margin-bottom:16px;">Step forward and make your offering to the ancient spirits.</p>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
                         <div class="panel" onclick="GameManager.chooseShrineOption('heal')" style="padding:12px; cursor:pointer; border:1px solid var(--gold);">
-                            <div style="font-weight:700; color:#00ffaa;">💚 Healing Blessing</div>
+                            <div style="font-weight:700; color:#00ffaa;"><i class="fas fa-heart"></i> Healing Blessing</div>
                             <div style="font-size:11px; color:var(--ink-dim);">Restore 40% Max HP</div>
                         </div>
                         <div class="panel" onclick="GameManager.chooseShrineOption('power')" style="padding:12px; cursor:pointer; border:1px solid var(--gold);">
-                            <div style="font-weight:700; color:var(--gold-bright);">⚔️ Might Blessing</div>
+                            <div style="font-weight:700; color:var(--gold-bright);"><i class="fas fa-fist-raised"></i> Might Blessing</div>
                             <div style="font-size:11px; color:var(--ink-dim);">+15% Physical & Magic Damage</div>
                         </div>
                         <div class="panel" onclick="GameManager.chooseShrineOption('blood')" style="padding:12px; cursor:pointer; border:1px solid var(--crimson);">
-                            <div style="font-weight:700; color:var(--crimson);">🩸 Blood Sacrifice</div>
+                            <div style="font-weight:700; color:var(--crimson);"><i class="fas fa-tint"></i> Blood Sacrifice</div>
                             <div style="font-size:11px; color:var(--ink-dim);">Sacrifice 20% HP for 100 Gold & 20 Orbs</div>
                         </div>
                         <div class="panel" onclick="GameManager.chooseShrineOption('defense')" style="padding:12px; cursor:pointer; border:1px solid var(--arcane);">
-                            <div style="font-weight:700; color:var(--arcane);">🛡️ Iron Barrier</div>
+                            <div style="font-weight:700; color:var(--arcane);"><i class="fas fa-shield-alt"></i> Iron Barrier</div>
                             <div style="font-size:11px; color:var(--ink-dim);">+25 Defense & +50 Shield</div>
                         </div>
                     </div>
@@ -570,15 +673,15 @@ const GameManager = {
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center" style="max-width:480px;">
                     <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:2rem; margin-bottom:6px;">
-                        💎 Ornate Treasure Vault
+                        <i class="fas fa-gem"></i> Ornate Treasure Vault
                     </h2>
                     <p style="color:var(--ink-dim); margin-bottom:16px;">You unlocked an ancient dungeon chest!</p>
                     <div class="victory-rewards" style="margin-bottom:20px;">
-                        <div class="reward-pill"><span>🪙 Gold:</span> <strong>+${goldLoot}</strong></div>
-                        <div class="reward-pill"><span>⚔️ Victory Coins:</span> <strong>+${coinsLoot}</strong></div>
+                        <div class="reward-pill"><span><i class="fas fa-coins"></i> Gold:</span> <strong>+${goldLoot}</strong></div>
+                        <div class="reward-pill"><span><i class="fas fa-khanda"></i> Victory Coins:</span> <strong>+${coinsLoot}</strong></div>
                     </div>
                     <button class="cta" onclick="GameManager.closeModal(); GameManager.advanceMapNode();" style="width:100%;">
-                        Claim Loot & Continue ➡️
+                        Claim Loot & Continue <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
@@ -591,7 +694,7 @@ const GameManager = {
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center" style="max-width:520px;">
                     <h2 style="font-family:var(--font-display); color:var(--gold-bright); font-size:1.8rem; margin-bottom:6px;">
-                        ❓ Mysterious Wandering Traveler
+                        <i class="fas fa-question-circle"></i> Mysterious Wandering Traveler
                     </h2>
                     <p style="color:var(--ink-dim); margin-bottom:16px;">A cloaked hermit offers you a mysterious choice.</p>
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
@@ -618,6 +721,7 @@ const GameManager = {
     },
 
     renderBattleArena: function() {
+        if (typeof document === 'undefined') return;
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
 
@@ -705,7 +809,7 @@ const GameManager = {
         if (enemy && enemy.health <= 0) {
             return `
                 <button class="cta animate-bounce" onclick="GameManager.closeModal(); GameManager.advanceMapNode()" style="padding:14px; font-size:1.1rem; width:100%;">
-                    VICTORY! Continue Expedition ➡️
+                    VICTORY! Continue Expedition <i class="fas fa-chevron-right"></i>
                 </button>
             `;
         }
@@ -745,7 +849,7 @@ const GameManager = {
                     </div>
                     <div class="name" style="font-size:10.5px; font-weight:600; color:${isSelected ? 'var(--gold-bright)' : 'var(--ink-dim)'}; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${skill.name}</div>
 
-                    ${isCooldown ? `<div style="position:absolute; inset:0; background:rgba(10,8,20,0.85); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--crimson); font-weight:800; font-size:10px;">⌛ ${skill.currentCD}T</div>` : ''}
+                    ${isCooldown ? `<div style="position:absolute; inset:0; background:rgba(10,8,20,0.85); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--crimson); font-weight:800; font-size:10px;"><i class="fas fa-hourglass-half"></i> ${skill.currentCD}T</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -788,6 +892,7 @@ const GameManager = {
         if (skill.type === 'buff') {
             if (skill.shieldVal) player.shield += skill.shieldVal;
             if (skill.mpRecover) player.mana = Math.min(player.maxMana, player.mana + skill.mpRecover);
+            this.updateUI(); // INSTANT HP/BAR DROP FIRST
             this.logAction(`Hero used <strong>${skill.name}</strong>! Gained Shield!`, 'info');
         } else {
             const basePower = skill.type === 'magic' ? player.TotalInt : player.TotalStr;
@@ -797,14 +902,19 @@ const GameManager = {
             dmg = Math.max(1, dmg - Math.floor(enemyDef * 0.3));
 
             enemy.health = Math.max(0, enemy.health - dmg);
-            this.spawnFloatingText(document.getElementById('enemy-img'), `${isCrit ? 'CRIT! ' : ''}${dmg}`, isCrit ? 'crit' : 'dmg');
+
+            // INSTANT HEALTH BAR DROP FIRST!
+            this.updateUI();
+
+            // THEN FLOATING TEXT AND LOG!
+            this.spawnFloatingText(typeof document !== 'undefined' ? document.getElementById('enemy-img') : null, `${isCrit ? 'CRIT! ' : ''}${dmg}`, isCrit ? 'crit' : 'dmg');
             this.logAction(`Hero used <strong>${skill.name}</strong> dealing <span style="color:#ff3366">${dmg} damage</span>!`, 'info');
         }
 
         if (skill.cooldown > 0) skill.currentCD = skill.cooldown;
 
         if (enemy.checkPhase2()) {
-            this.logAction(`<strong>⚠️ ${enemy.name} ENRAGED INTO PHASE 2!</strong> Strength & Stats Boosted!`, 'warning');
+            this.logAction(`<strong><i class="fas fa-exclamation-triangle"></i> ${enemy.name} ENRAGED INTO PHASE 2!</strong> Strength & Stats Boosted!`, 'warning');
         }
 
         if (enemy.health <= 0) {
@@ -813,9 +923,8 @@ const GameManager = {
             return;
         }
 
-        setTimeout(() => {
-            this.executeEnemyTurn();
-        }, 800);
+        // INSTANT TURN EXECUTION (ZERO DELAY!)
+        this.executeEnemyTurn();
     },
 
     executeEnemyTurn: function() {
@@ -843,15 +952,16 @@ const GameManager = {
             player.health = Math.max(0, player.health - netDmg);
         }
 
-        this.spawnFloatingText(document.getElementById('player-img'), `${netDmg > 0 ? netDmg : 'BLOCKED!'}`, 'dmg');
+        // INSTANT HEALTH BAR DROP FIRST!
+        this.updateUI();
+
+        // THEN FLOATING TEXT AND LOG!
+        this.spawnFloatingText(typeof document !== 'undefined' ? document.getElementById('player-img') : null, `${netDmg > 0 ? netDmg : 'BLOCKED!'}`, 'dmg');
         this.logAction(`<strong>${enemy.name}</strong> used ${enemySkill.name} dealing <span style="color:#ff2a5f">${netDmg} damage</span>!`, 'warning');
 
-        // Turn tick: decrement skill cooldowns
         player.skills.forEach(s => {
             if (s.currentCD > 0) s.currentCD--;
         });
-
-        this.updateUI();
 
         if (player.health <= 0) {
             this.isTurnInProgress = false;
@@ -889,20 +999,20 @@ const GameManager = {
         const modalHtml = `
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center animate-bounce">
-                    <h2 style="color:var(--gold); font-size:2.4rem;">🎉 VICTORY!</h2>
+                    <h2 style="color:var(--gold); font-size:2.4rem;"><i class="fas fa-trophy"></i> VICTORY!</h2>
                     <p class="subtitle">Cleared Level ${this.currentNodeIndex + 1} / 12 — Defeated ${enemy.name}</p>
 
                     <div class="victory-rewards">
-                        <div class="reward-pill"><span>🪙 Gold:</span> <strong>+${goldLoot}</strong></div>
-                        <div class="reward-pill"><span>⚔️ Victory Coins:</span> <strong>+${coinsLoot}</strong></div>
-                        <div class="reward-pill"><span>⭐ EXP:</span> <strong>+${xpLoot}</strong></div>
+                        <div class="reward-pill"><span><i class="fas fa-coins"></i> Gold:</span> <strong>+${goldLoot}</strong></div>
+                        <div class="reward-pill"><span><i class="fas fa-khanda"></i> Victory Coins:</span> <strong>+${coinsLoot}</strong></div>
+                        <div class="reward-pill"><span><i class="fas fa-star"></i> EXP:</span> <strong>+${xpLoot}</strong></div>
                     </div>
 
-                    ${leveledUp ? `<div class="level-up-banner">🔥 LEVEL UP! Reached Level ${player.level}! +3 Stat Points!</div>` : ''}
-                    ${player.level >= 5 && !player.specialization ? `<div class="special-unlock-banner">⭐ SPECIALIZATION UNLOCKED! Pick your Level 5 Hero Mastery!</div>` : ''}
+                    ${leveledUp ? `<div class="level-up-banner"><i class="fas fa-fire"></i> LEVEL UP! Reached Level ${player.level}! +3 Stat Points!</div>` : ''}
+                    ${player.level >= 5 && !player.specialization ? `<div class="special-unlock-banner"><i class="fas fa-star"></i> SPECIALIZATION UNLOCKED! Pick your Level 5 Hero Mastery!</div>` : ''}
 
                     <div style="margin-top:24px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.advanceMapNode()" style="padding:14px 28px; font-size:1.15rem;">🎉 Continue Map Exploration ➡️</button>
+                        <button class="btn btn-primary" onclick="GameManager.closeModal(); GameManager.advanceMapNode()" style="padding:14px 28px; font-size:1.15rem;">Continue Expedition <i class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>
@@ -920,24 +1030,25 @@ const GameManager = {
         if (player) player.coins = (player.coins || 0) + darkOrbsEarned;
         if (!this.permanentMeta) this.permanentMeta = { darkOrbs: 0 };
         this.permanentMeta.darkOrbs = (this.permanentMeta.darkOrbs || 0) + darkOrbsEarned;
+        this.heroChosen = false;
 
         const modalHtml = `
             <div class="modal-overlay">
                 <div class="modal-card glass-panel text-center" style="max-width:540px;">
                     <h2 style="font-family:var(--font-display); color:var(--crimson); font-size:2.2rem; margin-bottom:6px;">
-                        💀 YOU HAVE PERISHED
+                        <i class="fas fa-skull"></i> YOU HAVE PERISHED
                     </h2>
                     <p style="color:var(--ink-dim); margin-bottom:16px;">Your hero succumbed to the darkness on Stage ${this.currentStage}, Level ${this.currentNodeIndex + 1}.</p>
 
                     <div class="panel" style="padding:14px; margin-bottom:20px; text-align:left; font-size:12px; line-height:1.6;">
-                        <div>🗺️ <strong>Stage Reached:</strong> Stage ${this.currentStage} (${STAGE_THEMES[this.currentStage]?.name})</div>
-                        <div>📊 <strong>Level Reached:</strong> Level ${this.currentNodeIndex + 1} / 12</div>
-                        <div>🎲 <strong>Run Seed:</strong> <span style="font-family:var(--font-mono); color:var(--gold);">${this.currentSeedUsed}</span></div>
-                        <div>🔮 <strong>Permanent Meta-Currency Earned:</strong> <span style="color:var(--gold-bright); font-weight:700;">+${darkOrbsEarned} Dark Orbs</span></div>
+                        <div><i class="fas fa-map"></i> <strong>Stage Reached:</strong> Stage ${this.currentStage} (${STAGE_THEMES[this.currentStage]?.name})</div>
+                        <div><i class="fas fa-list-ol"></i> <strong>Level Reached:</strong> Level ${this.currentNodeIndex + 1} / 12</div>
+                        <div><i class="fas fa-dice"></i> <strong>Run Seed:</strong> <span style="font-family:var(--font-mono); color:var(--gold);">${this.currentSeedUsed}</span></div>
+                        <div><i class="fas fa-gem"></i> <strong>Permanent Meta-Currency Earned:</strong> <span style="color:var(--gold-bright); font-weight:700;">+${darkOrbsEarned} Dark Orbs</span></div>
                     </div>
 
                     <button class="cta" onclick="GameManager.closeModal(); GameManager.renderCampHub();" style="width:100%;">
-                        🏕️ Return to Safe Camp
+                        <i class="fas fa-campground"></i> Return to Safe Camp
                     </button>
                 </div>
             </div>
@@ -971,92 +1082,6 @@ const GameManager = {
         this.updateUI();
     },
 
-    openUpgradeModal: function(isNaturalMapNode = false) {
-        SoundEngine.playClick();
-        if (!player) return;
-
-        const wLvl = player.equipment.weaponLevel || 0;
-        const aLvl = player.equipment.armorLevel || 0;
-        const accLvl = player.equipment.accessoryLevel || 0;
-
-        const wCost = (wLvl + 1) * 10;
-        const aCost = (aLvl + 1) * 10;
-        const accCost = (accLvl + 1) * 10;
-
-        const modalHtml = `
-            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeForgeModal()">
-                <div class="modal-card glass-panel" style="max-width:740px; max-height:88vh; overflow-y:auto;">
-                    <div class="modal-header">
-                        <h2>🔨 Blacksmith Forge, Gem Workbench & Pet Evolution</h2>
-                        <span class="stat-chip coin-badge">⚔️ ${player.coins || 0} Victory Coins</span>
-                        <button class="close-btn" onclick="GameManager.closeForgeModal()">&times;</button>
-                    </div>
-
-                    <div style="background:rgba(217,168,60,0.12); padding:8px 12px; border-radius:8px; border:1px solid var(--gold); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                        <div>
-                            ⚡ <strong>BLACKSMITH UPGRADES:</strong> <span style="font-weight:800; color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}">${this.blacksmithUpgradesRemaining} / 2</span> ${this.blacksmithUpgradesRemaining === 0 ? '(EXHAUSTED)' : ''}
-                        </div>
-                        <div style="font-size:11px; color:var(--ink-dim);">
-                            ${isNaturalMapNode ? 'Natural Node Encounter' : 'Summoned Blacksmith'}
-                        </div>
-                    </div>
-
-                    <!-- Section 1: Gear Upgrades -->
-                    <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.1rem;"><i class="fas fa-hammer"></i> Gear Refinement (+1 to +10)</h3>
-                    <div class="upgrade-grid" style="margin-bottom:20px; display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-                        <div class="upgrade-card glass-panel text-center" style="padding:10px;">
-                            <div class="item-icon-frame" style="width:48px; height:48px; margin:0 auto 6px;">
-                                <img src="characters imgs/items/iron_sword.jpg" alt="Iron Sword" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
-                            </div>
-                            <div class="upgrade-top">
-                                <strong>⚔️ Weapon (+${wLvl})</strong>
-                                <div style="color:var(--gold); font-size:11px;">+${Math.floor(wLvl * 15)}% STR</div>
-                            </div>
-                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('weapon')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < wCost || wLvl >= 10 ? 'disabled' : ''} style="width:100%; margin-top:8px; font-size:11px;">
-                                ${wLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${wCost}`}
-                            </button>
-                        </div>
-
-                        <div class="upgrade-card glass-panel text-center" style="padding:10px;">
-                            <div class="item-icon-frame" style="width:48px; height:48px; margin:0 auto 6px;">
-                                <img src="characters imgs/items/leather_vest.jpg" alt="Leather Vest" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
-                            </div>
-                            <div class="upgrade-top">
-                                <strong>🛡️ Armor (+${aLvl})</strong>
-                                <div style="color:#00ffaa; font-size:11px;">+${Math.floor(aLvl * 15)}% VIT</div>
-                            </div>
-                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('armor')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < aCost || aLvl >= 10 ? 'disabled' : ''} style="width:100%; margin-top:8px; font-size:11px;">
-                                ${aLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${aCost}`}
-                            </button>
-                        </div>
-
-                        <div class="upgrade-card glass-panel text-center" style="padding:10px;">
-                            <div class="item-icon-frame" style="width:48px; height:48px; margin:0 auto 6px;">
-                                <img src="characters imgs/items/wooden_ring.jpg" alt="Wooden Ring" style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
-                            </div>
-                            <div class="upgrade-top">
-                                <strong>💍 Accessory (+${accLvl})</strong>
-                                <div style="color:var(--arcane); font-size:11px;">+${Math.floor(accLvl * 15)}% AGI</div>
-                            </div>
-                            <button class="btn btn-primary" onclick="GameManager.upgradeGearSlot('accessory')" ${this.blacksmithUpgradesRemaining <= 0 || (player.coins || 0) < accCost || accLvl >= 10 ? 'disabled' : ''} style="width:100%; margin-top:8px; font-size:11px;">
-                                ${accLvl >= 10 ? 'MAX +10' : `Upgrade (+1) ⚔️ ${accCost}`}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:16px; text-align:right;">
-                        <button class="btn btn-secondary" onclick="GameManager.closeForgeModal()">Exit Forge</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        this.showModal(modalHtml);
-    },
-
-    closeForgeModal: function() {
-        this.closeModal();
-    },
-
     upgradeGearSlot: function(slot) {
         if (!player) return;
         if (this.blacksmithUpgradesRemaining <= 0) {
@@ -1076,20 +1101,9 @@ const GameManager = {
         player.equipment[slot + 'Level'] = currentLvl + 1;
         player.recalculateStats();
         SoundEngine.playLevelUp();
-        this.logAction(`Forged <strong>${slot.toUpperCase()} +${currentLvl + 1}</strong>! Stats boosted! (${this.blacksmithUpgradesRemaining} upgrades left)`, 'info');
+        this.logAction(`Forged <strong>${slot.toUpperCase()} +${currentLvl + 1}</strong>! (${this.blacksmithUpgradesRemaining} upgrades left)`, 'info');
         this.saveGameData();
-        this.openUpgradeModal(false);
-    },
-
-    addStatFromInventory: function(stat) {
-        if (!player || player.statPoints <= 0) return;
-        player.statPoints--;
-        player[stat]++;
-        player.recalculateStats();
-        SoundEngine.playClick();
-        this.saveGameData();
-        this.updateHeaderStats();
-        this.openInventoryModal('wealth');
+        this.openTownHubModal();
     },
 
     buyPotion: function(type) {
@@ -1105,63 +1119,8 @@ const GameManager = {
         else if (type === 'mp') player.potions.mpPotion = (player.potions.mpPotion || 0) + 1;
         this.saveGameData();
         this.updateHeaderStats();
-        this.openShopModal(false);
+        this.openTownHubModal();
         this.showToast(`Bought 1 ${type.toUpperCase()} Potion!`, 'success');
-    },
-
-    openShopModal: function(isNaturalMapNode = false) {
-        SoundEngine.playClick();
-        let weaponOptions = SHOP_ITEMS.weapons.map((w, idx) => `
-            <div class="shop-item glass-panel" id="shop-item-weapon-${idx}" style="padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <div><strong>${w.name}</strong> <div class="item-desc" style="font-size:11px; color:var(--ink-dim);">${w.desc}</div></div>
-                <button class="btn btn-primary" onclick="GameManager.buyGear('weapon', ${idx})" ${player.gold < w.price ? 'disabled' : ''}>Buy 🪙${w.price}</button>
-            </div>
-        `).join('');
-
-        const modalHtml = `
-            <div class="modal-overlay">
-                <div class="modal-card glass-panel" id="merchant-shop-card" style="max-width:720px; max-height:85vh; overflow-y:auto;">
-                    <div class="modal-header">
-                        <h2>🛒 Dungeon Merchant Shop</h2>
-                        <span class="gold-badge">🪙 Gold: ${player ? player.gold : 0}</span>
-                        <button class="close-btn" onclick="GameManager.closeShopModal()">&times;</button>
-                    </div>
-
-                    <div class="shop-section">
-                        <h4 style="color:var(--gold); margin-bottom:8px;">🧪 Emergency Potions & Supplies</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
-                            <div class="shop-item panel" style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <strong style="color:var(--gold-bright);"><img src="characters imgs/items/health_potion.jpg" style="width:20px; height:20px; border-radius:4px; vertical-align:middle;"> Health Potion (+150 HP)</strong>
-                                    <div class="item-desc" style="font-size:0.8rem; color:var(--ink-dim);">Restores 150 Health in battle</div>
-                                </div>
-                                <button class="btn btn-primary" onclick="GameManager.buyPotion('hp')" ${player.gold < 15 ? 'disabled' : ''}>Buy 🪙15 Gold</button>
-                            </div>
-
-                            <div class="shop-item panel" style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <strong style="color:var(--gold-bright);"><img src="characters imgs/items/mana_potion.jpg" style="width:20px; height:20px; border-radius:4px; vertical-align:middle;"> Mana Potion (+100 MP)</strong>
-                                    <div class="item-desc" style="font-size:0.8rem; color:var(--ink-dim);">Restores 100 Mana in battle</div>
-                                </div>
-                                <button class="btn btn-primary" onclick="GameManager.buyPotion('mp')" ${player.gold < 15 ? 'disabled' : ''}>Buy 🪙15 Gold</button>
-                            </div>
-                        </div>
-
-                        <h4 style="color:var(--gold); margin-bottom:8px;">⚔️ Weapons & Gear</h4>
-                        ${weaponOptions}
-                    </div>
-
-                    <div style="margin-top:16px; text-align:right;">
-                        <button class="btn btn-secondary" onclick="GameManager.closeShopModal()">Exit Shop</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        this.showModal(modalHtml);
-    },
-
-    closeShopModal: function() {
-        this.closeModal();
     },
 
     buyGear: function(slot, idx) {
@@ -1176,11 +1135,11 @@ const GameManager = {
         player.recalculateStats();
         SoundEngine.playLevelUp();
         this.saveGameData();
-        this.openShopModal(false);
+        this.openTownHubModal();
         this.showToast(`Purchased ${item.name}!`, 'success');
     },
 
-    openInventoryModal: function(activeTab = 'wealth') {
+    openInventoryModal: function() {
         SoundEngine.playClick();
         if (!player) {
             this.renderCampHub();
@@ -1202,7 +1161,7 @@ const GameManager = {
                     </div>
 
                     <div class="panel" style="padding:14px; margin-bottom:16px;">
-                        <h4 style="color:var(--gold); margin-bottom:8px;">🔥 Stat Point Allocations (Points: ${player.statPoints})</h4>
+                        <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-fire"></i> Stat Point Allocations (Points: ${player.statPoints})</h4>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px;">
                             <div>STR: ${player.str} <button class="btn btn-primary" onclick="GameManager.addStatFromInventory('str')" ${player.statPoints <= 0 ? 'disabled' : ''} style="padding:2px 8px;">+1</button></div>
                             <div>AGI: ${player.agi} <button class="btn btn-primary" onclick="GameManager.addStatFromInventory('agi')" ${player.statPoints <= 0 ? 'disabled' : ''} style="padding:2px 8px;">+1</button></div>
@@ -1220,13 +1179,24 @@ const GameManager = {
         this.showModal(modalHtml);
     },
 
+    addStatFromInventory: function(stat) {
+        if (!player || player.statPoints <= 0) return;
+        player.statPoints--;
+        player[stat]++;
+        player.recalculateStats();
+        SoundEngine.playClick();
+        this.saveGameData();
+        this.updateHeaderStats();
+        this.openInventoryModal();
+    },
+
     openSettingsModal: function() {
         SoundEngine.playClick();
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
                 <div class="modal-card glass-panel" style="max-width:740px; max-height:88vh; overflow-y:auto;">
                     <div class="modal-header">
-                        <h2>⚙️ Game Settings & World Save Manager</h2>
+                        <h2><i class="fas fa-cog"></i> Game Settings & Audio Controls</h2>
                         <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
                     </div>
 
@@ -1236,7 +1206,7 @@ const GameManager = {
                             <div style="font-size:0.85rem; color:var(--ink-dim);">Toggle dark fantasy combat sound effects and ambience.</div>
                         </div>
                         <button class="btn ${SoundEngine.isMuted ? 'btn-secondary' : 'btn-potion'}" id="audio-btn" onclick="GameManager.toggleMuteAudio(); GameManager.openSettingsModal();" style="padding:8px 16px;">
-                            ${SoundEngine.isMuted ? '🔇 Sound OFF' : '🔊 Sound ON'}
+                            ${SoundEngine.isMuted ? '<i class="fas fa-volume-mute"></i> Sound OFF' : '<i class="fas fa-volume-up"></i> Sound ON'}
                         </button>
                     </div>
 
@@ -1258,9 +1228,9 @@ const GameManager = {
                 currentStage: this.currentStage,
                 currentNodeIndex: this.currentNodeIndex,
                 runSeed: this.runSeed,
-                merchantSummonsRemaining: this.merchantSummonsRemaining,
-                blacksmithSummonsRemaining: this.blacksmithSummonsRemaining,
+                townSummonsRemaining: this.townSummonsRemaining,
                 blacksmithUpgradesRemaining: this.blacksmithUpgradesRemaining,
+                heroChosen: this.heroChosen,
                 permanentMeta: this.permanentMeta || { maxHpRanks: 0, dmgRanks: 0, critRanks: 0, darkOrbs: 0 },
                 difficulty: this.difficulty,
                 playerData: {
@@ -1299,9 +1269,9 @@ const GameManager = {
                 if (data.unlockedStage) this.unlockedStage = data.unlockedStage;
                 if (data.permanentMeta) this.permanentMeta = data.permanentMeta;
                 if (data.runSeed) this.runSeed = data.runSeed;
-                if (data.merchantSummonsRemaining !== undefined) this.merchantSummonsRemaining = data.merchantSummonsRemaining;
-                if (data.blacksmithSummonsRemaining !== undefined) this.blacksmithSummonsRemaining = data.blacksmithSummonsRemaining;
+                if (data.townSummonsRemaining !== undefined) this.townSummonsRemaining = data.townSummonsRemaining;
                 if (data.blacksmithUpgradesRemaining !== undefined) this.blacksmithUpgradesRemaining = data.blacksmithUpgradesRemaining;
+                if (data.heroChosen !== undefined) this.heroChosen = data.heroChosen;
 
                 if (data.playerData && data.playerData.classType) {
                     this.loadFromData(data);
@@ -1341,6 +1311,7 @@ const GameManager = {
     },
 
     showToast: function(msg, type = 'info') {
+        if (typeof document === 'undefined') return;
         const toast = document.createElement('div');
         toast.style.position = 'fixed';
         toast.style.bottom = '20px';
@@ -1356,39 +1327,44 @@ const GameManager = {
         document.body.appendChild(toast);
         setTimeout(() => {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
-        }, 2500);
+        }, 2200);
     },
 
     showModal: function(htmlContent) {
+        if (typeof document === 'undefined') return;
         const container = document.getElementById('modal-container');
         if (container) container.innerHTML = htmlContent;
     },
 
     closeModal: function() {
+        if (typeof document === 'undefined') return;
         const container = document.getElementById('modal-container');
         if (container) container.innerHTML = '';
     },
 
     closeConfirmModal: function() {
+        if (typeof document === 'undefined') return;
         const el = document.getElementById('confirm-modal-overlay');
         if (el && el.parentNode) el.parentNode.removeChild(el);
     },
 
     closeInputModal: function() {
+        if (typeof document === 'undefined') return;
         const el = document.getElementById('input-modal-overlay');
         if (el && el.parentNode) el.parentNode.removeChild(el);
     },
 
     updateUI: function() {
+        if (typeof document === 'undefined') return;
         const pHealthTxt = document.getElementById('player-hp-txt');
         const pHealthBar = document.getElementById('player-hp-bar');
         const pManaTxt = document.getElementById('player-mp-txt');
         const pManaBar = document.getElementById('player-mp-bar');
 
-        if (pHealthTxt) pHealthTxt.innerText = `${player.health}/${player.maxHealth}`;
-        if (pHealthBar) pHealthBar.style.width = `${Math.max(0, (player.health / player.maxHealth) * 100)}%`;
-        if (pManaTxt) pManaTxt.innerText = `${player.mana}/${player.maxMana}`;
-        if (pManaBar) pManaBar.style.width = `${Math.max(0, (player.mana / player.maxMana) * 100)}%`;
+        if (pHealthTxt) pHealthTxt.innerText = `${player ? player.health : 0}/${player ? player.maxHealth : 1}`;
+        if (pHealthBar) pHealthBar.style.width = `${Math.max(0, ((player ? player.health : 0) / (player ? player.maxHealth : 1)) * 100)}%`;
+        if (pManaTxt) pManaTxt.innerText = `${player ? player.mana : 0}/${player ? player.maxMana : 1}`;
+        if (pManaBar) pManaBar.style.width = `${Math.max(0, ((player ? player.mana : 0) / (player ? player.maxMana : 1)) * 100)}%`;
 
         const eHealthTxt = document.getElementById('enemy-hp-txt');
         const eHealthBar = document.getElementById('enemy-hp-bar');
@@ -1402,7 +1378,7 @@ const GameManager = {
     },
 
     spawnFloatingText: function(targetEl, text, type = 'dmg') {
-        if (!targetEl) return;
+        if (typeof document === 'undefined' || !targetEl) return;
         const rect = targetEl.getBoundingClientRect();
         const floatEl = document.createElement('div');
         floatEl.className = `floating-text text-${type}`;
@@ -1421,6 +1397,7 @@ const GameManager = {
     },
 
     logAction: function(msg, category = 'info') {
+        if (typeof document === 'undefined') return;
         const logBody = document.getElementById('log-body');
         if (!logBody) return;
 
@@ -1432,6 +1409,7 @@ const GameManager = {
     },
 
     updateHeaderStats: function() {
+        if (typeof document === 'undefined') return;
         const goldEl = document.getElementById('hdr-gold');
         const coinsEl = document.getElementById('hdr-coins');
         const stageEl = document.getElementById('hdr-stage');

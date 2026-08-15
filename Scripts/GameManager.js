@@ -938,8 +938,10 @@ const GameManager = {
             return;
         }
 
-        // INSTANT TURN EXECUTION (ZERO DELAY!)
-        this.executeEnemyTurn();
+        // 600ms (~0.6s) TURN PACING DELAY BEFORE ENEMY RETALIATES!
+        setTimeout(() => {
+            this.executeEnemyTurn();
+        }, 600);
     },
 
     executeEnemyTurn: function() {

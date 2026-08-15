@@ -1,4 +1,4 @@
-// GameManager.js - Procedural Roguelite Core Engine, Safe Camp, 10 Stages x 12 Levels, Town Summons & No-Emoji Dark Fantasy UI
+// GameManager.js - Procedural Roguelite Core Engine, Safe Camp, 10 Stages x 12 Levels, Town Summons & Visceral Combat Animations
 const SHOP_ITEMS = {
     weapons: [
         { name: 'Steel Longsword', str: 20, int: 0, price: 100, desc: '+20 Strength' },
@@ -98,7 +98,6 @@ const GameManager = {
     stageNodes: [],
     isTurnInProgress: false,
     activeWorld: 1,
-    heroChosen: false,
     isNaturalMapNode: false,
     permanentMeta: {
         maxHpRanks: 0,
@@ -170,31 +169,16 @@ const GameManager = {
 
         const darkOrbs = (this.permanentMeta && this.permanentMeta.darkOrbs !== undefined) ? this.permanentMeta.darkOrbs : (player ? player.coins : 0);
 
-        let heroSelectionHtml = '';
-        if (this.heroChosen && player && this.currentNodeIndex > 0) {
-            heroSelectionHtml = `
-                <div class="panel" style="padding:14px; border:1.5px solid var(--gold); background:rgba(217,168,60,0.1); border-radius:10px; display:flex; align-items:center; gap:12px;">
-                    <img src="${player.img}" alt="${player.classType}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);">
-                    <div>
-                        <div style="font-family:var(--font-display); font-size:15px; color:var(--gold-bright); font-weight:700;">
-                            <i class="fas fa-user-shield"></i> ACTIVE CHAMPION: ${player.classType.toUpperCase()} (LOCKED FOR RUN)
-                        </div>
-                        <div style="font-size:11px; color:var(--ink-dim);">Your champion choice is locked until victory or demise in combat.</div>
-                    </div>
-                </div>
-            `;
-        } else {
-            heroSelectionHtml = `
-                <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
-                    ${this.renderCampClassCard('Warrior', 'Heavy Melee & Iron Shield', 'characters imgs/player/Warrior.jpg')}
-                    ${this.renderCampClassCard('Rogue', 'Critical Hit Assassin', 'characters imgs/player/Rouge.jpg')}
-                    ${this.renderCampClassCard('Wizard', 'Arcane Burst Sorcerer', 'characters imgs/player/Wizard.jpg')}
-                    ${this.renderCampClassCard('Hunter', 'Ranged Bow & Companion', 'characters imgs/player/hunter.jpg')}
-                    ${this.renderCampClassCard('Paladin', 'Holy Shield Crusader', 'characters imgs/player/Paladin.jpg')}
-                    ${this.renderCampClassCard('Necromancer', 'Shadow Lifesteal Lich', 'characters imgs/player/Necromancer.jpg')}
-                </div>
-            `;
-        }
+        const heroSelectionHtml = `
+            <div class="hero-class-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
+                ${this.renderCampClassCard('Warrior', 'Heavy Melee & Iron Shield', 'characters imgs/player/Warrior.jpg')}
+                ${this.renderCampClassCard('Rogue', 'Critical Hit Assassin', 'characters imgs/player/Rouge.jpg')}
+                ${this.renderCampClassCard('Wizard', 'Arcane Burst Sorcerer', 'characters imgs/player/Wizard.jpg')}
+                ${this.renderCampClassCard('Hunter', 'Ranged Bow & Companion', 'characters imgs/player/hunter.jpg')}
+                ${this.renderCampClassCard('Paladin', 'Holy Shield Crusader', 'characters imgs/player/Paladin.jpg')}
+                ${this.renderCampClassCard('Necromancer', 'Shadow Lifesteal Lich', 'characters imgs/player/Necromancer.jpg')}
+            </div>
+        `;
 
         viewContainer.innerHTML = `
             <div class="camp-hub-screen animate-fade-in" style="padding:16px;">
@@ -267,13 +251,8 @@ const GameManager = {
     },
 
     selectCampHero: function(className) {
-        if (this.heroChosen && player && this.currentNodeIndex > 0) {
-            this.showToast(`Hero choice is locked during an active run!`, 'warning');
-            return;
-        }
         SoundEngine.playClick();
         player = new Player(className);
-        this.heroChosen = true;
         this.applyPermanentMeta();
         this.saveGameData();
         this.renderCampHub();
@@ -319,7 +298,6 @@ const GameManager = {
         if (stageNum > 10) stageNum = 10;
         if (!player) {
             player = new Player('Warrior');
-            this.heroChosen = true;
             this.applyPermanentMeta();
         }
 
@@ -401,15 +379,15 @@ const GameManager = {
                 </div>
 
                 <!-- Combined Summon & Upgrade Status Bar -->
-                <div class="panel" style="padding:10px 14px; margin-bottom:16px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px; font-size:11.5px; border:1px solid var(--border-rune);">
-                    <div><i class="fas fa-store" style="color:var(--gold);"></i> <strong>TOWN SUMMONS:</strong> <span style="color:var(--gold-bright); font-family:var(--font-mono);">${this.townSummonsRemaining} / 2</span></div>
-                    <div><i class="fas fa-hammer" style="color:var(--gold);"></i> <strong>FORGE UPGRADES:</strong> <span style="color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}; font-family:var(--font-mono);">${this.blacksmithUpgradesRemaining} / 2 ${this.blacksmithUpgradesRemaining === 0 ? '(EXHAUSTED)' : ''}</span></div>
+                <div class="panel" style="padding:10px 14px; margin-bottom:16px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:10px; font-size:12px; border:1px solid var(--border-rune);">
+                    <div><i class="fas fa-store" style="color:var(--gold);"></i> <strong>SUMMON MERCHANT & BLACKSMITH:</strong> <span style="color:var(--gold-bright); font-family:var(--font-mono); font-weight:700;">${this.townSummonsRemaining} / 2 USES LEFT</span></div>
+                    <div><i class="fas fa-hammer" style="color:var(--gold);"></i> <strong>FORGE GEAR UPGRADES:</strong> <span style="color:${this.blacksmithUpgradesRemaining > 0 ? 'var(--gold-bright)' : 'var(--crimson)'}; font-family:var(--font-mono); font-weight:700;">${this.blacksmithUpgradesRemaining} / 2 USES LEFT</span></div>
                 </div>
 
                 <!-- Action Hub: Single Combined Town Summon Button -->
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
-                    <button class="icon-btn" onclick="GameManager.summonTownHub()" ${this.townSummonsRemaining <= 0 || this.currentNodeIndex >= 11 ? 'disabled' : ''} style="padding:8px 16px; border:1.5px solid var(--gold); color:var(--gold-bright); font-weight:700;">
-                        <i class="fas fa-store"></i> Summon Merchant & Blacksmith (${this.townSummonsRemaining}/2)
+                    <button class="icon-btn" onclick="GameManager.summonTownHub()" ${this.townSummonsRemaining <= 0 || this.currentNodeIndex >= 11 ? 'disabled' : ''} style="padding:10px 20px; border:1.5px solid var(--gold); color:var(--gold-bright); font-weight:700; font-size:0.95rem; box-shadow:0 0 12px rgba(217,168,60,0.25);">
+                        <i class="fas fa-store"></i> Summon Merchant & Blacksmith (${this.townSummonsRemaining} Remaining)
                     </button>
                 </div>
 
@@ -878,6 +856,40 @@ const GameManager = {
         `;
     },
 
+    triggerCombatAnimation: function(attacker) {
+        if (typeof document === 'undefined') return;
+        const playerImg = document.getElementById('player-img');
+        const enemyImg = document.getElementById('enemy-img');
+
+        if (attacker === 'player') {
+            if (playerImg) {
+                playerImg.classList.remove('anim-lunge-player');
+                void playerImg.offsetWidth;
+                playerImg.classList.add('anim-lunge-player');
+                setTimeout(() => playerImg.classList.remove('anim-lunge-player'), 350);
+            }
+            if (enemyImg) {
+                enemyImg.classList.remove('anim-hit-shake');
+                void enemyImg.offsetWidth;
+                enemyImg.classList.add('anim-hit-shake');
+                setTimeout(() => enemyImg.classList.remove('anim-hit-shake'), 350);
+            }
+        } else if (attacker === 'enemy') {
+            if (enemyImg) {
+                enemyImg.classList.remove('anim-lunge-enemy');
+                void enemyImg.offsetWidth;
+                enemyImg.classList.add('anim-lunge-enemy');
+                setTimeout(() => enemyImg.classList.remove('anim-lunge-enemy'), 350);
+            }
+            if (playerImg) {
+                playerImg.classList.remove('anim-hit-shake');
+                void playerImg.offsetWidth;
+                playerImg.classList.add('anim-hit-shake');
+                setTimeout(() => playerImg.classList.remove('anim-hit-shake'), 350);
+            }
+        }
+    },
+
     useSkill: function(skillIndex) {
         if (this.isTurnInProgress) return;
         const skill = player.skills[skillIndex];
@@ -905,6 +917,9 @@ const GameManager = {
 
             // INSTANT HEALTH BAR DROP FIRST!
             this.updateUI();
+
+            // TRIGGER VISCERAL HERO LUNGE & ENEMY HIT SHAKE ANIMATIONS!
+            this.triggerCombatAnimation('player');
 
             // THEN FLOATING TEXT AND LOG!
             this.spawnFloatingText(typeof document !== 'undefined' ? document.getElementById('enemy-img') : null, `${isCrit ? 'CRIT! ' : ''}${dmg}`, isCrit ? 'crit' : 'dmg');
@@ -954,6 +969,9 @@ const GameManager = {
 
         // INSTANT HEALTH BAR DROP FIRST!
         this.updateUI();
+
+        // TRIGGER VISCERAL ENEMY LUNGE & PLAYER HIT SHAKE ANIMATIONS!
+        this.triggerCombatAnimation('enemy');
 
         // THEN FLOATING TEXT AND LOG!
         this.spawnFloatingText(typeof document !== 'undefined' ? document.getElementById('player-img') : null, `${netDmg > 0 ? netDmg : 'BLOCKED!'}`, 'dmg');
@@ -1030,7 +1048,6 @@ const GameManager = {
         if (player) player.coins = (player.coins || 0) + darkOrbsEarned;
         if (!this.permanentMeta) this.permanentMeta = { darkOrbs: 0 };
         this.permanentMeta.darkOrbs = (this.permanentMeta.darkOrbs || 0) + darkOrbsEarned;
-        this.heroChosen = false;
 
         const modalHtml = `
             <div class="modal-overlay">
@@ -1230,7 +1247,6 @@ const GameManager = {
                 runSeed: this.runSeed,
                 townSummonsRemaining: this.townSummonsRemaining,
                 blacksmithUpgradesRemaining: this.blacksmithUpgradesRemaining,
-                heroChosen: this.heroChosen,
                 permanentMeta: this.permanentMeta || { maxHpRanks: 0, dmgRanks: 0, critRanks: 0, darkOrbs: 0 },
                 difficulty: this.difficulty,
                 playerData: {
@@ -1271,7 +1287,6 @@ const GameManager = {
                 if (data.runSeed) this.runSeed = data.runSeed;
                 if (data.townSummonsRemaining !== undefined) this.townSummonsRemaining = data.townSummonsRemaining;
                 if (data.blacksmithUpgradesRemaining !== undefined) this.blacksmithUpgradesRemaining = data.blacksmithUpgradesRemaining;
-                if (data.heroChosen !== undefined) this.heroChosen = data.heroChosen;
 
                 if (data.playerData && data.playerData.classType) {
                     this.loadFromData(data);

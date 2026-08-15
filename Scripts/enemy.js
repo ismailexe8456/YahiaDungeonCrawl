@@ -205,12 +205,58 @@ class Enemy {
         return Math.min(0.02 + (this.agility * 0.002), 0.30);
     }
 
-    getRandomSkill() {
-        if (this.inPhase2 && this.phase2Skill && Math.random() < 0.5) {
-            return this.phase2Skill;
+    getTacticalSkill(player, stageNum = 1) {
+        if (!this.skills || this.skills.length === 0) {
+            return { name: 'Basic Strike', mult: 1.0, type: 'physical' };
         }
-        const randIndex = Math.floor(Math.random() * this.skills.length);
-        return this.skills[randIndex];
+
+        // Level 1: Low Stage Normal Enemies (Stage 1-3 Normal Enemies - Simple / Suboptimal Moves)
+        if (stageNum <= 3 && !this.isBoss && !this.isElite) {
+            if (Math.random() < 0.65) {
+                return this.skills[0]; // Simple basic strike
+            }
+            return this.skills[Math.floor(Math.random() * this.skills.length)];
+        }
+
+        // Level 3: Mastermind AI (Bosses, Elites or Stage 7+ - Optimal Lethal Execution)
+        if (this.isBoss || this.isElite || stageNum >= 7) {
+            // A. Phase 2 Ultimate Enraged Skill
+            if (this.inPhase2 && this.phase2Skill && Math.random() < 0.60) {
+                return this.phase2Skill;
+            }
+
+            // B. Lethal Hero Execution Check (Slay hero if possible)
+            if (player) {
+                for (let s of this.skills) {
+                    const estDmg = Math.floor(this.strength * (s.mult || 1.0));
+                    if (estDmg >= (player.health + (player.shield || 0))) {
+                        return s;
+                    }
+                }
+            }
+
+            // C. Survival Healing / Lifesteal if low HP
+            if (this.health < Math.floor(this.maxHealth * 0.35)) {
+                const healSkill = this.skills.find(s => s.type === 'heal' || s.lifesteal);
+                if (healSkill) return healSkill;
+            }
+
+            // D. Max Damage Multiplier
+            const sortedByDmg = [...this.skills].sort((a, b) => (b.mult || 1.0) - (a.mult || 1.0));
+            return sortedByDmg[0];
+        }
+
+        // Level 2: Mid Stage Normal Enemies (Stage 4-6 - Balanced Tactical AI)
+        if (player && player.health < Math.floor(player.maxHealth * 0.30)) {
+            const heavySkill = this.skills.find(s => (s.mult || 1.0) >= 1.5);
+            if (heavySkill) return heavySkill;
+        }
+
+        return this.skills[Math.floor(Math.random() * this.skills.length)];
+    }
+
+    getRandomSkill(player, stageNum = 1) {
+        return this.getTacticalSkill(player, stageNum);
     }
 }
 

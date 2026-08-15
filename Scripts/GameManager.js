@@ -871,12 +871,7 @@ const GameManager = {
             const disabled = isCooldown || isInsufficientMana;
             const isSelected = this.selectedSkillIndex === index;
 
-            let skillImg = 'characters imgs/items/iron_sword.jpg';
-            if (skill.name.includes('Heavy Slash') || skill.name.includes('Slash')) skillImg = 'characters imgs/items/heavy_slash.jpg';
-            else if (skill.name.includes('Berserk') || skill.name.includes('Rampage')) skillImg = 'characters imgs/items/berserk_rampage.jpg';
-            else if (skill.name.includes('Iron Wall') || skill.name.includes('Shield') || skill.name.includes('Guard')) skillImg = 'characters imgs/items/iron_wall.jpg';
-            else if (skill.element === 'fire') skillImg = 'characters imgs/items/ruby_gem.jpg';
-            else if (skill.element === 'dark') skillImg = 'characters imgs/items/diamond_gem.jpg';
+            let skillImg = skill.iconImg || 'characters imgs/items/iron_sword.jpg';
 
             return `
                 <div class="skill ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}" 
@@ -1026,9 +1021,11 @@ const GameManager = {
             return;
         }
 
+        this.logAction(`<strong><i class="fas fa-brain animate-pulse" style="color:var(--gold-bright);"></i> ${enemy.name}</strong> is evaluating tactical counter-move...`, 'info');
+
         this.turnTimer = setTimeout(() => {
             this.executeEnemyTurn();
-        }, 600);
+        }, 750);
     },
 
     executeEnemyTurn: function() {
@@ -1041,8 +1038,8 @@ const GameManager = {
             return;
         }
 
-        const enemySkill = enemy.getRandomSkill();
-        const baseDmg = Math.floor(enemy.strength * enemySkill.mult);
+        const enemySkill = enemy.getTacticalSkill(player, this.currentStage);
+        const baseDmg = Math.floor(enemy.strength * (enemySkill.mult || 1.0));
         let playerDef = player.TotalDefense || 10;
         let netDmg = Math.max(1, baseDmg - Math.floor(playerDef * 0.4));
 

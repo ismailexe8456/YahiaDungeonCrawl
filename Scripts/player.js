@@ -176,10 +176,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Warrior.jpg',
         baseStats: { hp: 220, mp: 40, str: 45, agi: 20, int: 15, vit: 45, spd: 30 },
         skills: [
-            { id: 'w1', name: 'Heavy Slash', manaCost: 0, cooldown: 0, desc: 'Strike enemy dealing 120% physical damage.', sound: 'slash', type: 'physical', mult: 1.2 },
-            { id: 'w2', name: 'Berserk Rampage', manaCost: 20, cooldown: 2, desc: 'Unleash wild frenzy dealing 180% damage.', sound: 'heavyHit', type: 'physical', mult: 1.8 },
-            { id: 'w3', name: 'Iron Wall', manaCost: 15, cooldown: 3, desc: 'Gain 50 Shield points to absorb damage.', sound: 'shield', type: 'buff', shieldVal: 50 },
-            { id: 'w4', name: 'Execute', manaCost: 30, cooldown: 4, desc: 'Devastating strike dealing 250% damage.', sound: 'heavyHit', type: 'physical', mult: 2.5 }
+            { id: 'w1', name: 'Heavy Slash', manaCost: 0, cooldown: 0, desc: 'Strike enemy dealing 120% physical damage.', sound: 'slash', type: 'physical', mult: 1.2, iconImg: 'characters imgs/items/heavy_slash.jpg' },
+            { id: 'w2', name: 'Berserk Rampage', manaCost: 20, cooldown: 2, desc: 'Unleash wild frenzy dealing 180% damage.', sound: 'heavyHit', type: 'physical', mult: 1.8, iconImg: 'characters imgs/items/berserk_rampage.jpg' },
+            { id: 'w3', name: 'Iron Wall', manaCost: 15, cooldown: 3, desc: 'Gain 50 Shield points to absorb damage.', sound: 'shield', type: 'buff', shieldVal: 50, iconImg: 'characters imgs/items/iron_wall.jpg' },
+            { id: 'w4', name: 'Execute', manaCost: 30, cooldown: 4, desc: 'Devastating strike dealing 250% damage.', sound: 'heavyHit', type: 'physical', mult: 2.5, iconImg: 'characters imgs/items/iron_sword.jpg' }
         ]
     },
     Rogue: {
@@ -189,10 +189,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Rouge.jpg',
         baseStats: { hp: 140, mp: 60, str: 35, agi: 55, int: 20, vit: 25, spd: 50 },
         skills: [
-            { id: 'r1', name: 'Quick Dagger', manaCost: 0, cooldown: 0, desc: 'Swift strike dealing 100% physical damage.', sound: 'slash', type: 'physical', mult: 1.0 },
-            { id: 'r2', name: 'Poison Ambush', manaCost: 15, cooldown: 2, desc: 'Strike for 150% damage + 20% Lifesteal.', sound: 'slash', type: 'physical', mult: 1.5, lifesteal: 0.2 },
-            { id: 'r3', name: 'Shadow Dance', manaCost: 20, cooldown: 3, desc: 'Increase Crit Chance by 35% for next turn.', sound: 'shield', type: 'buff', critBuff: true },
-            { id: 'r4', name: 'Shadowblade Flurry', manaCost: 35, cooldown: 4, desc: 'Multi-hit strike dealing 260% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.6 }
+            { id: 'r1', name: 'Quick Dagger', manaCost: 0, cooldown: 0, desc: 'Swift strike dealing 100% physical damage.', sound: 'slash', type: 'physical', mult: 1.0, iconImg: 'characters imgs/items/iron_sword.jpg' },
+            { id: 'r2', name: 'Poison Ambush', manaCost: 15, cooldown: 2, desc: 'Strike for 150% damage + 20% Lifesteal.', sound: 'slash', type: 'physical', mult: 1.5, lifesteal: 0.2, iconImg: 'characters imgs/items/emerald_gem.jpg' },
+            { id: 'r3', name: 'Shadow Dance', manaCost: 20, cooldown: 3, desc: 'Increase Crit Chance by 35% for next turn.', sound: 'shield', type: 'buff', critBuff: true, iconImg: 'characters imgs/items/wooden_ring.jpg' },
+            { id: 'r4', name: 'Shadowblade Flurry', manaCost: 35, cooldown: 4, desc: 'Multi-hit strike dealing 260% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.6, iconImg: 'characters imgs/items/heavy_slash.jpg' }
         ]
     },
     Wizard: {
@@ -202,10 +202,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Wizard.jpg',
         baseStats: { hp: 120, mp: 220, str: 15, agi: 25, int: 60, vit: 20, spd: 35 },
         skills: [
-            { id: 'm1', name: 'Arcane Bolt', manaCost: 0, cooldown: 0, desc: 'Cast energy bolt dealing 110% magic damage.', sound: 'fireball', type: 'magic', mult: 1.1 },
-            { id: 'm2', name: 'Inferno Fireball', manaCost: 30, cooldown: 2, desc: 'Blast enemy dealing 200% elemental fire damage.', sound: 'fireball', type: 'magic', mult: 2.0, element: 'fire' },
-            { id: 'm3', name: 'Mana Barrier', manaCost: 25, cooldown: 3, desc: 'Convert mana into 65 Shield points & recover MP.', sound: 'shield', type: 'buff', shieldVal: 65, mpRecover: 30 },
-            { id: 'm4', name: 'Lightning Storm', manaCost: 50, cooldown: 4, desc: 'Summon cataclysmic storm dealing 280% magic damage.', sound: 'fireball', type: 'magic', mult: 2.8, element: 'lightning' }
+            { id: 'm1', name: 'Arcane Bolt', manaCost: 0, cooldown: 0, desc: 'Cast energy bolt dealing 110% magic damage.', sound: 'fireball', type: 'magic', mult: 1.1, iconImg: 'characters imgs/items/sapphire_gem.jpg' },
+            { id: 'm2', name: 'Inferno Fireball', manaCost: 30, cooldown: 2, desc: 'Blast enemy dealing 200% elemental fire damage.', sound: 'fireball', type: 'magic', mult: 2.0, element: 'fire', iconImg: 'characters imgs/items/ruby_gem.jpg' },
+            { id: 'm3', name: 'Mana Barrier', manaCost: 25, cooldown: 3, desc: 'Convert mana into 65 Shield points & recover MP.', sound: 'shield', type: 'buff', shieldVal: 65, mpRecover: 30, iconImg: 'characters imgs/items/iron_wall.jpg' },
+            { id: 'm4', name: 'Lightning Storm', manaCost: 50, cooldown: 4, desc: 'Summon cataclysmic storm dealing 280% magic damage.', sound: 'fireball', type: 'magic', mult: 2.8, element: 'lightning', iconImg: 'characters imgs/items/diamond_gem.jpg' }
         ]
     },
     Hunter: {
@@ -215,10 +215,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/hunter.jpg',
         baseStats: { hp: 160, mp: 80, str: 38, agi: 45, int: 22, vit: 32, spd: 45 },
         skills: [
-            { id: 'h1', name: 'Piercing Arrow', manaCost: 0, cooldown: 0, desc: 'Ranged shot dealing 115% physical damage.', sound: 'slash', type: 'physical', mult: 1.15 },
-            { id: 'h2', name: 'Multi-Arrow Volley', manaCost: 20, cooldown: 2, desc: 'Fire array of arrows dealing 170% damage.', sound: 'slash', type: 'physical', mult: 1.7 },
-            { id: 'h3', name: 'Eagle Focus', manaCost: 15, cooldown: 3, desc: '+25% Crit chance and gain 30 Shield.', sound: 'shield', type: 'buff', shieldVal: 30, critBuff: true },
-            { id: 'h4', name: 'Sniper Assassinate', manaCost: 40, cooldown: 4, desc: 'Lethal headshot dealing 270% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.7 }
+            { id: 'h1', name: 'Piercing Arrow', manaCost: 0, cooldown: 0, desc: 'Ranged shot dealing 115% physical damage.', sound: 'slash', type: 'physical', mult: 1.15, iconImg: 'characters imgs/items/iron_sword.jpg' },
+            { id: 'h2', name: 'Multi-Arrow Volley', manaCost: 20, cooldown: 2, desc: 'Fire array of arrows dealing 170% damage.', sound: 'slash', type: 'physical', mult: 1.7, iconImg: 'characters imgs/items/heavy_slash.jpg' },
+            { id: 'h3', name: 'Eagle Focus', manaCost: 15, cooldown: 3, desc: '+25% Crit chance and gain 30 Shield.', sound: 'shield', type: 'buff', shieldVal: 30, critBuff: true, iconImg: 'characters imgs/items/wooden_ring.jpg' },
+            { id: 'h4', name: 'Sniper Assassinate', manaCost: 40, cooldown: 4, desc: 'Lethal headshot dealing 270% physical damage.', sound: 'heavyHit', type: 'physical', mult: 2.7, iconImg: 'characters imgs/items/berserk_rampage.jpg' }
         ]
     },
     Paladin: {
@@ -228,10 +228,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Paladin.jpg',
         baseStats: { hp: 200, mp: 100, str: 38, agi: 22, int: 35, vit: 38, spd: 32 },
         skills: [
-            { id: 'p1', name: 'Righteous Hammer', manaCost: 0, cooldown: 0, desc: 'Strike with holy force dealing 110% physical damage.', sound: 'slash', type: 'physical', mult: 1.1 },
-            { id: 'p2', name: 'Divine Smite', manaCost: 25, cooldown: 2, desc: 'Call down holy pillar dealing 180% radiant magic damage.', sound: 'fireball', type: 'magic', mult: 1.8, element: 'holy' },
-            { id: 'p3', name: 'Lay on Hands', manaCost: 35, cooldown: 3, desc: 'Channel holy light to heal 35% of max HP.', sound: 'heal', type: 'heal', healPercent: 0.35 },
-            { id: 'p4', name: 'Aegis of Light', manaCost: 40, cooldown: 4, desc: 'Grant a holy shield that blocks 100 damage.', sound: 'shield', type: 'buff', shieldVal: 100 }
+            { id: 'p1', name: 'Righteous Hammer', manaCost: 0, cooldown: 0, desc: 'Strike with holy force dealing 110% physical damage.', sound: 'slash', type: 'physical', mult: 1.1, iconImg: 'characters imgs/items/iron_sword.jpg' },
+            { id: 'p2', name: 'Divine Smite', manaCost: 25, cooldown: 2, desc: 'Call down holy pillar dealing 180% radiant magic damage.', sound: 'fireball', type: 'magic', mult: 1.8, element: 'holy', iconImg: 'characters imgs/items/diamond_gem.jpg' },
+            { id: 'p3', name: 'Lay on Hands', manaCost: 35, cooldown: 3, desc: 'Channel holy light to heal 35% of max HP.', sound: 'heal', type: 'heal', healPercent: 0.35, iconImg: 'characters imgs/items/health_potion.jpg' },
+            { id: 'p4', name: 'Aegis of Light', manaCost: 40, cooldown: 4, desc: 'Grant a holy shield that blocks 100 damage.', sound: 'shield', type: 'buff', shieldVal: 100, iconImg: 'characters imgs/items/iron_wall.jpg' }
         ]
     },
     Necromancer: {
@@ -241,10 +241,10 @@ const HERO_CLASSES = {
         img: 'characters imgs/player/Necromancer.jpg',
         baseStats: { hp: 130, mp: 180, str: 18, agi: 28, int: 55, vit: 22, spd: 38 },
         skills: [
-            { id: 'n1', name: 'Bone Spear', manaCost: 10, cooldown: 0, desc: 'Hurl sharp bone projectiles dealing 125% magic damage.', sound: 'fireball', type: 'magic', mult: 1.25, element: 'dark' },
-            { id: 'n2', name: 'Siphon Life', manaCost: 25, cooldown: 2, desc: 'Drain life force: deals 150% damage and heals user for 50% of damage dealt.', sound: 'heal', type: 'magic', mult: 1.5, lifesteal: 0.5, element: 'dark' },
-            { id: 'n3', name: 'Curse of Decay', manaCost: 20, cooldown: 3, desc: 'Corrupt enemy: deals 140% dark magic damage & weakens enemy strength by 20% for 3 turns.', sound: 'fireball', type: 'magic', mult: 1.4, debuffStrPct: 0.2, element: 'dark' },
-            { id: 'n4', name: 'Army of the Dead', manaCost: 45, cooldown: 4, desc: 'Summon spectral forces dealing 260% dark damage!', sound: 'heavyHit', type: 'magic', mult: 2.6, element: 'dark' }
+            { id: 'n1', name: 'Bone Spear', manaCost: 10, cooldown: 0, desc: 'Hurl sharp bone projectiles dealing 125% magic damage.', sound: 'fireball', type: 'magic', mult: 1.25, element: 'dark', iconImg: 'characters imgs/items/heavy_slash.jpg' },
+            { id: 'n2', name: 'Siphon Life', manaCost: 25, cooldown: 2, desc: 'Drain life force: deals 150% damage and heals user for 50% of damage dealt.', sound: 'heal', type: 'magic', mult: 1.5, lifesteal: 0.5, element: 'dark', iconImg: 'characters imgs/items/ruby_gem.jpg' },
+            { id: 'n3', name: 'Curse of Decay', manaCost: 20, cooldown: 3, desc: 'Corrupt enemy: deals 140% dark magic damage & weakens enemy strength by 20% for 3 turns.', sound: 'fireball', type: 'magic', mult: 1.4, debuffStrPct: 0.2, element: 'dark', iconImg: 'characters imgs/items/emerald_gem.jpg' },
+            { id: 'n4', name: 'Army of the Dead', manaCost: 45, cooldown: 4, desc: 'Summon spectral forces dealing 260% dark damage!', sound: 'heavyHit', type: 'magic', mult: 2.6, element: 'dark', iconImg: 'characters imgs/items/berserk_rampage.jpg' }
         ]
     }
 };

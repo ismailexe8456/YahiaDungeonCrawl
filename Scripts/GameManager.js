@@ -144,6 +144,7 @@ const GameManager = {
     },
 
     renderCampHub: function() {
+        if (typeof document === 'undefined') return;
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) return;
         this.updateHeaderStats();
@@ -280,11 +281,12 @@ const GameManager = {
         const dmgBonus = (this.permanentMeta.dmgRanks || 0) * 0.015;
         const critBonus = (this.permanentMeta.critRanks || 0) * 0.01;
 
-        player.maxHealth = Math.floor(player.baseStats.hp * (1 + hpBonus));
-        player.health = player.maxHealth;
-        player.str = Math.floor(player.baseStats.str * (1 + dmgBonus));
         player.critBonus = critBonus;
         player.recalculateStats();
+
+        player.maxHealth = Math.floor(player.maxHealth * (1 + hpBonus));
+        player.health = player.maxHealth;
+        player.str = Math.floor(player.str * (1 + dmgBonus));
     },
 
     startStageMap: function(stageNum, seed) {

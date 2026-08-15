@@ -265,6 +265,7 @@ class Player {
         this.coins = 15; // Victory Coins for Gear Upgrades
 
         // Base Stats
+        this.baseStats = { ...classDef.baseStats };
         this.str = classDef.baseStats.str;
         this.agi = classDef.baseStats.agi;
         this.int = classDef.baseStats.int;
@@ -427,4 +428,8 @@ class Player {
         }
         this.recalculateStats();
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { Player, COMPANIONS, GEMS, HERO_CLASSES };
 }

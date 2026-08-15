@@ -1209,31 +1209,221 @@ const GameManager = {
 
     openSettingsModal: function() {
         SoundEngine.playClick();
+        if (player) this.saveGameData();
+
+        const savedUsername = localStorage.getItem('dungeon_crawl_last_username') || '';
+
         const modalHtml = `
             <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
                 <div class="modal-card glass-panel" style="max-width:740px; max-height:88vh; overflow-y:auto;">
                     <div class="modal-header">
-                        <h2><i class="fas fa-cog"></i> Game Settings & Audio Controls</h2>
+                        <h2><i class="fas fa-cog"></i> Save, Load & Cloud Database Manager</h2>
                         <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
                     </div>
 
+                    <!-- Audio Control Section -->
                     <div class="glass-panel" style="padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--gold);">
                         <div>
                             <strong style="color:var(--gold); font-size:1.05rem;"><i class="fas fa-volume-up"></i> Sound Engine Controls</strong>
-                            <div style="font-size:0.85rem; color:var(--ink-dim);">Toggle dark fantasy combat sound effects and ambience.</div>
+                            <div style="font-size:0.85rem; color:var(--ink-dim);">Toggle dark fantasy combat sound effects and background audio ambience.</div>
                         </div>
                         <button class="btn ${SoundEngine.isMuted ? 'btn-secondary' : 'btn-potion'}" id="audio-btn" onclick="GameManager.toggleMuteAudio(); GameManager.openSettingsModal();" style="padding:8px 16px;">
                             ${SoundEngine.isMuted ? '<i class="fas fa-volume-mute"></i> Sound OFF' : '<i class="fas fa-volume-up"></i> Sound ON'}
                         </button>
                     </div>
 
-                    <div style="text-align:right; margin-top:16px;">
+                    <!-- Online Cloud DB Sync Box -->
+                    <div class="cloud-db-box glass-panel" style="margin-bottom:16px; padding:16px; border:1.5px solid var(--gold);">
+                        <h3 style="color:var(--gold-bright); margin-bottom:6px;"><i class="fas fa-cloud-upload-alt"></i> Online Cloud Database Sync</h3>
+                        <p style="font-size:12px; color:var(--ink-dim); margin-bottom:12px;">Save or restore your hero expedition across any browser, PC, or mobile device using your Hero Account Name!</p>
+
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                            <input type="text" id="cloud-username-input" class="glass-input" value="${savedUsername}" placeholder="Enter Hero Account Name..." style="flex:1; min-width:200px; padding:8px 12px; border-radius:6px; border:1px solid var(--border-rune); background:var(--bg-inset); color:#fff; font-family:var(--font-mono);">
+                            <button class="btn btn-primary" onclick="GameManager.saveToCloudDB()" style="padding:8px 16px;"><i class="fas fa-cloud-upload-alt"></i> Save Cloud</button>
+                            <button class="btn btn-potion" onclick="GameManager.loadFromCloudDB()" style="padding:8px 16px;"><i class="fas fa-cloud-download-alt"></i> Load Cloud</button>
+                        </div>
+                        <div id="cloud-status-msg" style="font-size:12px; font-weight:700; color:var(--gold-bright);"></div>
+                    </div>
+
+                    <!-- Local Save & Export Tools -->
+                    <div class="glass-panel" style="margin-bottom:20px; padding:16px; border:1px solid var(--border-rune);">
+                        <h3 style="color:var(--gold); margin-bottom:10px; font-size:1.05rem;"><i class="fas fa-save"></i> Local Storage & Backup Code Tools</h3>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="GameManager.saveGameData(); GameManager.showToast('Progress saved locally!', 'success');"><i class="fas fa-save"></i> Save Local</button>
+                            <button class="btn btn-secondary" onclick="GameManager.exportSaveCode()"><i class="fas fa-copy"></i> Copy Code</button>
+                            <button class="btn btn-secondary" onclick="GameManager.importSaveCode()"><i class="fas fa-file-import"></i> Import Code</button>
+                            <button class="btn btn-secondary" onclick="GameManager.openLeaderboardModal()"><i class="fas fa-trophy"></i> Leaderboard</button>
+                        </div>
+                    </div>
+
+                    <!-- Actions Bar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <button class="btn btn-danger" onclick="GameManager.resetGameSession()" style="background:#ff2a5f; color:#fff; padding:8px 16px;"><i class="fas fa-undo"></i> Reset / New Run</button>
                         <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
                     </div>
                 </div>
             </div>
         `;
         this.showModal(modalHtml);
+    },
+
+    saveToCloudDB: async function() {
+        const input = document.getElementById('cloud-username-input');
+        const statusEl = document.getElementById('cloud-status-msg');
+        const username = input ? input.value.trim() : '';
+
+        if (!username) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff2a5f;">Please enter a Hero Account Name!</span>`;
+            return;
+        }
+
+        localStorage.setItem('dungeon_crawl_last_username', username);
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--gold);">Saving to Cloud Database...</span>`;
+
+        try {
+            this.saveGameData();
+            const saveData = {
+                currentStage: this.currentStage,
+                currentNodeIndex: this.currentNodeIndex,
+                unlockedStage: this.unlockedStage,
+                runSeed: this.runSeed,
+                permanentMeta: this.permanentMeta,
+                playerData: {
+                    classType: player ? player.classType : 'Warrior',
+                    level: player ? player.level : 1,
+                    xp: player ? player.xp : 0,
+                    gold: player ? player.gold : 50,
+                    coins: player ? player.coins : 0,
+                    str: player ? player.str : 20,
+                    agi: player ? player.agi : 20,
+                    int: player ? player.int : 20,
+                    vit: player ? player.vit : 20,
+                    statPoints: player ? player.statPoints : 0,
+                    equipment: player ? player.equipment : {},
+                    specialization: player ? player.specialization : null
+                }
+            };
+
+            await CloudDatabase.saveToCloud(username, saveData);
+            SoundEngine.playLevelUp();
+            if (statusEl) statusEl.innerHTML = `<span style="color:#00ffaa;">Saved successfully to Cloud DB for '${username}'!</span>`;
+            this.showToast(`Saved to Cloud DB ('${username}')`, 'success');
+        } catch (err) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff8c00;">Cloud Backup Saved Locally ('${username}')</span>`;
+            this.showToast(`Saved Local Backup ('${username}')`, 'success');
+        }
+    },
+
+    loadFromCloudDB: async function() {
+        const input = document.getElementById('cloud-username-input');
+        const statusEl = document.getElementById('cloud-status-msg');
+        const username = input ? input.value.trim() : '';
+
+        if (!username) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff2a5f;">Please enter a Hero Account Name!</span>`;
+            return;
+        }
+
+        localStorage.setItem('dungeon_crawl_last_username', username);
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--gold);">Loading from Cloud Database...</span>`;
+
+        try {
+            const data = await CloudDatabase.loadFromCloud(username);
+            if (!data || !data.save_data) {
+                throw new Error("No cloud record found for this Hero Account Name!");
+            }
+
+            this.loadFromData(data.save_data);
+            SoundEngine.playLevelUp();
+            this.closeModal();
+            this.renderDungeonMap();
+            this.showToast(`Loaded Cloud Hero ('${username}')`, 'success');
+        } catch (err) {
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ff2a5f;">Error: ${err.message}</span>`;
+            this.showToast(`Could not load Cloud save: ${err.message}`, 'warning');
+        }
+    },
+
+    exportSaveCode: function() {
+        if (!player) {
+            this.showToast("No active hero to export!", "warning");
+            return;
+        }
+        this.saveGameData();
+        const raw = localStorage.getItem('dungeon_crawl_save_slot_1');
+        if (!raw) return;
+        const code = btoa(raw);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code);
+            this.showToast("Save Code copied to clipboard!", "success");
+        } else {
+            this.showToast("Save Code created!", "success");
+        }
+    },
+
+    importSaveCode: function() {
+        const code = prompt("Paste your base64 encoded Save Code below:");
+        if (!code || !code.trim()) return;
+        try {
+            const raw = atob(code.trim());
+            const data = JSON.parse(raw);
+            this.loadFromData(data);
+            this.saveGameData();
+            this.closeModal();
+            this.renderDungeonMap();
+            this.showToast("Imported Save Code successfully!", "success");
+        } catch (e) {
+            this.showToast("Invalid Save Code format!", "warning");
+        }
+    },
+
+    openLeaderboardModal: async function() {
+        SoundEngine.playClick();
+        this.showModal(`
+            <div class="modal-overlay">
+                <div class="modal-card glass-panel text-center" style="max-width:600px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-trophy"></i> Global Cloud DB Leaderboard</h2>
+                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                    </div>
+                    <p style="color:var(--ink-dim); margin-bottom:16px;">Top players worldwide fetched from Cloud Database</p>
+                    <div id="leaderboard-content" style="min-height:180px; display:flex; align-items:center; justify-content:center;">
+                        <span style="color:var(--gold);">Loading global scores...</span>
+                    </div>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        const list = await CloudDatabase.fetchLeaderboard();
+        const contentEl = document.getElementById('leaderboard-content');
+        if (!contentEl) return;
+
+        if (!list || list.length === 0) {
+            contentEl.innerHTML = '<p style="color:var(--ink-dim);">No cloud records found yet. Be the first to save your hero to Cloud DB!</p>';
+            return;
+        }
+
+        const rowsHtml = list.map((item, index) => `
+            <div class="leaderboard-row" style="display:flex; justify-content:space-between; padding:8px 12px; margin-bottom:6px; background:var(--bg-inset); border-radius:6px; font-size:12px;">
+                <div>#${index + 1} <strong>${item.username}</strong> (${item.classType} Lvl ${item.level})</div>
+                <div style="color:var(--gold-bright);">Stage ${item.stage} | ${item.gold} Gold</div>
+            </div>
+        `).join('');
+
+        contentEl.innerHTML = `<div style="width:100%; text-align:left;">${rowsHtml}</div>`;
+    },
+
+    resetGameSession: function() {
+        if (confirm("Are you sure you want to reset your current run and return to Camp?")) {
+            SoundEngine.playClick();
+            this.currentNodeIndex = 0;
+            this.closeModal();
+            this.renderCampHub();
+            this.showToast("Returned to Safe Camp.", "info");
+        }
     },
 
     saveGameData: function() {

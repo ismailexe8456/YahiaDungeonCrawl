@@ -517,7 +517,7 @@ const GameManager = {
                         <button class="close-btn" onclick="GameManager.closeTownHubModal()">&times;</button>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+                    <div class="town-hub-grid">
                         <!-- Left Column: Merchant Shop -->
                         <div class="panel" style="padding:12px;">
                             <h4 style="color:var(--gold); margin-bottom:8px;"><i class="fas fa-prescription-bottle-alt"></i> Merchant Potions & Supplies</h4>
@@ -1038,7 +1038,7 @@ const GameManager = {
             return;
         }
 
-        const enemySkill = enemy.getTacticalSkill(player, this.currentStage);
+        const enemySkill = enemy.getTacticalSkill(player, this.currentStage, this.difficulty || 'normal');
         const baseDmg = Math.floor(enemy.strength * (enemySkill.mult || 1.0));
         let playerDef = player.TotalDefense || 10;
         let netDmg = Math.max(1, baseDmg - Math.floor(playerDef * 0.4));

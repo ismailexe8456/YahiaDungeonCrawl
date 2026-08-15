@@ -2020,8 +2020,19 @@ button.cta:disabled {
     margin-bottom: 16px;
 }
 
+.town-hub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
 /* Mobile Responsive Ultra Polish (@media max-width: 640px) */
 @media (max-width: 640px) {
+    .town-hub-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
     .game-container {
         padding: 6px !important;
         gap: 8px !important;

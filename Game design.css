@@ -689,14 +689,20 @@ body {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(5, 4, 10, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 12px;
     overflow-y: auto;
+    animation: modalOverlayFade 0.25s ease-out forwards;
+}
+
+@keyframes modalOverlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-card {
@@ -708,10 +714,16 @@ body {
     background: linear-gradient(180deg, var(--bg-panel-2), var(--bg-panel));
     border: 1.5px solid var(--gold);
     border-radius: 16px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.95);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.95), 0 0 20px var(--gold-glow);
     padding: 20px;
     position: relative;
     margin: auto;
+    animation: modalSpringPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalSpringPop {
+    from { transform: scale(0.85) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .modal-card::-webkit-scrollbar {
@@ -2001,6 +2013,11 @@ button.cta:disabled {
         gap: 18px; 
         align-items: start; 
     }
+.level-timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 /* Mobile Responsive Ultra Polish (@media max-width: 640px) */

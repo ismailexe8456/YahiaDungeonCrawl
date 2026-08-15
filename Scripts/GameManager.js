@@ -457,7 +457,7 @@ const GameManager = {
                     </button>
                 </div>
 
-                <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin-bottom:16px;">
+                <div class="level-timeline-grid">
                     ${levelTimelineHtml}
                 </div>
 

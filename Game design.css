@@ -2003,6 +2003,78 @@ button.cta:disabled {
     }
 }
 
+/* Mobile Responsive Ultra Polish (@media max-width: 640px) */
+@media (max-width: 640px) {
+    .game-container {
+        padding: 6px !important;
+        gap: 8px !important;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .game-header .header-right {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .level-timeline-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .level-slot-card {
+        padding: 6px 4px !important;
+        min-height: 54px;
+    }
+
+    .modal-card {
+        padding: 14px !important;
+        margin: 8px !important;
+        max-height: 94vh !important;
+    }
+
+    .hero-class-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .combatants {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .fighter {
+        width: 100% !important;
+    }
+
+    .fighter.enemy {
+        align-items: flex-start !important;
+    }
+
+    .fighter.enemy .who {
+        flex-direction: row !important;
+    }
+
+    .fighter.enemy .id {
+        text-align: left !important;
+    }
+
+    .vs-badge {
+        display: none !important;
+    }
+
+    .dock {
+        padding: 10px !important;
+    }
+
+    .skills-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
 
 
 

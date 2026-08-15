@@ -245,12 +245,75 @@ const GameManager = {
         return `
             <div class="hero-card panel ${isSelected ? 'selected-class' : ''}" 
                  onclick="GameManager.selectCampHero('${className}')" 
-                 style="padding:10px; cursor:pointer; border:1.5px solid ${isSelected ? 'var(--gold-bright)' : 'var(--border-rune)'}; background:${isSelected ? 'rgba(217,168,60,0.18)' : 'var(--bg-inset)'}; border-radius:10px; text-align:center;">
+                 style="padding:10px; cursor:pointer; border:1.5px solid ${isSelected ? 'var(--gold-bright)' : 'var(--border-rune)'}; background:${isSelected ? 'rgba(217,168,60,0.18)' : 'var(--bg-inset)'}; border-radius:10px; text-align:center; position:relative;">
+                
+                <button class="badge-sm" onclick="event.stopPropagation(); GameManager.inspectHero('${className}');" title="Inspect Stats & Skills" style="position:absolute; top:6px; right:6px; font-size:10px; padding:2px 6px;">
+                    <i class="fas fa-info-circle"></i> Info
+                </button>
+
                 <img src="${imgSrc}" alt="${className}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; margin-bottom:4px;">
                 <div style="font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--gold-bright);">${className}</div>
                 <div style="font-size:10px; color:var(--ink-dim);">${subtitle}</div>
             </div>
         `;
+    },
+
+    inspectHero: function(className) {
+        SoundEngine.playClick();
+        const classDef = HERO_CLASSES[className] || HERO_CLASSES.Warrior;
+        const tempHero = new Player(className);
+
+        const skillsHtml = tempHero.skills.map(s => `
+            <div style="background:var(--bg-inset); border:1px solid var(--border-rune); border-radius:8px; padding:8px; margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                    <strong style="color:var(--gold-bright); font-size:12px;">${s.name}</strong>
+                    <span style="font-family:var(--font-mono); font-size:10px; color:var(--arcane);">${s.manaCost} MP | CD: ${s.cooldown}T</span>
+                </div>
+                <div style="font-size:11px; color:var(--ink-dim);">${s.desc}</div>
+            </div>
+        `).join('');
+
+        const modalHtml = `
+            <div class="modal-overlay" onclick="if(event.target === this) GameManager.closeModal()">
+                <div class="modal-card glass-panel text-center" style="max-width:540px; max-height:88vh; overflow-y:auto;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-user-shield"></i> ${className.toUpperCase()} (${classDef.title})</h2>
+                        <button class="close-btn" onclick="GameManager.closeModal()">&times;</button>
+                    </div>
+
+                    <img src="${classDef.img}" alt="${className}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); margin-bottom:10px;">
+
+                    <p style="font-size:12px; color:var(--ink-dim); margin-bottom:14px; line-height:1.5;">${classDef.desc}</p>
+
+                    <!-- Attributes Grid -->
+                    <div class="panel" style="padding:10px; margin-bottom:14px; text-align:left;">
+                        <h4 style="color:var(--gold); margin-bottom:8px; font-size:12px;"><i class="fas fa-chart-bar"></i> Base Hero Attributes</h4>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; font-size:11.5px; font-family:var(--font-mono);">
+                            <div>❤️ HP: <strong style="color:#00ffaa;">${classDef.baseStats.hp}</strong></div>
+                            <div>⚡ MP: <strong style="color:var(--arcane);">${classDef.baseStats.mp}</strong></div>
+                            <div>✊ STR: <strong style="color:var(--gold);">${classDef.baseStats.str}</strong></div>
+                            <div>🏃 AGI: <strong style="color:var(--gold);">${classDef.baseStats.agi}</strong></div>
+                            <div>🔮 INT: <strong style="color:var(--arcane);">${classDef.baseStats.int}</strong></div>
+                            <div>🛡️ VIT: <strong style="color:#00ffaa;">${classDef.baseStats.vit}</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Breakdown -->
+                    <div class="panel" style="padding:10px; margin-bottom:16px; text-align:left;">
+                        <h4 style="color:var(--gold); margin-bottom:8px; font-size:12px;"><i class="fas fa-bolt"></i> Starting Abilities & Spells</h4>
+                        ${skillsHtml}
+                    </div>
+
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button class="cta" onclick="GameManager.selectCampHero('${className}'); GameManager.closeModal();" style="padding:10px 20px;">
+                            <i class="fas fa-check"></i> Choose ${className}
+                        </button>
+                        <button class="btn btn-secondary" onclick="GameManager.closeModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        this.showModal(modalHtml);
     },
 
     selectCampHero: function(className) {
@@ -935,14 +998,19 @@ const GameManager = {
             this.logAction(`<strong><i class="fas fa-exclamation-triangle"></i> ${enemy.name} ENRAGED INTO PHASE 2!</strong> Strength & Stats Boosted!`, 'warning');
         }
 
+        if (this.turnTimer) {
+            clearTimeout(this.turnTimer);
+            this.turnTimer = null;
+        }
+
         if (enemy.health <= 0) {
             this.isTurnInProgress = false;
+            this.updateUI();
             this.handleVictory();
             return;
         }
 
-        // 600ms (~0.6s) TURN PACING DELAY BEFORE ENEMY RETALIATES!
-        setTimeout(() => {
+        this.turnTimer = setTimeout(() => {
             this.executeEnemyTurn();
         }, 600);
     },
@@ -950,6 +1018,10 @@ const GameManager = {
     executeEnemyTurn: function() {
         if (!enemy || enemy.health <= 0) {
             this.isTurnInProgress = false;
+            if (enemy && enemy.health <= 0) {
+                this.updateUI();
+                this.handleVictory();
+            }
             return;
         }
 

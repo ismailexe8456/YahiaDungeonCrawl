@@ -1928,6 +1928,35 @@ button.cta:disabled {
     color: var(--gold-bright);
 }
 
+/* Procedural Roguelite Timeline & Camp Styles */
+.active-current-slot {
+    box-shadow: 0 0 16px rgba(217,168,60,0.5);
+    background: radial-gradient(circle at 50% 50%, rgba(217,168,60,0.2) 0%, var(--bg-inset) 100%) !important;
+    animation: activeGlowPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes activeGlowPulse {
+    from { box-shadow: 0 0 10px rgba(217,168,60,0.3); }
+    to { box-shadow: 0 0 22px rgba(217,168,60,0.7); }
+}
+
+.cleared-slot {
+    background: rgba(0, 255, 170, 0.05) !important;
+}
+
+.locked-slot {
+    background: rgba(10, 8, 18, 0.6) !important;
+}
+
+.stage-unlocked-btn:hover {
+    border-color: var(--gold-bright) !important;
+    box-shadow: 0 0 12px rgba(217,168,60,0.3);
+}
+
+.selected-class {
+    box-shadow: 0 0 14px rgba(217,168,60,0.4);
+}
+
 /* Desktop 3-Column Arena Layout */
 @media (min-width: 840px) {
     .d-body { 

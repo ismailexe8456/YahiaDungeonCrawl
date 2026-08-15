@@ -106,6 +106,16 @@ const GameManager = {
         darkOrbs: 0
     },
 
+    setGameStart: function(classType, event) {
+        if (event && event.stopPropagation) event.stopPropagation();
+        try { SoundEngine.playClick(); } catch(e) {}
+        this.selectCampHero(classType);
+    },
+
+    renderHeroSelect: function() {
+        this.renderCampHub();
+    },
+
     init: function() {
         const viewContainer = document.getElementById('main-view');
         if (!viewContainer) {
@@ -1461,6 +1471,12 @@ const GameManager = {
     }
 };
 
-window.onload = function() {
-    GameManager.init();
-};
+if (typeof window !== 'undefined') {
+    window.onload = function() {
+        GameManager.init();
+    };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = GameManager;
+}
